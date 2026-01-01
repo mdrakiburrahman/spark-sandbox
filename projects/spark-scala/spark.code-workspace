@@ -1,0 +1,13 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.watcherExclude": {
+      "**/target": true
+    },
+    "java.compile.nullAnalysis.mode": "disabled"
+  }
+}
