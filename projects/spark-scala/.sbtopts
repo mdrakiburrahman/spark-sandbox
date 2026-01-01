@@ -1,0 +1,16 @@
+#
+#
+#   Options for SBT.
+#
+#   Can be used by sbt CLI or Metals.
+#
+# ---------------------------------------------------------------------------------------
+
+# ┌─────┐
+# │ JVM │
+# └─────┘
+-J-Xmx8192M
+-J-Xms2048M
+-J-Xss6M
+-J-XX:+UseG1GC
+-J-XX:MaxMetaspaceSize=2048M

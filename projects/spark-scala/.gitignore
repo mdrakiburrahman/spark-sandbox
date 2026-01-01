@@ -1,0 +1,35 @@
+# Data warehouse
+#
+**/warehouse/
+**/warehouse*/
+
+# Stream Checkpoints
+#
+**/checkpoints/
+**/checkpoints*/
+
+# Hive metastore
+#
+**/metastore_db/
+**/derby.log
+
+# Test results
+#
+**/test-reports/
+
+# Log files
+#
+*.log
+**/.logs/
+
+# Temporary folders
+#
+**/tmp/
+**/.temp/
+
+# Build output
+#
+**/.scala-build/
+.metals/
+**/target/
+**/.bloop/

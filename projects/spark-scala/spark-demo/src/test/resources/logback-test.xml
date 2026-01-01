@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+
+<configuration>
+    <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+    <import class="ch.qos.logback.core.FileAppender"/>
+
+    <appender name="FILE" class="FileAppender">
+        <file>test-reports/TEST-${test.name}-logback.log</file>
+        <append>false</append>
+        <encoder class="PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} -- %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="warning">
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

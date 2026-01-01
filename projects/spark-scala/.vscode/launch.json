@@ -1,0 +1,21 @@
+{
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  // Metals: https://scalameta.org/metals/docs/editors/vscode/#via-a-launchjson-configuration
+  "version": "0.2.0",
+  "configurations": [
+    // This allows you to attach the debbugger to a suspended Scala job, when running with
+    // `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005`
+    // see run-spark-jobs.sh
+    {
+      "type": "scala",
+      "request": "attach",
+      "name": "Attach debugger",
+      // name of the module that is being debugging
+      "buildTarget": "root",
+      // Host of the jvm to connect to
+      "hostName": "localhost",
+      // Port to connect to
+      "port": 5005
+    }
+  ]
+}

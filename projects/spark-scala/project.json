@@ -4,6 +4,103 @@
   "projectType": "application",
   "sourceRoot": "projects/spark-scala",
   "targets": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["build-jar"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          {
+            "command": "echo 'All builds completed.'",
+            "forwardAllArgs": false
+          }
+        ]
+      },
+      "outputs": ["{projectRoot}/**/*.jar"]
+    },
+    "build-jar": {
+      "cache": true,
+      "dependsOn": [],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          {
+            "command": "sbt -J-Xmx16G -J-Xms4G -J-Xss6M -J-XX:+UseG1GC -J-XX:MaxMetaspaceSize=2048M assembly",
+            "forwardAllArgs": false
+          }
+        ]
+      },
+      "inputs": [
+        "{projectRoot}/**/*.scala",
+        "{projectRoot}/**/*.sbt",
+        "{projectRoot}/**/*.yaml",
+        {
+          "runtime": "git rev-parse --short HEAD"
+        }
+      ],
+      "outputs": ["{projectRoot}/**/*.jar"]
+    },
+    "compile": {
+      "cache": true,
+      "dependsOn": ["compile-scala"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          {
+            "command": "echo 'All compilations completed.'",
+            "forwardAllArgs": false
+          }
+        ]
+      },
+      "outputs": ["{projectRoot}/**/*.jar"]
+    },
+    "compile-scala": {
+      "cache": true,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": ["sbt test:compile", "sbt compile"],
+        "parallel": false
+      },
+      "inputs": [
+        "{projectRoot}/**/*.scala",
+        "{projectRoot}/**/*.sbt",
+        "{projectRoot}/**/*.yaml"
+      ]
+    },
+    "clean": {
+      "cache": false,
+      "dependsOn": [],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          {
+            "command": "sbt clean",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "lint": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": ["sbt scalafmtAll"],
+        "parallel": false
+      },
+      "dependsOn": [],
+      "inputs": ["{projectRoot}/**/*.scala", "{projectRoot}/**/*.sbt"],
+      "outputs": ["{projectRoot}/**/*.scala", "{projectRoot}/**/*.sbt"]
+    },
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
@@ -21,6 +118,35 @@
           }
         ]
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["test-scala"],
+      "options": {
+        "commands": ["echo 'All tests completed.'"]
+      }
+    },
+    "test-scala": {
+      "cache": true,
+      "executor": "nx:run-commands",
+      "dependsOn": [],
+      "options": {
+        "cwd": "projects/spark-scala",
+        "env": {
+          "JAVA_HOME": "/usr/local/sdkman/candidates/java/current"
+        },
+        "commands": [
+          {
+            "command": "sbt test",
+            "forwardAllArgs": false
+          }
+        ]
+      },
+      "inputs": [
+        "{projectRoot}/**/*.scala",
+        "{projectRoot}/**/*.sbt",
+        "{projectRoot}/**/*.yaml"
+      ]
     }
   }
 }
