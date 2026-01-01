@@ -44,7 +44,11 @@ lazy val commonExecutor = project
     commonExecutorAssemblySettings,
     testSettings,
     version := commitVersion.value,
-    libraryDependencies ++= testDependencies
+    libraryDependencies ++= deltaDependencies
+      ++ fileTypeDependencies
+      ++ sparkDependencies
+      ++ sparkTestDependencies
+      ++ testDependencies
   )
 
 // Common: Imports for traits, objects, utility methods etc.
@@ -58,7 +62,9 @@ lazy val common = project
     genericAssemblySettings,
     testSettings,
     version := version.value,
-    libraryDependencies ++= testDependencies
+    libraryDependencies ++= sparkDependencies
+      ++ sparkTestDependencies
+      ++ testDependencies
   )
   .dependsOn(
     commonExecutor % "compile->compile;test->test"

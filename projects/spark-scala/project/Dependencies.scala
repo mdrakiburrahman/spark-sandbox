@@ -29,17 +29,12 @@ object Dependencies {
    *
    * Pinned versions due to known issues:
    *
-   * - [azure-identity:1.8.2]
+   * --------------------------------------------- SAMPLE ------------------------------------------------
+   * - [package:X.X.X]
    *
-   *   In order to work with Synapse Spark 3.4 and azure-core, must be 1.8.2, see https://github.com/Azure/azure-sdk-for-java/issues/37683#issuecomment-1826388305
-   *   Before upgrading, ensure you test Synapse runtime to obtain SNI credential.
+   *   Describe your reason for pinning so the next persion that bumps knows what to look for.
    *
-   * - [azure-xml:1.0.0-beta.3]
-   *
-   *   azure-core references an obscure class [[com.azure.xml.XmlProviders]] that's only available in beta:
-   *
-   *   >>> https://github.com/Azure/azure-sdk-for-java/issues/34462
-   *   >>> https://github.com/Azure/azure-docs-sdk-java/blob/main/preview/docs-ref-autogen/com.azure.xml.yml
+   * --------------------------------------------- SAMPLE ------------------------------------------------
    */
     // @formatter:off
     lazy val dependencies =
@@ -47,9 +42,53 @@ object Dependencies {
             // %% - adds Scala suffixes to artifact names (e.g. mylib_2.12)
             // %  - Java package, does not add Scala suffixes to artifact names (e.g. mylib)
             //
+            val deltaSpark                              = "io.delta"                               %% "delta-spark"                                            % "3.2.0"
             val scalaTest                               = "org.scalatest"                          %% "scalatest"                                              % "3.2.18"
             val scalaTestPlus                           = "org.scalatestplus"                      %% "scalacheck-1-18"                                        % "3.2.18.0"
+            val snakeYaml                               = "org.yaml"                               %  "snakeyaml"                                              % "2.2"
+            val sparkCatalyst                           = "org.apache.spark"                       %% "spark-catalyst"                                         % "3.5.1"
+            val sparkCore                               = "org.apache.spark"                       %% "spark-core"                                             % "3.5.1"
+            val sparkSql                                = "org.apache.spark"                       %% "spark-sql"                                              % "3.5.1"
+            val sparkStreaming                          = "org.apache.spark"                       %% "spark-streaming"                                        % "3.5.1"
         }
+
+    /**
+     * Multiple SLF4J's in the classpath produces annoying logging like this:
+     *
+     *    ```
+     *    SLF4J: Class path contains multiple SLF4J providers.
+     *    SLF4J: Found provider [ch.qos.logback.classic.spi.LogbackServiceProvider@39ba9bd2]
+     *    SLF4J: Found provider [org.apache.logging.slf4j.SLF4JServiceProvider@3820c045]
+     *    SLF4J: Found provider [org.slf4j.simple.SimpleServiceProvider@59d1a39c]
+     *    SLF4J: See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.
+     *    ```
+     */
+    lazy val slf4jExclusions = Seq(
+        ExclusionRule(organization = "org.slf4j", name = "slf4j-simple"),
+    )
+
+   /* provided  - dependency is available on target machine, do not include in artifact
+    *             (reduces Jar size significantly)
+    * test      - dependency is only used for test runs, do not include in artifact
+    */
+    lazy val deltaDependencies = Seq(
+        dependencies.deltaSpark
+    )
+
+    lazy val fileTypeDependencies = Seq(
+        dependencies.snakeYaml,
+    )
+
+    lazy val sparkDependencies = Seq(
+        dependencies.sparkSql                   % "provided",
+        dependencies.sparkStreaming             % "provided"
+    ).map(_.excludeAll(slf4jExclusions: _*))
+
+    lazy val sparkTestDependencies = Seq(
+        dependencies.sparkCatalyst              % "test" classifier "tests",
+        dependencies.sparkCore                  % "test" classifier "tests",
+        dependencies.sparkSql                   % "test" classifier "tests",
+    ).map(_.excludeAll(slf4jExclusions: _*))
 
     lazy val testDependencies = Seq(
         dependencies.scalaTest                  % "test",
