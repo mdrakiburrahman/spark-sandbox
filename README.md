@@ -22,4 +22,6 @@ This repository contains POCs/POTs in Apache Spark.
 
 1. Follow [CONTRIBUTING](contrib/README.md) to get a windows machine ready to start the devcontainer.
 
-2. Inside WSL, start the devcontainer with `Ctrl + Shift + P > Dev Containers: Rebuild and Reopen in Container`
+1. Inside WSL, start the devcontainer with `Ctrl + Shift + P > Dev Containers: Rebuild and Reopen in Container`
+
+1. Dig into [spark-scala](projects/spark-scala/README.md) to run local demonstrations.
