@@ -1,0 +1,6 @@
+{
+    "name": "devcontainer",
+    "image": "rakirahman.azurecr.io/devcontainer/spark:403ed4f76e8f42d280b07e19b8e7c5038a08d885bbb4ae24912f681d6083af3d",
+    "remoteUser": "vscode",
+    "containerUser": "vscode"
+}
