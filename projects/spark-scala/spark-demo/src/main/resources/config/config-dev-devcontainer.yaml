@@ -1,0 +1,56 @@
+# Spark configuration
+#
+spark:
+  local: true
+  debug: true
+
+  # Lower based on your machine's resources
+  #
+  ui: true
+  offHeapEnabled: true
+  driverCore: 24
+  driverMemory: "48g"
+  driverDefaultJavaOptions: "-Xss256m"
+  executorCore: 12
+  executorMemory: "48g"
+  executorDefaultJavaOptions: "-Xss256m"
+  offHeapMemory: "24g"
+  shufflePartitions: 32
+
+  warehouseRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/warehouse"
+  checkpointsRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/checkpoints"
+  metastoreRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator"
+  seedRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/seed"
+
+  state:
+    minBatchesToRetain: 2
+    minDeltasForSnapshot: 2
+    maintenanceInterval: "10s"
+    storeProviderClass: "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider"
+
+    rocksDb:
+      compactOnCommit: true
+
+# Local secret store
+#
+secret:
+  devcontainer:
+    storageLocation: "file://{GIT_ROOT}/.env.local"
+
+# Entra ID
+#
+tokenCredential:
+  defaultProvider: DevcontainerCredentialProvider
+  defaultConfig:
+    clientCertRef: ""
+    clientId: ""
+    tenantId: ""
+    vaultUrl: ""
+  relayEndpoint: ""
+
+# Telemetry configuration
+#
+telemetry:
+  url: ""
+  audience: ""
+  isRelay: true
