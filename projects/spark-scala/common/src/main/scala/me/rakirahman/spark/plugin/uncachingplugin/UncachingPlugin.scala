@@ -9,16 +9,14 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.api.plugin.{DriverPlugin, ExecutorPlugin, PluginContext, SparkPlugin}
 
-import org.apache.logging.log4j.{Logger, LogManager}
+import org.apache.spark.internal.Logging
 
 /** A simple HTTP server for caching operations using NanoHTTPD.
   *
   * @param port
   *   The port to serve on.
   */
-class UncacheServer(port: Int) extends NanoHTTPD(port) {
-
-  private val logger: Logger = LogManager.getLogger(this.getClass.getCanonicalName.stripSuffix("$"))
+class UncacheServer(port: Int) extends NanoHTTPD(port) with Logging {
 
   /** @inheritdoc
     */
@@ -32,10 +30,10 @@ class UncacheServer(port: Int) extends NanoHTTPD(port) {
 
       if (spark.catalog.tableExists(tableName)) {
         spark.catalog.uncacheTable(tableName)
-        logger.info(s"Successfully uncached table: $tableName")
+        logInfo(s"Successfully uncached table: $tableName")
         NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "text/plain", s"Successfully uncached table: $tableName")
       } else {
-        logger.warn(s"Table not found: $tableName")
+        logWarning(s"Table not found: $tableName")
         NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, "text/plain", s"Table not found: $tableName")
       }
     } else {
@@ -65,9 +63,7 @@ object UncacherSparkPluginMetadata {
 
 /** A custom driver plugin that starts a long running thread in the driver process.
   */
-class UncachingDriverPlugin extends DriverPlugin {
-
-  val logger: Logger = LogManager.getLogger(this.getClass.getCanonicalName.stripSuffix("$"))
+class UncachingDriverPlugin extends DriverPlugin with Logging {
 
   var sparkContext: SparkContext = null
   var server: UncacheServer = null
@@ -80,7 +76,7 @@ class UncachingDriverPlugin extends DriverPlugin {
       pluginContext: PluginContext
   ): util.Map[String, String] = {
 
-    logger.debug("Initializing long-running server for a REST API")
+    logDebug("Initializing long-running server for a REST API")
 
     this.sparkContext = sc
     server = new UncacheServer(UncacherSparkPluginMetadata.DEFAULT_PORT)
@@ -88,9 +84,9 @@ class UncachingDriverPlugin extends DriverPlugin {
     serverThread = new Thread(() => {
       try {
         server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
-        logger.info(s"Started NanoHTTPD server on port ${UncacherSparkPluginMetadata.DEFAULT_PORT}")
+        logInfo(s"Started NanoHTTPD server on port ${UncacherSparkPluginMetadata.DEFAULT_PORT}")
       } catch {
-        case e: IOException => logger.error("Failed to start NanoHTTPD server", e)
+        case e: IOException => logError("Failed to start NanoHTTPD server", e)
       }
     })
     serverThread.setDaemon(true)
@@ -102,11 +98,11 @@ class UncachingDriverPlugin extends DriverPlugin {
   /** @inheritdoc
     */
   override def shutdown(): Unit = {
-    logger.debug("Shutting down NanoHTTPD server and plugin")
+    logDebug("Shutting down NanoHTTPD server and plugin")
 
     if (server != null) {
       server.stop()
-      logger.info("NanoHTTPD server stopped")
+      logInfo("NanoHTTPD server stopped")
     }
 
     if (serverThread != null) {

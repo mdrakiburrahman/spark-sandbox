@@ -104,7 +104,7 @@
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": [],
+      "dependsOn": ["build-jar"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
