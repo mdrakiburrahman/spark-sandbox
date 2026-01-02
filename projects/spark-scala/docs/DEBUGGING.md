@@ -28,6 +28,7 @@ Clean any `sbt` based builds, as they aren't debuggable, run `sbt clean`.
 From metals, run `Clean compile` > `Import Build` to generate a clean debuggable build (uses [Bloop](https://scalacenter.github.io/bloop/)).
 
 Once the build completes, you'll see an outline of your file:
+
 ![Build Completed](../.imgs/metals-build-completed.png)
 
 ### Spark Submitted Jobs using Java Debug Wire Protocol
