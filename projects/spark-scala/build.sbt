@@ -62,8 +62,11 @@ lazy val common = project
     genericAssemblySettings,
     testSettings,
     version := version.value,
-    libraryDependencies ++= sparkDependencies
+    libraryDependencies ++= azureNetworkingDependencies
+      ++ httpServerDependencies
+      ++ sparkDependencies
       ++ sparkTestDependencies
+      ++ synapseDependencies
       ++ testDependencies
   )
   .dependsOn(
@@ -80,7 +83,9 @@ lazy val sparkDemo = project
     credentials := Seq.empty,
     genericAssemblySettings,
     testSettings,
-    version := version.value
+    version := version.value,
+    // The provided scope packages are not available from common, it seems.
+    libraryDependencies ++= sparkDependencies
   )
   .dependsOn(
     common % "compile->compile;test->test"

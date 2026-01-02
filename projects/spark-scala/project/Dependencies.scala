@@ -42,7 +42,9 @@ object Dependencies {
             // %% - adds Scala suffixes to artifact names (e.g. mylib_2.12)
             // %  - Java package, does not add Scala suffixes to artifact names (e.g. mylib)
             //
+            val azureNettyHttp                          = "com.azure"                              %  "azure-core-http-netty"                                  % "1.15.4"
             val deltaSpark                              = "io.delta"                               %% "delta-spark"                                            % "3.2.0"
+            val httpNano                                = "org.nanohttpd"                          %  "nanohttpd"                                              % "2.3.1"
             val scalaTest                               = "org.scalatest"                          %% "scalatest"                                              % "3.2.18"
             val scalaTestPlus                           = "org.scalatestplus"                      %% "scalacheck-1-18"                                        % "3.2.18.0"
             val snakeYaml                               = "org.yaml"                               %  "snakeyaml"                                              % "2.2"
@@ -50,6 +52,7 @@ object Dependencies {
             val sparkCore                               = "org.apache.spark"                       %% "spark-core"                                             % "3.5.1"
             val sparkSql                                = "org.apache.spark"                       %% "spark-sql"                                              % "3.5.1"
             val sparkStreaming                          = "org.apache.spark"                       %% "spark-streaming"                                        % "3.5.1"
+            val synapseUtils                            = "com.microsoft.azure.synapse"            %% "synapseutils"                                           % "1.5.4"
         }
 
     /**
@@ -71,12 +74,20 @@ object Dependencies {
     *             (reduces Jar size significantly)
     * test      - dependency is only used for test runs, do not include in artifact
     */
+    lazy val azureNetworkingDependencies = Seq(
+        dependencies.azureNettyHttp,
+    )
+    
     lazy val deltaDependencies = Seq(
         dependencies.deltaSpark
     )
 
     lazy val fileTypeDependencies = Seq(
         dependencies.snakeYaml,
+    )
+
+    lazy val httpServerDependencies = Seq(
+        dependencies.httpNano
     )
 
     lazy val sparkDependencies = Seq(
@@ -89,6 +100,10 @@ object Dependencies {
         dependencies.sparkCore                  % "test" classifier "tests",
         dependencies.sparkSql                   % "test" classifier "tests",
     ).map(_.excludeAll(slf4jExclusions: _*))
+
+    lazy val synapseDependencies = Seq(
+        dependencies.synapseUtils
+    )
 
     lazy val testDependencies = Seq(
         dependencies.scalaTest                  % "test",

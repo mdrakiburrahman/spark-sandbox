@@ -62,7 +62,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
-        "commands": ["sbt test:compile", "sbt compile"],
+        "commands": ["sbt test:compile", "sbt compile", "sbt bloopInstall"],
         "parallel": false
       },
       "inputs": [
