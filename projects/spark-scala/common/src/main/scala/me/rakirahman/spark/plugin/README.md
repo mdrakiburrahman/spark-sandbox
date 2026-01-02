@@ -9,7 +9,7 @@ This folder contains the following Spark Plugins that are used in Production, an
 To learn more:
 
 - [Spark Advanced Instrumentation](https://spark.apache.org/docs/latest/monitoring.html#advanced-instrumentation)
-- [A great set of blogs on Spark Plugins](https://blog.madhukaraphatak.com/categories/spark-plugin/)
+- [A great set of blogs on Spark Plugins](https://blog.madhukaraphatak.in/categories/spark-plugin/)
   - [Code examples the blog](https://github.com/phatak-dev/spark-3.0-examples/tree/master/src/main/scala/com/madhukaraphatak/spark/core/plugins)
 - [Another great set of code examples](https://github.com/cerndb/SparkPlugins/tree/master)
 - [Plugins across GitHub](https://github.com/search?q=%22extends+SparkPlugin%22+language%3AScala&type=code&l=Scala)
