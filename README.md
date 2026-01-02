@@ -10,7 +10,7 @@
     <a href="https://code.visualstudio.com/docs/devcontainers/containers">Devcontainer Overview</a>
     ·
     <a href="https://github.com/mdrakiburrahman/spark-devcontainer">Spark Devcontainer Source</a>
-    .
+    ·
   </p>
 </p>
 
