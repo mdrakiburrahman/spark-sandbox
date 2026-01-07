@@ -128,6 +128,7 @@ get_spark_configs() {
 #
 get_additional_runtime_jars() {
     local jars=(
+        "io.openlineage:openlineage-spark_2.12:1.23.0"
         "org.apache.hadoop:hadoop-azure-datalake:3.3.4"
         "org.apache.hadoop:hadoop-azure:3.3.4"
     )
@@ -171,4 +172,9 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 
 # 2. OpenLineage
-/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+openlineage_configs=()
+openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
+openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
+openlineage_configs+=("--conf" "spark.openlineage.transport.location=/workspaces/spark-sandbox/projects/spark-scala/.temp/openlineage/lineage.json")
+
+/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
