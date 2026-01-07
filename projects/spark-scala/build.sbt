@@ -64,6 +64,7 @@ lazy val common = project
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
       ++ httpServerDependencies
+      ++ jacksonDependencies
       ++ sparkDependencies
       ++ sparkTestDependencies
       ++ synapseDependencies

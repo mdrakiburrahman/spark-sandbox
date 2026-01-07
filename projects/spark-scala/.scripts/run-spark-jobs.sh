@@ -165,7 +165,10 @@ export demo_spark_resource_config=$(get_spark_configs "$DEMO_DEVCONTAINER_CONFIG
 # ---------------------
 
 # 1. Plugins
-/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} \
-    --conf $(get_additional_runtime_jars) \
-    --conf "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin" \
-    --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+spark_plugin_configs=()
+spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin")
+
+/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+
+# 2. OpenLineage
+/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}

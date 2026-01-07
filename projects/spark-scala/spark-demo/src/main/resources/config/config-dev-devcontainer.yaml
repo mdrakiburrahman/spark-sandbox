@@ -17,10 +17,10 @@ spark:
   offHeapMemory: "24g"
   shufflePartitions: 32
 
-  warehouseRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/warehouse"
-  checkpointsRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/checkpoints"
-  metastoreRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator"
-  seedRootPath: "file://{GIT_ROOT}/projects/spark-orchestrator/seed"
+  warehouseRootPath: "file://{GIT_ROOT}/projects/spark-scala/warehouse"
+  checkpointsRootPath: "file://{GIT_ROOT}/projects/spark-scala/checkpoints"
+  metastoreRootPath: "file://{GIT_ROOT}/projects/spark-scala"
+  seedRootPath: "file://{GIT_ROOT}/projects/spark-scala/seed"
 
   state:
     minBatchesToRetain: 2
