@@ -174,7 +174,8 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 # 2. OpenLineage
 openlineage_configs=()
 openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
-openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-openlineage_configs+=("--conf" "spark.openlineage.transport.location=/workspaces/spark-sandbox/projects/spark-scala/.temp/openlineage/lineage.json")
+openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:9003")
+openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
 
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}

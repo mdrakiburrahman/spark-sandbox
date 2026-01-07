@@ -45,4 +45,7 @@ object DemoEtl extends App with Logging {
     .format("delta")
     .mode("append")
     .saveAsTable("sf.waymo")
+
+  spark.stop()
+
 }
