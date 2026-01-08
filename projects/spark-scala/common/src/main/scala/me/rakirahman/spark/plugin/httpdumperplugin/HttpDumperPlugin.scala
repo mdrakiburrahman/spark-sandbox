@@ -4,8 +4,9 @@ import java.io.IOException
 import java.net.ServerSocket
 import java.util
 
-import fi.iki.elonen.NanoHTTPD
+import me.rakirahman.spark.plugin.httpdumperplugin.conf.HttpDumperConf
 
+import fi.iki.elonen.NanoHTTPD
 import org.apache.spark.SparkContext
 import org.apache.spark.api.plugin.{DriverPlugin, ExecutorPlugin, PluginContext, SparkPlugin}
 import org.apache.spark.internal.Logging
@@ -94,15 +95,22 @@ class HttpDumperPlugin extends SparkPlugin with Logging {
   override def executorPlugin(): ExecutorPlugin = new HttpDumperExecutorPlugin
 }
 
-/** Metadata for the HttpDumperPlugin.
-  */
-object HttpDumperPluginMetadata {
-  val DEFAULT_PORT = 9003
-}
-
 /** Driver plugin that receives HTTP request metadata from executors.
   */
 class HttpDumperDriverPlugin extends DriverPlugin with Logging {
+
+  var config: HttpDumperConf = _
+
+  /** @inheritdoc
+    */
+  override def init(
+      sc: SparkContext,
+      ctx: PluginContext
+  ): java.util.Map[String, String] = {
+    config = HttpDumperConf(ctx.conf)
+    logInfo(s"HttpDumperDriverPlugin initialized with config: database=${config.databaseName}, table=${config.tableName}, format=${config.tableFormat}")
+    new java.util.HashMap[String, String]
+  }
 
   /** @inheritdoc
     */
@@ -115,6 +123,9 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
         logInfo(s"  Remote IP: ${metadata.remoteIpAddress}")
         logInfo(s"  Headers: ${metadata.headers}")
         logInfo(s"  Parameters: ${metadata.parameters}")
+        logInfo(s"  Target database: ${config.databaseName}")
+        logInfo(s"  Target table: ${config.tableName}")
+        logInfo(s"  Target format: ${config.tableFormat}")
         Unit
       case _ =>
         logWarning(s"Received unexpected message type: ${message.getClass.getSimpleName}")
@@ -130,19 +141,21 @@ class HttpDumperExecutorPlugin extends ExecutorPlugin with Logging {
   var pluginContext: PluginContext = null
   var server: HttpDumperServer = null
   var serverThread: Thread = null
+  var config: HttpDumperConf = _
 
   /** @inheritdoc
     */
   override def init(ctx: PluginContext, extraConf: util.Map[String, String]): Unit = {
-    logDebug("Initializing HTTP dumper server on executor")
+    config = HttpDumperConf(ctx.conf)
+    logInfo(s"HttpDumperExecutorPlugin initialized with port: ${config.executorPort}")
 
     this.pluginContext = ctx
-    server = new HttpDumperServer(HttpDumperPluginMetadata.DEFAULT_PORT, pluginContext)
+    server = new HttpDumperServer(config.executorPort, pluginContext)
 
     serverThread = new Thread(() => {
       try {
         server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
-        logInfo(s"Started HTTP dumper server on port ${HttpDumperPluginMetadata.DEFAULT_PORT}")
+        logInfo(s"Started HTTP dumper server on port ${config.executorPort}")
       } catch {
         case e: IOException => logError("Failed to start HTTP dumper server", e)
       }

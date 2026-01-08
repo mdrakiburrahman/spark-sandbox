@@ -175,7 +175,11 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 openlineage_configs=()
 openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
 openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:9003")
+openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:19003")
 openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
+openlineage_configs+=("--conf" "spark.plugin.conf.database.name=foodb")
+openlineage_configs+=("--conf" "spark.plugin.conf.table.name=footable")
+openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=19003")
 
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
