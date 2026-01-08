@@ -64,7 +64,8 @@ case class HttpDumperConf(
     databaseName: String,
     tableName: String,
     tableFormat: String,
-    executorPort: Int
+    executorPort: Int,
+    flushTimeoutSeconds: Int
 )
 
 object HttpDumperConf {
@@ -85,9 +86,16 @@ object HttpDumperConf {
 
   private val executorPort = IntHttpDumperProperty(
     key = "spark.plugin.conf.executor.port",
-    default = 19003,
+    default = 9003,
     min = Some(1024),
     max = Some(65535)
+  )
+
+  private val flushTimeoutSeconds = IntHttpDumperProperty(
+    key = "spark.plugin.conf.flush.timeout.seconds",
+    default = 60,
+    min = Some(1),
+    max = Some(3600)
   )
 
   def apply(conf: SparkConf): HttpDumperConf = {
@@ -95,7 +103,8 @@ object HttpDumperConf {
       databaseName = databaseName.get(conf),
       tableName = tableName.get(conf),
       tableFormat = tableFormat.get(conf),
-      executorPort = executorPort.get(conf)
+      executorPort = executorPort.get(conf),
+      flushTimeoutSeconds = flushTimeoutSeconds.get(conf)
     )
   }
 }
