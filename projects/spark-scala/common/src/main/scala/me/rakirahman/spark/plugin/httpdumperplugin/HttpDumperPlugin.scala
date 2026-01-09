@@ -249,7 +249,6 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       val yearMonthDate = DateSorter.convert(currentTime, DateTypes.YearMonthDate)
 
       requests.foreach { request =>
-
         // Avoid circular dependency
         //
         if (!request.requestBody.contains(table)) {

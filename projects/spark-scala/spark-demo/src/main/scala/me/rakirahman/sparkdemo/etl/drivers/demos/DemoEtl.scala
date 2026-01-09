@@ -1,53 +1,69 @@
 package me.rakirahman.sparkdemo.etl.drivers.demos
 
-import org.apache.spark.sql.Row
-import org.apache.spark.sql.types._
-
 import me.rakirahman.spark.SparkSessionExtensions._
+
 import me.rakirahman.spark.SparkSessionManager
 import me.rakirahman.sparkdemo.config.DemoEnvironmentConfiguration
 
-import org.apache.spark.internal.Logging
 import scala.concurrent.duration._
 
-/** Simple ETL demo.
-  */
-object DemoEtl extends App with Logging {
-
-  val configFileName = args.headOption.getOrElse {
-    logError("No configuration file provided - exiting.")
-    sys.exit(1)
-  }
+object DemoEtl extends App {
+  val configFileName = args.headOption.getOrElse(sys.exit(1))
   val envConfig = DemoEnvironmentConfiguration(null, configFileName)
+  val dbName = "demo_etl"
   val spark = SparkSessionManager(envConfig).session
 
-  spark.sql("CREATE DATABASE IF NOT EXISTS sf")
+  spark.sql(s"CREATE DATABASE IF NOT EXISTS ${dbName}")
+  spark.catalog.setCurrentDatabase(dbName)
 
-  val schema = StructType(
-    Array(
-      StructField("vendor_id", LongType, true),
-      StructField("trip_id", LongType, true),
-      StructField("trip_distance", FloatType, true),
-      StructField("fare_amount", DoubleType, true),
-      StructField("store_and_fwd_flag", StringType, true)
-    )
-  )
+  Array("customers", "orders", "products", "sales").foreach { table =>
+    spark.read
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .csv(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
+      .write
+      .format("delta")
+      .mode("overwrite")
+      .saveAsTable(s"${dbName}.${table}")
+  }
 
-  val data = Seq(
-    Row(1L, 1000371L, 1.8f, 15.32, "N"),
-    Row(2L, 1000372L, 2.5f, 22.15, "N"),
-    Row(2L, 1000373L, 0.9f, 9.01, "N"),
-    Row(1L, 1000374L, 8.4f, 42.13, "Y")
-  )
-
-  logInfo("APPEND-ing sample data into Delta table")
   spark
-    .createDataFrame(spark.sparkContext.parallelize(data), schema)
+    .sql(s"""
+    SELECT
+        c.customerID,
+        c.customerName,
+        c.contact,
+        COUNT(o.orderID) as order_count,
+        CASE
+            WHEN COUNT(o.orderID) > 0 THEN TRUE
+            ELSE FALSE
+        END AS has_orders
+    FROM ${dbName}.customers c
+    LEFT JOIN ${dbName}.orders o ON c.customerID = o.customerID
+    GROUP BY c.customerID, c.customerName, c.contact
+    ORDER BY order_count DESC
+  """)
     .write
     .format("delta")
-    .mode("append")
-    .saveAsTable("sf.waymo")
+    .mode("overwrite")
+    .saveAsTable(s"${dbName}.customers_cleaned")
+
+  spark
+    .sql(s"""
+    SELECT
+        p.productName,
+        COUNT(s.OrderID) as total_sales,
+        SUM(s.Quantity) as total_quantity,
+        ROUND(AVG(s.Quantity), 2) as avg_quantity_per_sale
+    FROM ${dbName}.products p
+    LEFT JOIN ${dbName}.sales s ON p.productID = s.productID
+    GROUP BY p.productName
+    ORDER BY total_sales DESC
+  """)
+    .write
+    .format("delta")
+    .mode("overwrite")
+    .saveAsTable(s"${dbName}.product_sales_summary")
 
   spark.stopAfter(30.seconds)
-
 }

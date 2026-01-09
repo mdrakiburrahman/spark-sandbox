@@ -59,6 +59,7 @@ class SparkSessionManager(
       // partitions to 1, this works out nicely (1 thread == 1 partition)
       //
       .config("spark.master", if (envConfig.isRunningInTest()) "local" else "local[*]")
+      .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
       .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
       // These values are only respected when Spark Session is initiated outside
       // of spark-submit, such as 'sbt test' where scala programmatically
