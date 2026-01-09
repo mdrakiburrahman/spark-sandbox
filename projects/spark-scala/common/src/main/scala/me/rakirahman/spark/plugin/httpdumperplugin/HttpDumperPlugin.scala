@@ -94,7 +94,6 @@ class HttpDumperServer(port: Int, pluginContext: PluginContext) extends NanoHTTP
       )
 
       pluginContext.send(metadata)
-      logInfo(s"Sent HTTP request metadata to driver: $method $uri from $remoteIpAddress")
 
       NanoHTTPD.newFixedLengthResponse(
         NanoHTTPD.Response.Status.OK,
@@ -214,13 +213,13 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       if (requests.nonEmpty) {
         try {
           val sparkSession = SparkSession.builder().getOrCreate()
-          
+
           if (!sparkSession.sparkContext.isStopped) {
             if (!tableCreated) {
               createTableIfNotExists(sparkSession)
               tableCreated = true
             }
-            
+
             insertRequests(requests.toList, sparkSession)
             logInfo(s"Flushed ${requests.size} HTTP requests to database")
           } else {
@@ -250,34 +249,40 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       val yearMonthDate = DateSorter.convert(currentTime, DateTypes.YearMonthDate)
 
       requests.foreach { request =>
-        val headersJson = objectMapper.writeValueAsString(request.headers)
-        val parametersJson = objectMapper.writeValueAsString(request.parameters)
 
-        sparkSession.sql(
-          s"""
-             |INSERT INTO $database.$table (
-             |  result_timestamp,
-             |  result_timestamp_long,
-             |  ${SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString},
-             |  request_uri,
-             |  request_method,
-             |  request_headers_json,
-             |  request_parameters_json,
-             |  remote_ip_address,
-             |  request_body
-             |) VALUES (
-             |  CAST('${currentTime}' AS TIMESTAMP),
-             |  ${currentTimeLong}L,
-             |  '${yearMonthDate}',
-             |  '${escapeSql(request.uri)}',
-             |  '${request.method}',
-             |  '${escapeSql(headersJson)}',
-             |  '${escapeSql(parametersJson)}',
-             |  '${request.remoteIpAddress}',
-             |  '${escapeSql(request.requestBody)}'
-             |)
-             |""".stripMargin
-        )
+        // Avoid circular dependency
+        //
+        if (!request.requestBody.contains(table)) {
+
+          val headersJson = objectMapper.writeValueAsString(request.headers)
+          val parametersJson = objectMapper.writeValueAsString(request.parameters)
+
+          sparkSession.sql(
+            s"""
+               |INSERT INTO $database.$table (
+               |  result_timestamp,
+               |  result_timestamp_long,
+               |  ${SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString},
+               |  request_uri,
+               |  request_method,
+               |  request_headers_json,
+               |  request_parameters_json,
+               |  remote_ip_address,
+               |  request_body
+               |) VALUES (
+               |  CAST('${currentTime}' AS TIMESTAMP),
+               |  ${currentTimeLong}L,
+               |  '${yearMonthDate}',
+               |  '${escapeSql(request.uri)}',
+               |  '${request.method}',
+               |  '${escapeSql(headersJson)}',
+               |  '${escapeSql(parametersJson)}',
+               |  '${request.remoteIpAddress}',
+               |  '${escapeSql(request.requestBody)}'
+               |)
+               |""".stripMargin
+          )
+        }
       }
     } catch {
       case e: Exception =>

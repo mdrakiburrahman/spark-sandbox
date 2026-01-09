@@ -1,8 +1,12 @@
 package me.rakirahman.spark
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object SparkSessionExtensions {
+import scala.concurrent.duration._
+import scala.util.{Failure, Success, Try}
+
+object SparkSessionExtensions extends Logging {
 
   implicit class SparkConfigTransformer(spark: SparkSession) {
 
@@ -37,6 +41,28 @@ object SparkSessionExtensions {
     def withConfigurationAsDataFrame(): DataFrame = {
       import spark.implicits._
       spark.sparkContext.getConf.getAll.sorted.toSeq.toDF("key", "value")
+    }
+
+    /** Stops the Spark session after a specified duration.
+      *
+      * This method will sleep for the specified number of seconds and then call stop() on the SparkSession. Useful for testing or controlled execution scenarios.
+      *
+      * @param seconds
+      *   Number of seconds to wait before stopping the Spark session
+      */
+    def stopAfter(seconds: Int): Unit = {
+      logInfo(s"Scheduling Spark session stop after $seconds seconds...")
+      Thread.sleep(seconds * 1000L)
+      spark.stop()
+    }
+
+    /** Stops the Spark session after a specified duration (using Scala Duration).
+      *
+      * @param duration
+      *   Duration to wait before stopping the Spark session
+      */
+    def stopAfter(duration: Duration): Unit = {
+      stopAfter(duration.toSeconds.toInt)
     }
   }
 }

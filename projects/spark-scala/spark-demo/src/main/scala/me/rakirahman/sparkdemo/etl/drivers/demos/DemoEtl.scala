@@ -3,10 +3,12 @@ package me.rakirahman.sparkdemo.etl.drivers.demos
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 
+import me.rakirahman.spark.SparkSessionExtensions._
 import me.rakirahman.spark.SparkSessionManager
 import me.rakirahman.sparkdemo.config.DemoEnvironmentConfiguration
 
 import org.apache.spark.internal.Logging
+import scala.concurrent.duration._
 
 /** Simple ETL demo.
   */
@@ -46,6 +48,6 @@ object DemoEtl extends App with Logging {
     .mode("append")
     .saveAsTable("sf.waymo")
 
-  spark.stop()
+  spark.stopAfter(30.seconds)
 
 }
