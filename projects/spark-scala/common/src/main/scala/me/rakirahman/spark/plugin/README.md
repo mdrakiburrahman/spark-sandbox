@@ -5,6 +5,8 @@ Spark plugins are an extremely powerful concept that allows us to run arbitrary 
 This folder contains the following Spark Plugins that are used in Production, and also a few demos to illustrate the concept.
 
 - [Demo - Uncaching Driver Plugin: REST API that uncaches a temp table](uncachingplugin/README.md)
+- [Demo - RPC Plugin: Executor to Driver Communication](rpcplugin/README.md)
+- [Demo - HTTP Dumper Plugin: Executor to Driver Communication followed by dumping into a Lakehouse table](httpdumperplugin/README.md)
 
 To learn more:
 
