@@ -28,6 +28,7 @@ set -e
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 export SPARK_SCALA_DIR="${GIT_ROOT}/projects/spark-scala"
 export SCRIPTS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+export SPARK_SUBMIT_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.security=ALL-UNNAMED"
 export LOG_FILE_NAME="run-spark-jobs-$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 export TEMP_DIR="${SPARK_SCALA_DIR}/.temp"
 export HEAP_DUMP_DIR="${TEMP_DIR}/dumps"
@@ -128,6 +129,7 @@ get_spark_configs() {
 #
 get_additional_runtime_jars() {
     local jars=(
+        "io.openlineage:openlineage-spark_2.12:1.26.0"
         "org.apache.hadoop:hadoop-azure-datalake:3.3.4"
         "org.apache.hadoop:hadoop-azure:3.3.4"
     )
@@ -165,7 +167,45 @@ export demo_spark_resource_config=$(get_spark_configs "$DEMO_DEVCONTAINER_CONFIG
 # ---------------------
 
 # 1. Plugins
-/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} \
-    --conf $(get_additional_runtime_jars) \
-    --conf "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin" \
-    --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+spark_plugin_configs=()
+spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin")
+
+/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+
+# 2. OpenLineage
+#
+# >>> https://openlineage.io/docs/integrations/spark/configuration/spark_conf/
+# >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
+# >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
+#
+# To send to file directly:
+#
+# ```bash
+# openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
+# openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
+# ```
+#
+# To send to HTTP endpoint (e.g., OpenLineage backend):
+#
+# ```bash
+# openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+# openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+# ```
+#
+export DRIVER_PLUGIN_PORT=19000
+export EXECUTOR_PLUGIN_PORT=19001
+
+openlineage_configs=()
+
+openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
+openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+
+openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
+openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
+openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
+openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
+openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
+openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+
+/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}

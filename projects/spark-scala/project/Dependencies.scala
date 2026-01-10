@@ -45,6 +45,7 @@ object Dependencies {
             val azureNettyHttp                          = "com.azure"                              %  "azure-core-http-netty"                                  % "1.15.4"
             val deltaSpark                              = "io.delta"                               %% "delta-spark"                                            % "3.2.0"
             val httpNano                                = "org.nanohttpd"                          %  "nanohttpd"                                              % "2.3.1"
+            val jacksonModule                           = "com.fasterxml.jackson.module"           %% "jackson-module-scala"                                   % "2.17.2"
             val scalaTest                               = "org.scalatest"                          %% "scalatest"                                              % "3.2.18"
             val scalaTestPlus                           = "org.scalatestplus"                      %% "scalacheck-1-18"                                        % "3.2.18.0"
             val snakeYaml                               = "org.yaml"                               %  "snakeyaml"                                              % "2.2"
@@ -88,6 +89,10 @@ object Dependencies {
 
     lazy val httpServerDependencies = Seq(
         dependencies.httpNano
+    )
+
+    lazy val jacksonDependencies = Seq(
+        dependencies.jacksonModule
     )
 
     lazy val sparkDependencies = Seq(

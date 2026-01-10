@@ -147,6 +147,14 @@
         "{projectRoot}/**/*.sbt",
         "{projectRoot}/**/*.yaml"
       ]
+    },
+    "get-azcopy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/get-azcopy.sh ~/.azure/bin"],
+        "parallel": false
+      }
     }
   }
 }

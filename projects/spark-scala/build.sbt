@@ -46,6 +46,8 @@ lazy val commonExecutor = project
     version := commitVersion.value,
     libraryDependencies ++= deltaDependencies
       ++ fileTypeDependencies
+      ++ httpServerDependencies
+      ++ jacksonDependencies
       ++ sparkDependencies
       ++ sparkTestDependencies
       ++ testDependencies
@@ -63,7 +65,6 @@ lazy val common = project
     testSettings,
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
-      ++ httpServerDependencies
       ++ sparkDependencies
       ++ sparkTestDependencies
       ++ synapseDependencies

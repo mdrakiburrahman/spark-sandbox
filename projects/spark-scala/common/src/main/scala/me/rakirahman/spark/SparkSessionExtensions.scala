@@ -1,8 +1,12 @@
 package me.rakirahman.spark
 
+import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-object SparkSessionExtensions {
+import scala.util.{Failure, Success, Try}
+import scala.io.Source
+
+object SparkSessionExtensions extends Logging {
 
   implicit class SparkConfigTransformer(spark: SparkSession) {
 
@@ -37,6 +41,26 @@ object SparkSessionExtensions {
     def withConfigurationAsDataFrame(): DataFrame = {
       import spark.implicits._
       spark.sparkContext.getConf.getAll.sorted.toSeq.toDF("key", "value")
+    }
+
+    /** Flushes the HttpDumperPlugin buffer by calling the driver's REST API /flush endpoint.
+      *
+      * This method blocks until the flush operation completes. It reads the driver port from the Spark configuration and makes an HTTP GET request to the /flush endpoint.
+      */
+    def flushPlugin(): Unit = {
+      val driverPort = spark.conf.getOption("spark.plugin.conf.driver.port").getOrElse("19000")
+      val url = s"http://localhost:$driverPort/flush"
+
+      logInfo(s"Flushing plugin buffer via $url")
+
+      try {
+        val response = Source.fromURL(url).mkString
+        logInfo(s"Plugin flush response: $response")
+      } catch {
+        case e: Exception =>
+          logError(s"Failed to flush plugin buffer", e)
+          throw e
+      }
     }
   }
 }
