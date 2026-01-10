@@ -35,29 +35,65 @@ object DemoEtl extends App {
             c.customerID,
             c.customerName,
             c.contact,
-            COUNT(o.orderID) as order_count,
-            CASE
-                WHEN COUNT(o.orderID) > 0 THEN TRUE
-                ELSE FALSE
+            CASE 
+                WHEN COUNT(o.orderID) OVER (PARTITION BY c.customerID) > 0 THEN TRUE 
+                ELSE FALSE 
             END AS has_orders
-        FROM ${dbName}.customers c
+        FROM ${dbName}.customers c 
         LEFT JOIN ${dbName}.orders o ON c.customerID = o.customerID
-        GROUP BY c.customerID, c.customerName, c.contact
-        ORDER BY order_count DESC
       """
     ),
     (
-      "product_sales_summary",
+      "products_enriched",
       s"""
         SELECT
+            productID,
+            productName,
+            price,
+            CASE 
+                WHEN price > 0 THEN TRUE 
+                ELSE FALSE 
+            END AS is_in_stock
+        FROM ${dbName}.products
+      """
+    ),
+    (
+      "sales_enriched",
+      s"""
+        SELECT
+            o.customerID,
+            s.orderID,
+            s.productID,
             p.productName,
-            COUNT(s.OrderID) as total_sales,
-            SUM(s.Quantity) as total_quantity,
-            ROUND(AVG(s.Quantity), 2) as avg_quantity_per_sale
-        FROM ${dbName}.products p
-        LEFT JOIN ${dbName}.sales s ON p.productID = s.productID
-        GROUP BY p.productName
-        ORDER BY total_sales DESC
+            s.quantity,
+            p.price * s.quantity as total_amount   
+        FROM ${dbName}.sales s 
+        JOIN ${dbName}.orders o ON s.orderID = o.orderID
+        JOIN ${dbName}.products p ON s.productID = p.productID
+        WHERE quantity > 0
+      """
+    ),
+    (
+      "customer_lifetime_value",
+      s"""
+        SELECT
+            s.customerID,
+            SUM(s.total_amount) AS total_spent,
+            COUNT(s.orderID) AS total_orders
+        FROM ${dbName}.sales_enriched s 
+        GROUP BY customerID
+      """
+    ),
+    (
+      "product_sales_performance",
+      s"""
+        SELECT
+            s.productID,
+            SUM(s.quantity) AS total_units_sold,
+            SUM(s.total_amount) AS total_revenue
+        FROM ${dbName}.sales_enriched s
+        JOIN ${dbName}.products_enriched p ON s.productID = p.productID
+        GROUP BY s.productID
       """
     )
   ).foreach { case (tableName, sqlQuery) =>
