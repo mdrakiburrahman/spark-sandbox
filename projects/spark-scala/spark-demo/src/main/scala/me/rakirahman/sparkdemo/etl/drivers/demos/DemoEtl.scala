@@ -25,7 +25,7 @@ object DemoEtl extends App with Logging {
          .option("inferSchema", "true")
          .load(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
          .write
-         .format("delta")
+         .format("csv")
          .mode("overwrite")
          .saveAsTable(s"${dbName}.${table}")
   }
@@ -104,14 +104,11 @@ object DemoEtl extends App with Logging {
     spark
       .sql(sqlQuery)
       .write
-      .format("delta")
+      .format("csv")
       .mode("overwrite")
       .saveAsTable(s"${dbName}.${table}")
   }
 
-  logInfo("Sleeping for 30 seconds before flushing...")
-  Thread.sleep(30000)
-  
   spark.flushPlugin()
   spark.stop()
 }
