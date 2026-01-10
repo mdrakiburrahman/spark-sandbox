@@ -22,8 +22,10 @@ Upload:
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 export EXECUTOR_JAR="$(find ${GIT_ROOT}/projects/spark-scala/common-executor/target/scala-2.12/ -name 'commonExecutor-*.jar' -type f -print -quit | xargs)"
 export SUBMIT_JAR="$(find ${GIT_ROOT}/projects/spark-scala/spark-demo/target/scala-2.12/ -name 'sparkDemo-*.jar' -type f -print -quit | xargs)"
+export SUBMIT_CONF="${GIT_ROOT}/projects/spark-scala/spark-demo/src/main/resources/config/config-dev-fabric.yaml"
 export SAS_TOKEN=$(az storage container generate-sas --account-name "${ACCOUNT}" --account-key "${ACCOUNT_KEY}" --name public --permissions acdlrw --expiry $(date -u -d "1 hour" '+%Y-%m-%dT%H:%MZ') --output tsv)
 
 /home/vscode/.azure/bin/azcopy copy "$EXECUTOR_JAR" "https://${ACCOUNT}.blob.core.windows.net/public/jars/$(basename $EXECUTOR_JAR)?${SAS_TOKEN}"
 /home/vscode/.azure/bin/azcopy copy "$SUBMIT_JAR" "https://${ACCOUNT}.blob.core.windows.net/public/jars/$(basename $SUBMIT_JAR)?${SAS_TOKEN}"
+/home/vscode/.azure/bin/azcopy copy "$SUBMIT_CONF" "https://${ACCOUNT}.blob.core.windows.net/public/conf/$(basename $SUBMIT_CONF)?${SAS_TOKEN}"
 ```

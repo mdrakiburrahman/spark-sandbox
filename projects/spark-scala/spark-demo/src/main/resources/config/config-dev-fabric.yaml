@@ -1,0 +1,40 @@
+# Spark configuration
+#
+spark:
+  local: false
+  debug: false
+  ui: true
+  offHeapEnabled: true
+  driverCore: -1
+  driverMemory: "0g"
+  executorCore: -1
+  executorMemory: "0g"
+  offHeapMemory: "0g"
+  shufflePartitions: -1
+
+  warehouseRootPath: ""
+  checkpointsRootPath: ""
+  seedRootPath: ""
+
+  state:
+    minBatchesToRetain: 2
+    minDeltasForSnapshot: 2
+    maintenanceInterval: "10s"
+    storeProviderClass: "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider"
+
+    rocksDb:
+      compactOnCommit: true
+
+tokenCredential:
+  defaultProvider: DevcontainerCredentialProvider
+  defaultConfig:
+    clientCertRef: ""
+    clientId: ""
+    tenantId: ""
+    vaultUrl: ""
+  relayEndpoint: ""
+
+telemetry:
+  url: ""
+  audience: ""
+  isRelay: true

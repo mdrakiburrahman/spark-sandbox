@@ -1,6 +1,7 @@
 # Documentation 📚
 
 - [Debugging](./DEBUGGING.md)
+- [Storage Account Uploading](./UPLOADING.md)
 
 ---
 
