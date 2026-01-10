@@ -108,6 +108,9 @@ object DemoEtl extends App with Logging {
       .saveAsTable(s"${dbName}.${table}")
   }
 
+  logInfo("Sleeping for 30 seconds before flushing...")
+  Thread.sleep(30000)
+  
   spark.flushPlugin()
   spark.stop()
 }

@@ -172,6 +172,10 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 
 # 2. OpenLineage
+#
+# >>> https://openlineage.io/docs/integrations/spark/configuration/spark_conf/
+# >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
+#
 export DRIVER_PLUGIN_PORT=19000
 export EXECUTOR_PLUGIN_PORT=19001
 
