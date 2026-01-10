@@ -128,6 +128,37 @@ class HttpDumperPlugin extends SparkPlugin with Logging {
   override def executorPlugin(): ExecutorPlugin = new HttpDumperExecutorPlugin
 }
 
+/** A simple HTTP server on the driver that exposes a /flush endpoint.
+  *
+  * @param port
+  *   The port to serve on.
+  * @param driverPlugin
+  *   The driver plugin instance to call flush on.
+  */
+class HttpDumperDriverServer(port: Int, driverPlugin: HttpDumperDriverPlugin) extends NanoHTTPD(port) with Logging {
+
+  /** @inheritdoc
+    */
+  override def serve(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response = {
+    try {
+      val uri = session.getUri
+      val method = session.getMethod.toString
+
+      if (uri == "/flush" && method == "GET") {
+        logInfo("Received /flush request, flushing buffer")
+        val flushedCount = driverPlugin.flushBuffer()
+        NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.OK, "application/json", s"""{"status":"success","flushed":$flushedCount}""")
+      } else {
+        NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.NOT_FOUND, "text/plain", s"Endpoint not found: $method $uri")
+      }
+    } catch {
+      case e: Exception =>
+        logError("Error processing request", e)
+        NanoHTTPD.newFixedLengthResponse(NanoHTTPD.Response.Status.INTERNAL_ERROR, "text/plain", s"Error: ${e.getMessage}")
+    }
+  }
+}
+
 /** Driver plugin that receives HTTP request metadata from executors.
   */
 class HttpDumperDriverPlugin extends DriverPlugin with Logging {
@@ -135,9 +166,10 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
   var config: HttpDumperConf = _
   private val requestBuffer = new ConcurrentLinkedQueue[HttpRequestMetadata]()
   private val bufferSemaphore = new Semaphore(1)
-  private var scheduledExecutor: ScheduledExecutorService = _
   private val objectMapper = new ObjectMapper()
   private var tableCreated = false
+  private var driverServer: HttpDumperDriverServer = _
+  private var serverThread: Thread = _
 
   objectMapper.registerModule(DefaultScalaModule)
 
@@ -149,15 +181,18 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
   ): java.util.Map[String, String] = {
     config = HttpDumperConf(ctx.conf)
 
-    logInfo(s"HttpDumperDriverPlugin initialized with config: database=${config.databaseName}, table=${config.tableName}, format=${config.tableFormat}, flushTimeout=${config.flushTimeoutSeconds}s")
-
-    scheduledExecutor = Executors.newSingleThreadScheduledExecutor()
-    scheduledExecutor.scheduleAtFixedRate(
-      () => flushBuffer(),
-      config.flushTimeoutSeconds,
-      config.flushTimeoutSeconds,
-      TimeUnit.SECONDS
-    )
+    logInfo(s"HttpDumperDriverPlugin initialized with config: database=${config.databaseName}, table=${config.tableName}, format=${config.tableFormat}, driverPort=${config.driverPort}")
+    driverServer = new HttpDumperDriverServer(config.driverPort, this)
+    serverThread = new Thread(() => {
+      try {
+        driverServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+        logInfo(s"Started driver REST API server on port ${config.driverPort}")
+      } catch {
+        case e: IOException => logError("Failed to start driver REST API server", e)
+      }
+    })
+    serverThread.setDaemon(true)
+    serverThread.start()
 
     new java.util.HashMap[String, String]
   }
@@ -198,8 +233,8 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
     }
   }
 
-  private def flushBuffer(): Unit = {
-    if (requestBuffer.isEmpty) return
+  def flushBuffer(): Int = {
+    if (requestBuffer.isEmpty) return 0
 
     Try {
       bufferSemaphore.acquire()
@@ -212,6 +247,7 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
         }
       }
 
+      var flushedCount = 0
       if (requests.nonEmpty) {
         try {
           val sparkSession = SparkSession.builder().getOrCreate()
@@ -222,8 +258,8 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
               tableCreated = true
             }
 
-            val inserted = insertRequests(requests.toList, sparkSession)
-            logInfo(s"Flushed ${inserted}/${requests.size} HTTP requests to database")
+            flushedCount = insertRequests(requests.toList, sparkSession)
+            logInfo(s"Flushed $flushedCount/${requests.size} HTTP requests to database")
           } else {
             logWarning(s"SparkContext is stopped, unable to flush ${requests.size} HTTP requests. Requests will be lost.")
           }
@@ -234,12 +270,16 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
             logError(s"Error getting SparkSession, unable to flush ${requests.size} HTTP requests", e)
         }
       }
+      flushedCount
     } match {
-      case Success(_) =>
-      case Failure(e) => logError("Failed to flush buffer", e)
+      case Success(count) =>
+        bufferSemaphore.release()
+        count
+      case Failure(e) =>
+        bufferSemaphore.release()
+        logError("Failed to flush buffer", e)
+        0
     }
-
-    bufferSemaphore.release()
   }
 
   private def insertRequests(requests: List[HttpRequestMetadata], sparkSession: SparkSession): Int = {
@@ -252,12 +292,7 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       val currentTimeLong = currentTime.getTime
       val yearMonthDate = DateSorter.convert(currentTime, DateTypes.YearMonthDate)
 
-      // Filter out requests containing the table name to avoid circular dependency
-      val filteredRequests = requests.filter(request => !request.requestBody.contains(table))
-
-      if (filteredRequests.isEmpty) return 0
-
-      val requestsDF = filteredRequests
+      val requestsDF = requests
         .map { request =>
           val headersJson = objectMapper.writeValueAsString(request.headers)
           val parametersJson = objectMapper.writeValueAsString(request.parameters)
@@ -285,10 +320,11 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
           "remote_ip_address",
           "request_body"
         )
+        .coalesce(1)
 
       requestsDF.write.mode("append").insertInto(s"$database.$table")
 
-      filteredRequests.size
+      requests.size
 
     } catch {
       case e: Exception =>
@@ -312,18 +348,20 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
 
   override def shutdown(): Unit = {
     try {
-      logInfo("Shutting down HttpDumperDriverPlugin, flushing remaining requests...")
+      logInfo("Shutting down HttpDumperDriverPlugin...")
 
-      if (scheduledExecutor != null) {
-        scheduledExecutor.shutdown()
-        if (!scheduledExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-          logWarning("Scheduled executor did not terminate gracefully, forcing shutdown")
-          scheduledExecutor.shutdownNow()
-        }
+      if (driverServer != null) {
+        driverServer.stop()
+        logInfo("Driver REST API server stopped")
+      }
+
+      if (serverThread != null) {
+        serverThread.interrupt()
       }
 
       try {
-        flushBuffer()
+        val flushed = flushBuffer()
+        logInfo(s"Final flush completed: $flushed requests")
       } catch {
         case _: IllegalStateException =>
           logWarning("SparkContext already stopped, unable to flush remaining requests")
@@ -352,7 +390,7 @@ class HttpDumperExecutorPlugin extends ExecutorPlugin with Logging {
     */
   override def init(ctx: PluginContext, extraConf: util.Map[String, String]): Unit = {
     config = HttpDumperConf(ctx.conf)
-    logInfo(s"HttpDumperExecutorPlugin initialized with port: ${config.executorPort}, flushTimeout: ${config.flushTimeoutSeconds}s")
+    logInfo(s"HttpDumperExecutorPlugin initialized with port: ${config.executorPort}")
 
     this.pluginContext = ctx
     server = new HttpDumperServer(config.executorPort, pluginContext)

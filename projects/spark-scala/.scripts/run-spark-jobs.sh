@@ -172,15 +172,18 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 
 # 2. OpenLineage
+export DRIVER_PLUGIN_PORT=19000
+export EXECUTOR_PLUGIN_PORT=19001
+
 openlineage_configs=()
 openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
-openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:19003")
 openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
+openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
+openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
 openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
 openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
 openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
-openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=19003")
-openlineage_configs+=("--conf" "spark.plugin.conf.flush.timeout.seconds=1")
 
 /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}

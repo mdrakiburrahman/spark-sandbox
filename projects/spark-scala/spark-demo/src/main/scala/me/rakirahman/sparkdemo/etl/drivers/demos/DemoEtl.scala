@@ -6,8 +6,9 @@ import me.rakirahman.spark.SparkSessionManager
 import me.rakirahman.sparkdemo.config.DemoEnvironmentConfiguration
 
 import scala.concurrent.duration._
+import org.apache.spark.internal.Logging
 
-object DemoEtl extends App {
+object DemoEtl extends App with Logging {
   val configFileName = args.headOption.getOrElse(sys.exit(1))
   val envConfig = DemoEnvironmentConfiguration(null, configFileName)
   val dbName = "demo_etl"
@@ -17,6 +18,7 @@ object DemoEtl extends App {
   spark.catalog.setCurrentDatabase(dbName)
 
   Array("customers", "orders", "products", "sales").foreach { table =>
+    logInfo(s"Creating table: ${table}")
     spark.read
       .option("header", "true")
       .option("inferSchema", "true")
@@ -96,14 +98,16 @@ object DemoEtl extends App {
         GROUP BY s.productID
       """
     )
-  ).foreach { case (tableName, sqlQuery) =>
+  ).foreach { case (table, sqlQuery) =>
+    logInfo(s"Creating table: ${table}")
     spark
       .sql(sqlQuery)
       .write
       .format("delta")
       .mode("overwrite")
-      .saveAsTable(s"${dbName}.${tableName}")
+      .saveAsTable(s"${dbName}.${table}")
   }
 
-  spark.stopAfter(30.seconds)
+  spark.flushPlugin()
+  spark.stop()
 }

@@ -15,7 +15,7 @@ spark:
   executorMemory: "48g"
   executorDefaultJavaOptions: "-Xss256m"
   offHeapMemory: "24g"
-  shufflePartitions: 32
+  shufflePartitions: 1
 
   warehouseRootPath: "file://{GIT_ROOT}/projects/spark-scala/warehouse"
   checkpointsRootPath: "file://{GIT_ROOT}/projects/spark-scala/checkpoints"

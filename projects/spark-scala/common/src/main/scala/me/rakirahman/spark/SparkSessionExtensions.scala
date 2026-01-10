@@ -3,8 +3,8 @@ package me.rakirahman.spark
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
-import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
+import scala.io.Source
 
 object SparkSessionExtensions extends Logging {
 
@@ -43,26 +43,24 @@ object SparkSessionExtensions extends Logging {
       spark.sparkContext.getConf.getAll.sorted.toSeq.toDF("key", "value")
     }
 
-    /** Stops the Spark session after a specified duration.
+    /** Flushes the HttpDumperPlugin buffer by calling the driver's REST API /flush endpoint.
       *
-      * This method will sleep for the specified number of seconds and then call stop() on the SparkSession. Useful for testing or controlled execution scenarios.
-      *
-      * @param seconds
-      *   Number of seconds to wait before stopping the Spark session
+      * This method blocks until the flush operation completes. It reads the driver port from the Spark configuration and makes an HTTP GET request to the /flush endpoint.
       */
-    def stopAfter(seconds: Int): Unit = {
-      logInfo(s"Scheduling Spark session stop after $seconds seconds...")
-      Thread.sleep(seconds * 1000L)
-      spark.stop()
-    }
+    def flushPlugin(): Unit = {
+      val driverPort = spark.conf.getOption("spark.plugin.conf.driver.port").getOrElse("19000")
+      val url = s"http://localhost:$driverPort/flush"
 
-    /** Stops the Spark session after a specified duration (using Scala Duration).
-      *
-      * @param duration
-      *   Duration to wait before stopping the Spark session
-      */
-    def stopAfter(duration: Duration): Unit = {
-      stopAfter(duration.toSeconds.toInt)
+      logInfo(s"Flushing plugin buffer via $url")
+
+      try {
+        val response = Source.fromURL(url).mkString
+        logInfo(s"Plugin flush response: $response")
+      } catch {
+        case e: Exception =>
+          logError(s"Failed to flush plugin buffer", e)
+          throw e
+      }
     }
   }
 }
