@@ -198,8 +198,8 @@ export EXECUTOR_PLUGIN_PORT=19001
 openlineage_configs=()
 
 openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
-openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
+openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
 
 openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
 openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")

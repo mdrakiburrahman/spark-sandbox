@@ -25,8 +25,8 @@ object DemoEtl extends App with Logging {
          .option("inferSchema", "true")
          .load(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
          .write
-         .format("csv")
-         .mode("overwrite")
+         .format("delta")
+         .mode("append")
          .saveAsTable(s"${dbName}.${table}")
   }
 
@@ -104,8 +104,8 @@ object DemoEtl extends App with Logging {
     spark
       .sql(sqlQuery)
       .write
-      .format("csv")
-      .mode("overwrite")
+      .format("delta")
+      .mode("append")
       .saveAsTable(s"${dbName}.${table}")
   }
 
