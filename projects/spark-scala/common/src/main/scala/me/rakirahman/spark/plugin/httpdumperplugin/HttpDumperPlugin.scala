@@ -22,6 +22,8 @@ import scala.util.{Failure, Success, Try}
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
+import org.apache.spark.sql.functions._
+
 /** HTTP metadata captured from an incoming request.
   *
   * @param uri
@@ -220,8 +222,8 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
               tableCreated = true
             }
 
-            insertRequests(requests.toList, sparkSession)
-            logInfo(s"Flushed ${requests.size} HTTP requests to database")
+            val inserted = insertRequests(requests.toList, sparkSession)
+            logInfo(s"Flushed ${inserted}/${requests.size} HTTP requests to database")
           } else {
             logWarning(s"SparkContext is stopped, unable to flush ${requests.size} HTTP requests. Requests will be lost.")
           }
@@ -240,57 +242,59 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
     bufferSemaphore.release()
   }
 
-  private def insertRequests(requests: List[HttpRequestMetadata], sparkSession: SparkSession): Unit = {
+  private def insertRequests(requests: List[HttpRequestMetadata], sparkSession: SparkSession): Int = {
     try {
+      import sparkSession.implicits._
+
       val database = config.databaseName
       val table = config.tableName
       val currentTime = Timestamp.valueOf(LocalDateTime.now())
       val currentTimeLong = currentTime.getTime
       val yearMonthDate = DateSorter.convert(currentTime, DateTypes.YearMonthDate)
 
-      requests.foreach { request =>
-        // Avoid circular dependency
-        //
-        if (!request.requestBody.contains(table)) {
+      // Filter out requests containing the table name to avoid circular dependency
+      val filteredRequests = requests.filter(request => !request.requestBody.contains(table))
 
+      if (filteredRequests.isEmpty) return 0
+
+      val requestsDF = filteredRequests
+        .map { request =>
           val headersJson = objectMapper.writeValueAsString(request.headers)
           val parametersJson = objectMapper.writeValueAsString(request.parameters)
 
-          sparkSession.sql(
-            s"""
-               |INSERT INTO $database.$table (
-               |  result_timestamp,
-               |  result_timestamp_long,
-               |  ${SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString},
-               |  request_uri,
-               |  request_method,
-               |  request_headers_json,
-               |  request_parameters_json,
-               |  remote_ip_address,
-               |  request_body
-               |) VALUES (
-               |  CAST('${currentTime}' AS TIMESTAMP),
-               |  ${currentTimeLong}L,
-               |  '${yearMonthDate}',
-               |  '${escapeSql(request.uri)}',
-               |  '${request.method}',
-               |  '${escapeSql(headersJson)}',
-               |  '${escapeSql(parametersJson)}',
-               |  '${request.remoteIpAddress}',
-               |  '${escapeSql(request.requestBody)}'
-               |)
-               |""".stripMargin
+          (
+            currentTime,
+            currentTimeLong,
+            yearMonthDate,
+            request.uri,
+            request.method,
+            headersJson,
+            parametersJson,
+            request.remoteIpAddress,
+            request.requestBody
           )
         }
-      }
+        .toDF(
+          "result_timestamp",
+          "result_timestamp_long",
+          SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,
+          "request_uri",
+          "request_method",
+          "request_headers_json",
+          "request_parameters_json",
+          "remote_ip_address",
+          "request_body"
+        )
+
+      requestsDF.write.mode("append").insertInto(s"$database.$table")
+
+      filteredRequests.size
+
     } catch {
       case e: Exception =>
         logError("Failed to insert requests into database", e)
+        0
     }
-  }
-
-  private def escapeSql(value: String): String = {
-    if (value == null) "" else value.replace("'", "''").replace("\\", "\\\\")
   }
 
   /** @inheritdoc
