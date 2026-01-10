@@ -129,7 +129,7 @@ get_spark_configs() {
 #
 get_additional_runtime_jars() {
     local jars=(
-        "io.openlineage:openlineage-spark_2.12:1.42.1"
+        "io.openlineage:openlineage-spark_2.12:1.26.0"
         "org.apache.hadoop:hadoop-azure-datalake:3.3.4"
         "org.apache.hadoop:hadoop-azure:3.3.4"
     )
