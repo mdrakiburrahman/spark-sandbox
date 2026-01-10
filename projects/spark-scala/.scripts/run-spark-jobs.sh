@@ -176,6 +176,15 @@ spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncach
 #
 # >>> https://openlineage.io/docs/integrations/spark/configuration/spark_conf/
 # >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
+# >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
+#
+# To send to file directly:
+#
+# ```bash
+# openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
+# openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
+# ```
+#
 #
 export DRIVER_PLUGIN_PORT=19000
 export EXECUTOR_PLUGIN_PORT=19001
