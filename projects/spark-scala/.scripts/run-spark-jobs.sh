@@ -28,6 +28,7 @@ set -e
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 export SPARK_SCALA_DIR="${GIT_ROOT}/projects/spark-scala"
 export SCRIPTS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+export SPARK_SUBMIT_OPTS="--add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.security=ALL-UNNAMED"
 export LOG_FILE_NAME="run-spark-jobs-$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 export TEMP_DIR="${SPARK_SCALA_DIR}/.temp"
 export HEAP_DUMP_DIR="${TEMP_DIR}/dumps"
