@@ -1,0 +1,14 @@
+build
+dist
+__pycache__
+.venv
+.hatch
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+*.egg-info
+**/*.pyc
+**/*.pyo
+**/*.pyd

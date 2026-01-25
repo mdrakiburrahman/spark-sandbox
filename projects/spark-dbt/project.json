@@ -6,7 +6,13 @@
     "clean": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["rm -rf build dist __pycache__ .venv", "hatch env prune"],
+        "cwd": "projects/spark-dbt",
+        "commands": [
+          "if [ -n \"$HATCH_ENV\" ]; then echo 'ERROR: Exit hatch shell first (type: exit)' && exit 1; fi",
+          "hatch env remove default 2>/dev/null || true",
+          "hatch env prune 2>/dev/null || true",
+          "cat .cleanpaths | xargs rm -rf"
+        ],
         "parallel": false
       }
     },

@@ -38,18 +38,11 @@ npx nx run spark-dbt:install
 
 ## 🚀 Using dbt
 
-### Option 1: Run dbt commands directly with hatch
-
-```bash
-cd projects/spark-dbt
-hatch run dbt --version
-```
-
-### Option 2: Activate the virtual environment with hatch shell
-
 ```bash
 cd projects/spark-dbt
 hatch shell
 
 dbt --version
 ```
+
+Then browse each `dbt-...` project and follow the READMEs.

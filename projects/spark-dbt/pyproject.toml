@@ -12,15 +12,14 @@ license = {text = "MIT"}
 authors = [
   { name = "Raki Rahman", email = "mdrakiburrahman@gmail.com" },
 ]
-dependencies = [
-  "dbt-fabricspark @ https://rakirahman.blob.core.windows.net/public/whls/dbt_fabricspark-1.9.1-py3-none-any.whl",
-]
 
 [tool.hatch.envs.default]
 type = "virtual"
 path = ".venv"
-installer = "uv"
-dependencies = []
+skip-install = true
+dependencies = [
+  "dbt-fabricspark @ https://rakirahman.blob.core.windows.net/public/whls/dbt_fabricspark-1.9.1-py3-none-any.whl",
+]
 
 [tool.hatch.envs.default.env-vars]
 UV_PRERELEASE = "allow"
