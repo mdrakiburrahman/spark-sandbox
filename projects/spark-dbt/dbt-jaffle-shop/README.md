@@ -41,7 +41,7 @@ export GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "${GIT_ROOT}/projects/spark-dbt/dbt-jaffle-shop"
 
 export DBT_PROFILES_DIR=$(pwd)
-export DBT_DEBUG=true
+export DBT_DEBUG=false
 
 dbt debug
 ```
