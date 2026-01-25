@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: store
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        businessentityid: integer
+        storename: string
+        salespersonid: integer
+        modifieddate: timestamp

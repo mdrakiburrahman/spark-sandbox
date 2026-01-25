@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: productsubcategory
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        productsubcategoryid: integer
+        productcategoryid: integer
+        name: string
+        modifieddate: timestamp

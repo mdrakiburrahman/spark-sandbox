@@ -85,6 +85,10 @@
           {
             "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
+          },
+          {
+            "command": "bash -c 'source .scripts/run-livy.sh && kill_all_sessions'",
+            "forwardAllArgs": false
           }
         ]
       }

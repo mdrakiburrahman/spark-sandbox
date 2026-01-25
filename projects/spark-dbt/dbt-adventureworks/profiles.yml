@@ -1,0 +1,20 @@
+adventureworks:
+  target: fabric-dev
+  outputs:
+    fabric-dev:
+      authentication: CLI
+      method: livy
+      livy_mode: local
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 58374f03-58b3-48f8-ae96-758f86aed72d
+      lakehouseid: 1e1d0e81-9d6f-462d-8fe3-80455804a395
+      lakehouse: dbt_adventureworks
+      schema: dbt_adventureworks
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-adventureworks

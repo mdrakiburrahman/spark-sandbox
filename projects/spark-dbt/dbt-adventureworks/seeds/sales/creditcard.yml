@@ -1,0 +1,13 @@
+version: 2
+
+seeds:
+  - name: creditcard
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        creditcardid: integer
+        cardtype: string
+        expyear: short
+        modifieddate: timestamp
+        expmonth: short
+        cardnumber: string
