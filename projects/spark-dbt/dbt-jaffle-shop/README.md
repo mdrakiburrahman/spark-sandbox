@@ -31,7 +31,6 @@ To get up and running with this project:
 
 Test connectivity:
 
-> Warning: flaky due to no Livy reuse, needs retries configured for the config
 > Ensure you're logged into `az login` first
 
 ```bash

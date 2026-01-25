@@ -10,7 +10,7 @@ jaffle_shop:
       connect_timeout: 10
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 58374f03-58b3-48f8-ae96-758f86aed72d
-      lakehouseid: e978c3f0-e710-4c10-826c-7baa50dc43b0
+      lakehouseid: dbeace9c-243b-4615-99fb-0f9497a2006a
       lakehouse: dbt_jaffle_shop
       schema: dbt_jaffle_shop
       threads: 12
