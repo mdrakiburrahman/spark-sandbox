@@ -1,0 +1,16 @@
+{
+  "folders": [
+    {
+      "path": "spark-dbt",
+    },
+    {
+      "path": "spark-scala",
+    },
+  ],
+  "settings": {
+    "files.watcherExclude": {
+      "**/target": true
+    },
+    "java.compile.nullAnalysis.mode": "disabled",
+  },
+}

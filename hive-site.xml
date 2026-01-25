@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <!-- Derby metastore connection - shared across all sessions -->
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>org.apache.derby.jdbc.EmbeddedDriver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:derby:/workspaces/spark-sandbox/projects/spark-scala/metastore_db;create=true</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>APP</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>mine</value>
+  </property>
+  <!-- Default warehouse location -->
+  <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>/workspaces/spark-sandbox/projects/spark-scala/warehouse</value>
+  </property>
+  <!-- Schema initialization -->
+  <property>
+    <name>datanucleus.schema.autoCreateAll</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>hive.metastore.schema.verification</name>
+    <value>false</value>
+  </property>
+</configuration>
