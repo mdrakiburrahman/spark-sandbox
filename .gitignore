@@ -6,3 +6,7 @@ node_modules/
 
 # Temporary
 .temp/*
+
+# Scala
+.metals/*
+.scala-build/*

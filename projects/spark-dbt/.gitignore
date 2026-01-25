@@ -7,3 +7,5 @@ build/
 __pycache__/
 .env.*
 .temp/
+.venv/*
+livy-session-id.txt
