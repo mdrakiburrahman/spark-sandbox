@@ -1,0 +1,36 @@
+{
+  "name": "spark-dbt",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [
+          "if [ -n \"$HATCH_ENV\" ]; then echo 'ERROR: Exit hatch shell first (type: exit)' && exit 1; fi",
+          "hatch env remove default 2>/dev/null || true",
+          "hatch env prune 2>/dev/null || true",
+          "cat .cleanpaths | xargs rm -rf"
+        ],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["black --line-length 2000 ."],
+        "parallel": false
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["clean"],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": ["hatch env create"],
+        "parallel": false
+      }
+    }
+  }
+}

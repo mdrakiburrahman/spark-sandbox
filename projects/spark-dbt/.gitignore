@@ -1,0 +1,9 @@
+.npmrc
+node_modules/
+nx
+.nx/
+dist/
+build/
+__pycache__/
+.env.*
+.temp/

@@ -1,0 +1,18 @@
+jaffle_shop:
+  target: fabric-dev
+  outputs:
+    fabric-dev:
+      authentication: CLI
+      method: livy
+      connect_retries: 25
+      connect_timeout: 10
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 58374f03-58b3-48f8-ae96-758f86aed72d
+      lakehouseid: e978c3f0-e710-4c10-826c-7baa50dc43b0
+      lakehouse: dbt_lakehouse
+      schema: dbt_lakehouse
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt_lakehouse
