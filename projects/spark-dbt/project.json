@@ -1,0 +1,30 @@
+{
+  "name": "spark-dbt",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["rm -rf build dist __pycache__ .venv", "hatch env prune"],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["black --line-length 2000 ."],
+        "parallel": false
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["clean"],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": ["hatch env create"],
+        "parallel": false
+      }
+    }
+  }
+}
