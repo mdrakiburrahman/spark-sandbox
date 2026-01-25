@@ -39,7 +39,8 @@ npx nx run spark-dbt:install
 ## 🚀 Using dbt
 
 ```bash
-cd projects/spark-dbt
+export GIT_ROOT=$(git rev-parse --show-toplevel)
+cd "${GIT_ROOT}/projects/spark-dbt"
 hatch shell
 
 dbt --version

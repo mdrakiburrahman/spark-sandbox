@@ -20,7 +20,7 @@ businessentityid,storename,salespersonid,modifieddate
 326,Worthwhile Activity Store,279,2014-09-12 11:15:07.497
 328,Purchase Mart,275,2014-09-12 11:15:07.497
 330,Major Sport Suppliers,283,2014-09-12 11:15:07.497
-332,Family's Favorite Bike Shop,278,2014-09-12 11:15:07.497
+332,Family\'s Favorite Bike Shop,278,2014-09-12 11:15:07.497
 334,Global Plaza,279,2014-09-12 11:15:07.497
 336,Imported and Domestic Cycles,276,2014-09-12 11:15:07.497
 338,Systematic Sales,281,2014-09-12 11:15:07.497
@@ -55,7 +55,7 @@ businessentityid,storename,salespersonid,modifieddate
 398,Grand Bicycle Stores,277,2014-09-12 11:15:07.497
 400,Exertion Activities Club,281,2014-09-12 11:15:07.497
 402,Impromptu Trips,283,2014-09-12 11:15:07.497
-404,Margie's Travel,275,2014-09-12 11:15:07.497
+404,Margie\'s Travel,275,2014-09-12 11:15:07.497
 406,Kickstand Sellers,275,2014-09-12 11:15:07.497
 408,Nearest Bike Store,286,2014-09-12 11:15:07.497
 410,Fast Bike Works,286,2014-09-12 11:15:07.497
@@ -124,7 +124,7 @@ businessentityid,storename,salespersonid,modifieddate
 536,Nonskid Tire Company,280,2014-09-12 11:15:07.497
 538,Amalgamated Parts Shop,288,2014-09-12 11:15:07.497
 540,Metro Bike Works,275,2014-09-12 11:15:07.497
-542,Best o' Bikes,277,2014-09-12 11:15:07.497
+542,Best o\' Bikes,277,2014-09-12 11:15:07.497
 544,Painters Bicycle Specialists,275,2014-09-12 11:15:07.497
 546,Client Discount Store,277,2014-09-12 11:15:07.497
 548,Eastside Sporting Goods,275,2014-09-12 11:15:07.497
