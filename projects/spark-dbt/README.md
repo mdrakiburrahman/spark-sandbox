@@ -50,3 +50,22 @@ Then browse each `dbt-...` project and follow the READMEs:
 
 - [dbt-jaffle-shop](dbt-jaffle-shop/README.md) to test the simple Jaffle Shop simple dataset.
 - [dbt-adventureworks](dbt-adventureworks/README.md) to test the Adventureworks Kimball STAR Schema dataset.
+
+## 🤖 Using MCP
+
+The following tutorials was used to setup an MCP server:
+
+- [A Practical Guide to Setting Up dbt MCP Server with VS Code and Claude](https://medium.com/@rahulpdiggi/a-practical-guide-to-setting-up-dbt-mcp-server-with-vs-code-and-claude-539289ab739f)
+- [Set up local MCP](https://docs.getdbt.com/docs/dbt-ai/setup-local-mcp)
+
+This is the mcp package on [PyPi](https://pypi.org/project/dbt-mcp/).
+
+To use it, first make sure `npx nx run spark-dbt:install` is done.
+
+Then, start the MCP server by clicking "Start" in "/workspaces/spark-sandbox/.vscode/mcp.json", and you should see these logs:
+
+![DBT MCP](.imgs/dbt-mcp.png)
+
+And we can use it to invoke any of the 9 skills available to the [dbt CLI](https://github.com/dbt-labs/dbt-mcp):
+
+![DBT MCP List](.imgs/dbt-mcp-list.png)

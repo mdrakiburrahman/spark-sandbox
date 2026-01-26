@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "dbt": {
+      "command": "uvx",
+      "args": ["dbt-mcp"],
+      "env": {
+        "DBT_PROJECT_DIR": "/workspaces/spark-sandbox/projects/spark-dbt/dbt-adventureworks",
+        "DBT_PATH": "/workspaces/spark-sandbox/projects/spark-dbt/.venv/bin/dbt"
+      }
+    }
+  }
+}
