@@ -66,6 +66,6 @@ Then, start the MCP server by clicking "Start" in "/workspaces/spark-sandbox/.vs
 
 ![DBT MCP](.imgs/dbt-mcp.png)
 
-And we can use it to invoke any of the 9 tools available to the dbt CLI:
+And we can use it to invoke any of the 9 tools available to the [dbt CLI](https://github.com/dbt-labs/dbt-mcp):
 
 ![DBT MCP List](.imgs/dbt-mcp-list.png)
