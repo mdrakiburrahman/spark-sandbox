@@ -1,0 +1,73 @@
+// DBML generated from dbt project: jaffle_shop
+// Generated at: 2026-01-26T01:24:21Z
+
+Table customers {
+  customer_id bigint [pk]
+  first_name string
+  last_name string
+  first_order date
+  most_recent_order date
+  number_of_orders bigint
+  customer_lifetime_value double
+}
+
+Table orders {
+  order_id bigint [pk]
+  customer_id bigint
+  order_date date
+  status string
+  credit_card_amount double
+  coupon_amount double
+  bank_transfer_amount double
+  gift_card_amount double
+  amount double
+}
+
+Table raw_customers {
+  id bigint [pk]
+  first_name string
+  last_name string
+}
+
+Table raw_orders {
+  id bigint [pk]
+  user_id bigint
+  order_date date
+  status string
+}
+
+Table raw_payments {
+  id bigint [pk]
+  order_id bigint
+  payment_method string
+  amount bigint
+}
+
+Table stg_customers {
+  customer_id bigint [pk]
+  first_name string
+  last_name string
+}
+
+Table stg_orders {
+  order_id bigint [pk]
+  customer_id bigint
+  order_date date
+  status string
+}
+
+Table stg_payments {
+  payment_id bigint [pk]
+  order_id bigint
+  payment_method string
+  amount double
+}
+
+// Relationships from dbt tests
+Ref: orders.customer_id > customers.customer_id
+
+// Inferred relationships (from column naming patterns)
+Ref: raw_orders.user_id > raw_customers.id
+Ref: raw_payments.order_id > raw_orders.id
+Ref: stg_orders.customer_id > stg_customers.customer_id
+Ref: stg_payments.order_id > stg_orders.order_id
