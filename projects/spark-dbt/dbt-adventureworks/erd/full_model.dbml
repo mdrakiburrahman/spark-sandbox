@@ -1,0 +1,320 @@
+// DBML generated from dbt project: adventureworks
+// Generated at: 2026-01-26T01:35:00Z
+
+// ===========================================
+// MART LAYER - Dimensional Model
+// ===========================================
+
+Table fct_sales {
+  sales_key string [pk]
+  product_key string
+  customer_key string
+  creditcard_key string
+  ship_address_key string
+  order_status_key string
+  order_date_key string
+  salesorderid int
+  salesorderdetailid int
+  unitprice decimal
+  orderqty smallint
+  revenue decimal
+}
+
+Table dim_product {
+  product_key string [pk]
+  productid int
+  product_name string
+  productnumber string
+  color string
+  class string
+  product_subcategory_name string
+  product_category_name string
+}
+
+Table dim_customer {
+  customer_key string [pk]
+  customerid int
+  businessentityid int
+  fullname string
+  storebusinessentityid int
+  storename string
+}
+
+Table dim_credit_card {
+  creditcard_key string [pk]
+  creditcardid int
+  cardtype string
+}
+
+Table dim_address {
+  address_key string [pk]
+  addressid int
+  city_name string
+  state_name string
+  country_name string
+}
+
+Table dim_order_status {
+  order_status_key string [pk]
+  order_status smallint
+  order_status_name string
+}
+
+Table dim_date {
+  date_key string [pk]
+  date_day date
+  prior_date_day date
+  next_date_day date
+  prior_year_date_day date
+  prior_year_over_year_date_day date
+  day_of_week int
+  day_of_week_name string
+  day_of_month int
+  day_of_year int
+}
+
+Table obt_sales {
+  sales_key string [pk]
+  salesorderid int
+  salesorderdetailid int
+  unitprice decimal
+  orderqty smallint
+  revenue decimal
+  productid int
+  product_name string
+  productnumber string
+  color string
+  class string
+  product_subcategory_name string
+  product_category_name string
+  customerid int
+  businessentityid int
+  fullname string
+  storebusinessentityid int
+  storename string
+  creditcardid int
+  cardtype string
+  addressid int
+  city_name string
+  state_name string
+  country_name string
+  order_status smallint
+  order_status_name string
+  date_day date
+  prior_date_day date
+  next_date_day date
+  prior_year_date_day date
+  prior_year_over_year_date_day date
+  day_of_week int
+  day_of_week_name string
+  day_of_month int
+  day_of_year int
+}
+
+// ===========================================
+// STAGING LAYER - Seeds / Source Tables
+// ===========================================
+
+Table salesorderheader {
+  salesorderid int [pk]
+  shipmethodid int
+  billtoaddressid int
+  modifieddate timestamp
+  rowguid string
+  taxamt decimal
+  shiptoaddressid int
+  onlineorderflag boolean
+  territoryid int
+  status smallint
+  orderdate timestamp
+  creditcardapprovalcode string
+  subtotal decimal
+  creditcardid int
+  currencyrateid int
+  revisionnumber smallint
+  freight decimal
+  duedate timestamp
+  totaldue decimal
+  customerid int
+  salespersonid int
+  shipdate timestamp
+  accountnumber string
+}
+
+Table salesorderdetail {
+  salesorderid int [pk]
+  orderqty smallint
+  salesorderdetailid int
+  unitprice decimal
+  specialofferid int
+  modifieddate timestamp
+  rowguid string
+  productid int
+  unitpricediscount decimal
+}
+
+Table customer {
+  customerid int [pk]
+  personid int
+  storeid int
+  territoryid int
+}
+
+Table person {
+  businessentityid int [pk]
+  title string
+  firstname string
+  middlename string
+  lastname string
+  persontype string
+  namestyle boolean
+  suffix string
+  modifieddate timestamp
+  rowguid string
+  emailpromotion int
+}
+
+Table store {
+  businessentityid int [pk]
+  storename string
+  salespersonid int
+  modifieddate timestamp
+}
+
+Table product {
+  productid int [pk]
+  name string
+  safetystocklevel smallint
+  finishedgoodsflag boolean
+  class string
+  makeflag boolean
+  productnumber string
+  reorderpoint smallint
+  modifieddate timestamp
+  rowguid string
+  productmodelid int
+  weightunitmeasurecode string
+  standardcost decimal
+  productsubcategoryid int
+  listprice decimal
+  daystomanufacture int
+  productline string
+  color string
+  sellstartdate timestamp
+  weight decimal
+}
+
+Table productcategory {
+  productcategoryid int [pk]
+  name string
+  modifieddate timestamp
+}
+
+Table productsubcategory {
+  productsubcategoryid int [pk]
+  productcategoryid int
+  name string
+  modifieddate timestamp
+}
+
+Table creditcard {
+  creditcardid int [pk]
+  cardtype string
+  expyear smallint
+  modifieddate timestamp
+  expmonth smallint
+  cardnumber string
+}
+
+Table address {
+  addressid int [pk]
+  addressline1 string
+  addressline2 string
+  city string
+  stateprovinceid int
+  postalcode string
+  spatiallocation string
+  rowguid string
+  modifieddate timestamp
+}
+
+Table stateprovince {
+  stateprovinceid int [pk]
+  countryregioncode string
+  modifieddate timestamp
+  rowguid string
+  name string
+  territoryid int
+  isonlystateprovinceflag boolean
+  stateprovincecode string
+}
+
+Table countryregion {
+  countryregioncode string [pk]
+  modifieddate timestamp
+  name string
+}
+
+Table date {
+  date_day date [pk]
+  prior_date_day date
+  next_date_day date
+  prior_year_date_day date
+  prior_year_over_year_date_day date
+  day_of_week int
+  day_of_week_name string
+  day_of_month int
+  day_of_year int
+}
+
+Table salesreason {
+  salesreasonid int [pk]
+  name string
+  reasontype string
+  modifieddate timestamp
+}
+
+Table salesorderheadersalesreason {
+  salesorderid int [pk]
+  modifieddate timestamp
+  salesreasonid int
+}
+
+// ===========================================
+// RELATIONSHIPS - Fact to Dimensions (Star Schema)
+// ===========================================
+
+Ref: fct_sales.product_key > dim_product.product_key
+Ref: fct_sales.customer_key > dim_customer.customer_key
+Ref: fct_sales.creditcard_key > dim_credit_card.creditcard_key
+Ref: fct_sales.ship_address_key > dim_address.address_key
+Ref: fct_sales.order_status_key > dim_order_status.order_status_key
+Ref: fct_sales.order_date_key > dim_date.date_key
+
+// ===========================================
+// RELATIONSHIPS - Staging Layer
+// ===========================================
+
+// Sales Order relationships
+Ref: salesorderdetail.salesorderid > salesorderheader.salesorderid
+Ref: salesorderheader.customerid > customer.customerid
+Ref: salesorderheader.creditcardid > creditcard.creditcardid
+Ref: salesorderheader.shiptoaddressid > address.addressid
+Ref: salesorderheader.billtoaddressid > address.addressid
+
+// Customer relationships
+Ref: customer.personid > person.businessentityid
+Ref: customer.storeid > store.businessentityid
+
+// Product relationships
+Ref: salesorderdetail.productid > product.productid
+Ref: product.productsubcategoryid > productsubcategory.productsubcategoryid
+Ref: productsubcategory.productcategoryid > productcategory.productcategoryid
+
+// Address relationships
+Ref: address.stateprovinceid > stateprovince.stateprovinceid
+Ref: stateprovince.countryregioncode > countryregion.countryregioncode
+
+// Sales reason relationships
+Ref: salesorderheadersalesreason.salesorderid > salesorderheader.salesorderid
+Ref: salesorderheadersalesreason.salesreasonid > salesreason.salesreasonid
