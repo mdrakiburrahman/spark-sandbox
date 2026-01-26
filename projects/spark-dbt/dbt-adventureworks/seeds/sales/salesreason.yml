@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: salesreason
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        salesreasonid: integer
+        name: string
+        reasontype: string
+        modifieddate: timestamp

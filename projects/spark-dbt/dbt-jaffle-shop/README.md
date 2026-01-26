@@ -31,7 +31,6 @@ To get up and running with this project:
 
 Test connectivity:
 
-> Warning: flaky due to no Livy reuse, needs retries configured for the config
 > Ensure you're logged into `az login` first
 
 ```bash
@@ -41,7 +40,7 @@ export GIT_ROOT=$(git rev-parse --show-toplevel)
 cd "${GIT_ROOT}/projects/spark-dbt/dbt-jaffle-shop"
 
 export DBT_PROFILES_DIR=$(pwd)
-export DBT_DEBUG=true
+export DBT_DEBUG=false
 
 dbt debug
 ```

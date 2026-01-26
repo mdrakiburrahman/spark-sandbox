@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: customer
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        customerid: integer
+        personid: integer
+        storeid: integer
+        territoryid: integer

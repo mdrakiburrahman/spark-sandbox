@@ -73,7 +73,7 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": [],
+      "dependsOn": ["clean-livy"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -84,6 +84,24 @@
           },
           {
             "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "bash -c 'source .scripts/run-livy.sh && kill_all_sessions'",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "clean-livy": {
+      "cache": false,
+      "dependsOn": [],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          {
+            "command": "bash -c 'source .scripts/run-livy.sh && kill_all_sessions'",
             "forwardAllArgs": false
           }
         ]

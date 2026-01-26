@@ -1,0 +1,10 @@
+version: 2
+
+seeds:
+  - name: countryregion
+    config:
+      schema: dbt_adventureworks
+      column_types:
+        countryregioncode: string
+        modifieddate: timestamp
+        name: string
