@@ -84,30 +84,29 @@ And the DBT DAG:
 Here are the tables at this point:
 
 ```sql
-SHOW ALL TABLES;
+spark.sql("SHOW TABLES IN dbt_adventureworks").show(truncate = false)
+```
 
--- ┌────────────────┬────────────┬──────────────────────┬──────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────┬───────────┐
--- │    database    │   schema   │         name         │     column_names     │                                       column_types                                        │ temporary │
--- │    varchar     │  varchar   │       varchar        │      varchar[]       │                                         varchar[]                                         │  boolean  │
--- ├────────────────┼────────────┼──────────────────────┼──────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────┼───────────┤
--- │ adventureworks │ date       │ date                 │ [date_day, prior_d…  │ [DATE, DATE, DATE, DATE, DATE, INTEGER, VARCHAR, INTEGER, INTEGER]                        │ false     │
--- │ adventureworks │ person     │ address              │ [addressid, addres…  │ [INTEGER, VARCHAR, VARCHAR, VARCHAR, INTEGER, VARCHAR, VARCHAR, VARCHAR, TIMESTAMP]       │ false     │
--- │ adventureworks │ person     │ countryregion        │ [countryregioncode…  │ [VARCHAR, TIMESTAMP, VARCHAR]                                                             │ false     │
--- │ adventureworks │ person     │ person               │ [businessentityid,…  │ [INTEGER, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, BOOLEAN, VARCHAR, TIMESTAMP, VAR…  │ false     │
--- │ adventureworks │ person     │ stateprovince        │ [stateprovinceid, …  │ [INTEGER, VARCHAR, TIMESTAMP, VARCHAR, VARCHAR, INTEGER, BOOLEAN, VARCHAR]                │ false     │
--- │ adventureworks │ production │ product              │ [productid, name, …  │ [INTEGER, VARCHAR, SMALLINT, BOOLEAN, VARCHAR, BOOLEAN, VARCHAR, SMALLINT, TIMESTAMP, V…  │ false     │
--- │ adventureworks │ production │ productcategory      │ [productcategoryid…  │ [INTEGER, VARCHAR, TIMESTAMP]                                                             │ false     │
--- │ adventureworks │ production │ productsubcategory   │ [productsubcategor…  │ [INTEGER, INTEGER, VARCHAR, TIMESTAMP]                                                    │ false     │
--- │ adventureworks │ sales      │ creditcard           │ [creditcardid, car…  │ [INTEGER, VARCHAR, SMALLINT, TIMESTAMP WITH TIME ZONE, SMALLINT, VARCHAR]                 │ false     │
--- │ adventureworks │ sales      │ customer             │ [customerid, perso…  │ [INTEGER, INTEGER, INTEGER, INTEGER]                                                      │ false     │
--- │ adventureworks │ sales      │ salesorderdetail     │ [salesorderid, ord…  │ [INTEGER, SMALLINT, INTEGER, 'DECIMAL(18,3)', INTEGER, TIMESTAMP, VARCHAR, INTEGER, 'DE…  │ false     │
--- │ adventureworks │ sales      │ salesorderheader     │ [salesorderid, shi…  │ [INTEGER, INTEGER, INTEGER, TIMESTAMP, VARCHAR, 'DECIMAL(18,3)', INTEGER, BOOLEAN, INTE…  │ false     │
--- │ adventureworks │ sales      │ salesorderheadersa…  │ [salesorderid, mod…  │ [INTEGER, TIMESTAMP, INTEGER]                                                             │ false     │
--- │ adventureworks │ sales      │ salesreason          │ [salesreasonid, na…  │ [INTEGER, VARCHAR, VARCHAR, TIMESTAMP]                                                    │ false     │
--- │ adventureworks │ sales      │ store                │ [businessentityid,…  │ [INTEGER, VARCHAR, INTEGER, TIMESTAMP]                                                    │ false     │
--- ├────────────────┴────────────┴──────────────────────┴──────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────┴───────────┤
--- │ 15 rows                                                                                                                                                                 6 columns │
--- └───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```text
++------------------+---------------------------+-----------+
+|namespace         |tableName                  |isTemporary|
++------------------+---------------------------+-----------+
+|dbt_adventureworks|address                    |false      |
+|dbt_adventureworks|countryregion              |false      |
+|dbt_adventureworks|creditcard                 |false      |
+|dbt_adventureworks|customer                   |false      |
+|dbt_adventureworks|date                       |false      |
+|dbt_adventureworks|person                     |false      |
+|dbt_adventureworks|product                    |false      |
+|dbt_adventureworks|productcategory            |false      |
+|dbt_adventureworks|productsubcategory         |false      |
+|dbt_adventureworks|salesorderdetail           |false      |
+|dbt_adventureworks|salesorderheader           |false      |
+|dbt_adventureworks|salesorderheadersalesreason|false      |
+|dbt_adventureworks|salesreason                |false      |
+|dbt_adventureworks|stateprovince              |false      |
+|dbt_adventureworks|store                      |false      |
++------------------+---------------------------+-----------+
 ```
 
 Build the model:
@@ -125,43 +124,42 @@ dbt test
 Here are the tables at this point:
 
 ```sql
-SHOW ALL TABLES;
+spark.sql("SHOW TABLES IN dbt_adventureworks").show(100, truncate = false)
+```
 
--- ┌────────────────┬────────────┬──────────────────────┬──────────────────────┬──────────────────────────────────────────────────────────┬───────────┐
--- │    database    │   schema   │         name         │     column_names     │                       column_types                       │ temporary │
--- │    varchar     │  varchar   │       varchar        │      varchar[]       │                        varchar[]                         │  boolean  │
--- ├────────────────┼────────────┼──────────────────────┼──────────────────────┼──────────────────────────────────────────────────────────┼───────────┤
--- │ adventureworks │ date       │ date                 │ [date_day, prior_d…  │ [DATE, DATE, DATE, DATE, DATE, INTEGER, VARCHAR, INTEG…  │ false     │
--- │ adventureworks │ marts      │ dim_address          │ [address_key, addr…  │ [VARCHAR, INTEGER, VARCHAR, VARCHAR, VARCHAR]            │ false     │
--- │ adventureworks │ marts      │ dim_credit_card      │ [creditcard_key, c…  │ [VARCHAR, INTEGER, VARCHAR]                              │ false     │
--- │ adventureworks │ marts      │ dim_customer         │ [customer_key, cus…  │ [VARCHAR, INTEGER, INTEGER, VARCHAR, INTEGER, VARCHAR]   │ false     │
--- │ adventureworks │ marts      │ dim_date             │ [date_key, date_da…  │ [VARCHAR, DATE, DATE, DATE, DATE, DATE, INTEGER, VARCH…  │ false     │
--- │ adventureworks │ marts      │ dim_order_status     │ [order_status_key,…  │ [VARCHAR, SMALLINT, VARCHAR]                             │ false     │
--- │ adventureworks │ marts      │ dim_product          │ [product_key, prod…  │ [VARCHAR, INTEGER, VARCHAR, VARCHAR, VARCHAR, VARCHAR,…  │ false     │
--- │ adventureworks │ marts      │ fct_sales            │ [sales_key, produc…  │ [VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR,…  │ false     │
--- │ adventureworks │ marts      │ obt_sales            │ [sales_key, saleso…  │ [VARCHAR, INTEGER, INTEGER, 'DECIMAL(18,3)', SMALLINT,…  │ false     │
--- │ adventureworks │ person     │ address              │ [addressid, addres…  │ [INTEGER, VARCHAR, VARCHAR, VARCHAR, INTEGER, VARCHAR,…  │ false     │
--- │ adventureworks │ person     │ countryregion        │ [countryregioncode…  │ [VARCHAR, TIMESTAMP, VARCHAR]                            │ false     │
--- │ adventureworks │ person     │ person               │ [businessentityid,…  │ [INTEGER, VARCHAR, VARCHAR, VARCHAR, VARCHAR, VARCHAR,…  │ false     │
--- │ adventureworks │ person     │ stateprovince        │ [stateprovinceid, …  │ [INTEGER, VARCHAR, TIMESTAMP, VARCHAR, VARCHAR, INTEGE…  │ false     │
--- │ adventureworks │ production │ product              │ [productid, name, …  │ [INTEGER, VARCHAR, SMALLINT, BOOLEAN, VARCHAR, BOOLEAN…  │ false     │
--- │ adventureworks │ production │ productcategory      │ [productcategoryid…  │ [INTEGER, VARCHAR, TIMESTAMP]                            │ false     │
--- │ adventureworks │ production │ productsubcategory   │ [productsubcategor…  │ [INTEGER, INTEGER, VARCHAR, TIMESTAMP]                   │ false     │
--- │ adventureworks │ sales      │ creditcard           │ [creditcardid, car…  │ [INTEGER, VARCHAR, SMALLINT, TIMESTAMP WITH TIME ZONE,…  │ false     │
--- │ adventureworks │ sales      │ customer             │ [customerid, perso…  │ [INTEGER, INTEGER, INTEGER, INTEGER]                     │ false     │
--- │ adventureworks │ sales      │ salesorderdetail     │ [salesorderid, ord…  │ [INTEGER, SMALLINT, INTEGER, 'DECIMAL(18,3)', INTEGER,…  │ false     │
--- │ adventureworks │ sales      │ salesorderheader     │ [salesorderid, shi…  │ [INTEGER, INTEGER, INTEGER, TIMESTAMP, VARCHAR, 'DECIM…  │ false     │
--- │ adventureworks │ sales      │ salesorderheadersa…  │ [salesorderid, mod…  │ [INTEGER, TIMESTAMP, INTEGER]                            │ false     │
--- │ adventureworks │ sales      │ salesreason          │ [salesreasonid, na…  │ [INTEGER, VARCHAR, VARCHAR, TIMESTAMP]                   │ false     │
--- │ adventureworks │ sales      │ store                │ [businessentityid,…  │ [INTEGER, VARCHAR, INTEGER, TIMESTAMP]                   │ false     │
--- ├────────────────┴────────────┴──────────────────────┴──────────────────────┴──────────────────────────────────────────────────────────┴───────────┤
--- │ 23 rows                                                                                                                                6 columns │
--- └──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+```text
++------------------+---------------------------+-----------+
+|namespace         |tableName                  |isTemporary|
++------------------+---------------------------+-----------+
+|dbt_adventureworks|address                    |false      |
+|dbt_adventureworks|countryregion              |false      |
+|dbt_adventureworks|creditcard                 |false      |
+|dbt_adventureworks|customer                   |false      |
+|dbt_adventureworks|date                       |false      |
+|dbt_adventureworks|dim_address                |false      |
+|dbt_adventureworks|dim_credit_card            |false      |
+|dbt_adventureworks|dim_customer               |false      |
+|dbt_adventureworks|dim_date                   |false      |
+|dbt_adventureworks|dim_order_status           |false      |
+|dbt_adventureworks|dim_product                |false      |
+|dbt_adventureworks|fct_sales                  |false      |
+|dbt_adventureworks|obt_sales                  |false      |
+|dbt_adventureworks|person                     |false      |
+|dbt_adventureworks|product                    |false      |
+|dbt_adventureworks|productcategory            |false      |
+|dbt_adventureworks|productsubcategory         |false      |
+|dbt_adventureworks|salesorderdetail           |false      |
+|dbt_adventureworks|salesorderheader           |false      |
+|dbt_adventureworks|salesorderheadersalesreason|false      |
+|dbt_adventureworks|salesreason                |false      |
+|dbt_adventureworks|stateprovince              |false      |
+|dbt_adventureworks|store                      |false      |
++------------------+---------------------------+-----------+
 ```
 
 And we can see the DBT DAG for `obt_sales`:
 
 ```bash
 dbt docs generate
-dbt docs serve
+dbt docs serve --port 18081
 ```

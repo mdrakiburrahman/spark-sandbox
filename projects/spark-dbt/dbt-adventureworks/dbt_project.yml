@@ -28,6 +28,8 @@ clean-targets: # directories to be removed by `dbt clean`
 
 models:
   adventureworks:
+    +materialized: table
+    +file_format: delta
     marts:
       +materialized: table
-      +schema: marts
+      +file_format: delta
