@@ -1,0 +1,40 @@
+logging:
+  type: base
+  level: log_crit
+  file-path: /workspaces/spark-sandbox/projects/spark-scala/.logs/blobfuse-onelake-logs-${ONELAKE_LAKEHOUSE}.log
+
+components:
+  - libfuse
+  - file_cache
+  - attr_cache
+  - azstorage
+
+libfuse:
+  direct-io: false
+  negative-entry-expiration-sec: 0
+  allow-other: true
+  uid: 1000
+  gid: 1000
+
+file_cache:
+  path: /tmp/blobfuse-cache/${ONELAKE_LAKEHOUSE}
+  timeout-sec: 3600
+  max-size-mb: 4096
+  allow-non-empty-temp: true
+  cleanup-on-start: false
+
+attr_cache:
+  entry_timeout: 240
+  negative_timeout: 120
+  no-symlinks: true
+  timeout-sec: 240
+  cleanup-on-start: true
+
+azstorage:
+  type: adls
+  account-name: onelake
+  container: 58374f03-58b3-48f8-ae96-758f86aed72d
+  subdirectory: ${ONELAKE_SUBDIRECTORY}
+  max-concurrency: 200
+  endpoint: onelake.dfs.fabric.microsoft.com
+  mode: azcli

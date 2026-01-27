@@ -31,6 +31,15 @@ spark:
     rocksDb:
       compactOnCommit: true
 
+# Delta Mount Driver configuration
+#
+DeltaMountDriver:
+  Mounts:
+    - Database: dbt_adventureworks
+      RootPath: "file://{GIT_ROOT}/projects/spark-scala/onelake/dbt_adventureworks/Tables"
+    - Database: dbt_jaffle_shop
+      RootPath: "file://{GIT_ROOT}/projects/spark-scala/onelake/dbt_jaffle_shop/Tables"
+
 # Local secret store
 #
 secret:

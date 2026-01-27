@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db onelake spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
           },
           {
@@ -129,10 +129,11 @@
       },
       "options": {
         "cwd": "projects/spark-scala",
+        "JOB": "all",
         "commands": [
           {
-            "command": ".scripts/run-spark-jobs.sh",
-            "forwardAllArgs": true
+            "command": ".scripts/run-spark-jobs.sh {args.JOB}",
+            "forwardAllArgs": false
           }
         ]
       }
@@ -171,6 +172,34 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [".scripts/get-azcopy.sh ~/.azure/bin"],
+        "parallel": false
+      }
+    },
+    "refresh-az-login": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/refresh-az-login.sh"],
+        "parallel": false
+      }
+    },
+    "mount-onelake": {
+      "dependsOn": ["refresh-az-login"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/mount-onelake.sh mount"],
+        "parallel": false
+      }
+    },
+    "unmount-onelake": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/mount-onelake.sh unmount"],
         "parallel": false
       }
     }
