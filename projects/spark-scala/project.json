@@ -129,10 +129,11 @@
       },
       "options": {
         "cwd": "projects/spark-scala",
+        "JOB": "all",
         "commands": [
           {
-            "command": ".scripts/run-spark-jobs.sh",
-            "forwardAllArgs": true
+            "command": ".scripts/run-spark-jobs.sh {args.JOB}",
+            "forwardAllArgs": false
           }
         ]
       }

@@ -25,6 +25,60 @@
 #
 set -e
 
+# ┌───────────────┐
+# │ Job Alias Map │
+# └───────────────┘
+#
+# Maps short aliases to fully qualified Spark class names.
+# Usage: nx run spark-scala:run --JOB=<alias>
+#
+DEMO_PLUGIN_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration"
+DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
+ALL_JOBS="all"
+
+declare -A JOB_ALIASES=(
+    ["demo-plugin"]="$DEMO_PLUGIN_CLASS"
+    ["demo-etl"]="$DEMO_ETL_CLASS"
+)
+
+print_available_jobs() {
+    echo
+    echo "Available job aliases:"
+    echo "───────────────────────────────────────────────────────────────────────────────"
+    printf "  %-20s %s\n" "ALIAS" "CLASS"
+    echo "───────────────────────────────────────────────────────────────────────────────"
+    printf "  %-20s %s\n" "all" "(runs all jobs in sequence)"
+    for alias in "${!JOB_ALIASES[@]}"; do
+        printf "  %-20s %s\n" "$alias" "${JOB_ALIASES[$alias]}"
+    done
+    echo "───────────────────────────────────────────────────────────────────────────────"
+    echo
+    echo "Usage: nx run spark-scala:run --JOB=<alias>"
+    echo
+}
+
+# Validate JOB argument
+JOB_ALIAS="${1:-}"
+
+if [[ -z "$JOB_ALIAS" ]]; then
+    echo "ERROR: No job alias provided."
+    print_available_jobs
+    exit 1
+fi
+
+if [[ "$JOB_ALIAS" != "$ALL_JOBS" && -z "${JOB_ALIASES[$JOB_ALIAS]:-}" ]]; then
+    echo "ERROR: Unknown job alias '$JOB_ALIAS'"
+    print_available_jobs
+    exit 1
+fi
+
+if [[ "$JOB_ALIAS" == "$ALL_JOBS" ]]; then
+    echo "=== Running ALL jobs in sequence ==="
+else
+    SPARK_CLASS="${JOB_ALIASES[$JOB_ALIAS]}"
+    echo "=== Running job: $JOB_ALIAS -> $SPARK_CLASS ==="
+fi
+
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 export SPARK_SCALA_DIR="${GIT_ROOT}/projects/spark-scala"
 export SCRIPTS_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
@@ -162,50 +216,85 @@ export spark_demo_jar="$(find $SCRIPTS_DIR/../spark-demo/target/scala-2.12/ -nam
 export DEMO_DEVCONTAINER_CONFIG="${SPARK_SCALA_DIR}/spark-demo/src/main/resources/config/config-dev-devcontainer.yaml"
 export demo_spark_resource_config=$(get_spark_configs "$DEMO_DEVCONTAINER_CONFIG")
 
-# ---------------------
-# Spark Concepts | Demo
-# ---------------------
-
-# 1. Plugins
-spark_plugin_configs=()
-spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin")
-
-/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
-
-# 2. OpenLineage
+# ┌─────────────────┐
+# │ Job Definitions │
+# └─────────────────┘
 #
-# >>> https://openlineage.io/docs/integrations/spark/configuration/spark_conf/
-# >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
-# >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
+# Each job defines its own spark configs and runs based on the selected alias.
 #
-# To send to file directly:
-#
-# ```bash
-# openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-# openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
-# ```
-#
-# To send to HTTP endpoint (e.g., OpenLineage backend):
-#
-# ```bash
-# openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-# openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
-# ```
-#
-export DRIVER_PLUGIN_PORT=19000
-export EXECUTOR_PLUGIN_PORT=19001
 
-openlineage_configs=()
+run_demo_plugin() {
+    echo "=== Running: demo-plugin (DemoPluginExploration) ==="
+    
+    local spark_class="$DEMO_PLUGIN_CLASS"
+    
+    spark_plugin_configs=()
+    spark_plugin_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin")
 
-openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
-openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${spark_plugin_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
 
-openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
-openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
-openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
-openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
-openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
-openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+run_demo_etl() {
+    echo "=== Running: demo-etl (DemoEtl with OpenLineage) ==="
+    
+    local spark_class="$DEMO_ETL_CLASS"
+    
+    # OpenLineage configuration
+    # >>> https://openlineage.io/docs/integrations/spark/configuration/spark_conf/
+    # >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
+    # >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
+    #
+    # To send to file directly:
+    #
+    # ```bash
+    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
+    # openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
+    # ```
+    #
+    # To send to HTTP endpoint (e.g., OpenLineage backend):
+    #
+    # ```bash
+    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+    # openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+    # ```
+    #
+    export DRIVER_PLUGIN_PORT=19000
+    export EXECUTOR_PLUGIN_PORT=19001
 
-/opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+    openlineage_configs=()
+
+    openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
+    openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
+    openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+
+    openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
+    openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
+    openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
+    openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
+    openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
+    openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
+# ┌─────────────┐
+# │ Run the Job │
+# └─────────────┘
+#
+case "$JOB_ALIAS" in
+    "all")
+        run_demo_plugin
+        run_demo_etl
+        ;;
+    "demo-plugin")
+        run_demo_plugin
+        ;;
+    "demo-etl")
+        run_demo_etl
+        ;;
+    *)
+        echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"
+        print_available_jobs
+        exit 1
+        ;;
+esac
