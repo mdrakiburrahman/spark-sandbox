@@ -173,6 +173,34 @@
         "commands": [".scripts/get-azcopy.sh ~/.azure/bin"],
         "parallel": false
       }
+    },
+    "refresh-az-login": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/refresh-az-login.sh"],
+        "parallel": false
+      }
+    },
+    "mount-onelake": {
+      "dependsOn": ["refresh-az-login"],
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/mount-onelake.sh mount"],
+        "parallel": false
+      }
+    },
+    "unmount-onelake": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/mount-onelake.sh unmount"],
+        "parallel": false
+      }
     }
   }
 }
