@@ -8,7 +8,7 @@ sources:
       # Date
       - name: date
         description: "Date dimension seed data"
-      
+
       # Person
       - name: address
         description: "Address seed data"
@@ -18,7 +18,7 @@ sources:
         description: "Person seed data"
       - name: stateprovince
         description: "State/Province seed data"
-      
+
       # Production
       - name: product
         description: "Product seed data"
@@ -26,7 +26,7 @@ sources:
         description: "Product category seed data"
       - name: productsubcategory
         description: "Product subcategory seed data"
-      
+
       # Sales
       - name: creditcard
         description: "Credit card seed data"

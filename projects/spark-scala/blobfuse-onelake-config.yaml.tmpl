@@ -15,6 +15,7 @@ libfuse:
   allow-other: true
   uid: 1000
   gid: 1000
+  umask: 022
 
 file_cache:
   path: /tmp/blobfuse-cache/${ONELAKE_LAKEHOUSE}

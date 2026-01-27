@@ -4,7 +4,7 @@ jaffle_shop:
     fabric-dev:
       authentication: CLI
       method: livy
-      livy_mode: fabric
+      livy_mode: local
       session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
       connect_retries: 25
       connect_timeout: 10

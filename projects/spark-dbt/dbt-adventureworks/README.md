@@ -61,7 +61,7 @@ dbt deps
 # 22:47:52    Updated version available: 1.3.3
 ```
 
-Seed database:
+Seed database (do not run in `local` mode since we mount from OneLake):
 
 ```bash
 dbt seed
