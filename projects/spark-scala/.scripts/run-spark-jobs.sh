@@ -34,11 +34,13 @@ set -e
 #
 DEMO_PLUGIN_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration"
 DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
+DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
     ["demo-plugin"]="$DEMO_PLUGIN_CLASS"
     ["demo-etl"]="$DEMO_ETL_CLASS"
+    ["delta-mount"]="$DELTA_MOUNT_CLASS"
 )
 
 print_available_jobs() {
@@ -277,6 +279,14 @@ run_demo_etl() {
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
 
+run_delta_mount() {
+    echo "=== Running: delta-mount (DeltaMountDriver) ==="
+    
+    local spark_class="$DELTA_MOUNT_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
 # ┌─────────────┐
 # │ Run the Job │
 # └─────────────┘
@@ -285,12 +295,16 @@ case "$JOB_ALIAS" in
     "all")
         run_demo_plugin
         run_demo_etl
+        run_delta_mount
         ;;
     "demo-plugin")
         run_demo_plugin
         ;;
     "demo-etl")
         run_demo_etl
+        ;;
+    "delta-mount")
+        run_delta_mount
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"

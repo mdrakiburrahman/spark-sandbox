@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db onelake spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
           },
           {
