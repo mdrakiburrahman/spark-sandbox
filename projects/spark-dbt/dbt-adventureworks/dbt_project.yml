@@ -26,6 +26,12 @@ clean-targets: # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+seeds:
+  adventureworks:
+    +schema: dbt_adventureworks_seed
+    +docs:
+      show: false
+
 models:
   adventureworks:
     +materialized: table

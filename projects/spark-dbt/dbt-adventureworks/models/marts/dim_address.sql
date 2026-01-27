@@ -1,16 +1,16 @@
 with stg_address as (
     select *
-    from {{ ref('address') }}
+    from {{ source('adventureworks_seed', 'address') }}
 ),
 
 stg_stateprovince as (
     select *
-    from {{ ref('stateprovince') }}
+    from {{ source('adventureworks_seed', 'stateprovince') }}
 ),
 
 stg_countryregion as (
     select *
-    from {{ ref('countryregion') }}
+    from {{ source('adventureworks_seed', 'countryregion') }}
 )
 
 select

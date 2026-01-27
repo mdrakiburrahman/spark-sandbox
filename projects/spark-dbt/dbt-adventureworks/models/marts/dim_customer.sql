@@ -3,21 +3,21 @@ with stg_customer as (
         customerid,
         personid,
         storeid
-    from {{ ref('customer') }}
+    from {{ source('adventureworks_seed', 'customer') }}
 ),
 
 stg_person as (
     select
         businessentityid,
         concat(coalesce(firstname, ''), ' ', coalesce(middlename, ''), ' ', coalesce(lastname, '')) as fullname
-    from {{ ref('person') }}
+    from {{ source('adventureworks_seed', 'person') }}
 ),
 
 stg_store as (
     select
         businessentityid as storebusinessentityid,
         storename
-    from {{ ref('store') }}
+    from {{ source('adventureworks_seed', 'store') }}
 )
 
 select

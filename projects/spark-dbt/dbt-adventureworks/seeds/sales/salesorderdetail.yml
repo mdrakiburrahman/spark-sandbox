@@ -4,7 +4,7 @@ seeds:
   - name: salesorderdetail
     description: contains sales data between 2011-01-01 to 2011-12-31.
     config:
-      schema: dbt_adventureworks
+      schema: dbt_adventureworks_seed
       column_types:
         salesorderid: integer
         orderqty: short
