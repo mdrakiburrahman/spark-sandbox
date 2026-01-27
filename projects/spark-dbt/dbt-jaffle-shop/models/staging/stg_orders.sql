@@ -1,10 +1,9 @@
 with source as (
 
     {#-
-    Normally we would select from the table here, but we are using seeds to load
-    our data in this project
+    Selecting from the seed database where raw data is loaded
     #}
-    select * from {{ ref('raw_orders') }}
+    select * from {{ source('jaffle_shop_seed', 'raw_orders') }}
 
 ),
 

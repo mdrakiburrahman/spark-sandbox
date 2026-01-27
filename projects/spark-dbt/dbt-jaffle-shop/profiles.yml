@@ -4,15 +4,15 @@ jaffle_shop:
     fabric-dev:
       authentication: CLI
       method: livy
-      livy_mode: local
+      livy_mode: fabric
       session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
       connect_retries: 25
       connect_timeout: 10
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 58374f03-58b3-48f8-ae96-758f86aed72d
-      lakehouseid: dbeace9c-243b-4615-99fb-0f9497a2006a
-      lakehouse: dbt_jaffle_shop
-      schema: dbt_jaffle_shop
+      lakehouseid: 9dc2752a-5144-4016-8eac-b6e989149700
+      lakehouse: dbt_jaffle_shop_dwh
+      schema: dbt_jaffle_shop_dwh
       threads: 12
       type: fabricspark
       retry_all: true
