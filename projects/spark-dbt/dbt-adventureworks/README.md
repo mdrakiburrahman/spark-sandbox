@@ -61,10 +61,12 @@ dbt deps
 # 22:47:52    Updated version available: 1.3.3
 ```
 
-Seed database (do not run in `local` mode since we mount from OneLake):
+Seed database.
+
+> Do not run in `local` mode since we mount from OneLake:
 
 ```bash
-dbt seed
+[[ $(yq e '.adventureworks.outputs.fabric-dev.livy_mode' profiles.yml) == "fabric" ]] && dbt seed || echo "Skipping dbt seed (livy_mode = local)"
 ```
 
 ![Source Schema](docs/img/source-schema.png)

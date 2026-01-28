@@ -50,7 +50,7 @@ Load the CSVs with the demo data set. This materializes the CSVs as tables in yo
 > Do NOT run in `local` mode since we mount from OneLake
 
 ```bash
-dbt seed
+[[ $(yq e '.adventureworks.outputs.fabric-dev.livy_mode' profiles.yml) == "fabric" ]] && dbt seed || echo "Skipping dbt seed (livy_mode = local)"
 ```
 
 7. Run the models:
