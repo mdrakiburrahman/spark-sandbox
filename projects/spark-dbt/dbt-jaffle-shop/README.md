@@ -47,6 +47,8 @@ dbt debug
 
 Load the CSVs with the demo data set. This materializes the CSVs as tables in your target schema. Note that a typical dbt project **does not require this step** since dbt assumes your raw data is already in your warehouse.
 
+> Do NOT run in `local` mode since we mount from OneLake
+
 ```bash
 dbt seed
 ```
