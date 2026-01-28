@@ -5,7 +5,7 @@ logging:
 
 components:
   - libfuse
-  - file_cache
+  - stream
   - attr_cache
   - azstorage
 
@@ -15,14 +15,11 @@ libfuse:
   allow-other: true
   uid: 1000
   gid: 1000
-  umask: 022
 
-file_cache:
-  path: /tmp/blobfuse-cache/${ONELAKE_LAKEHOUSE}
-  timeout-sec: 3600
-  max-size-mb: 4096
-  allow-non-empty-temp: true
-  cleanup-on-start: false
+stream:
+  block-size-mb: 128
+  buffer-size-mb: 512
+  max-buffers: 128
 
 attr_cache:
   entry_timeout: 240

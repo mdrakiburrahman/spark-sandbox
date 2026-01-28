@@ -73,7 +73,7 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy"],
+      "dependsOn": ["clean-livy", "unmount-onelake"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -200,6 +200,23 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [".scripts/mount-onelake.sh unmount"],
+        "parallel": false
+      }
+    },
+    "init": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["clean"],
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {}
+      },
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          "npx nx run spark-scala:mount-onelake",
+          "npx nx run spark-scala:run --JOB='delta-mount'"
+        ],
         "parallel": false
       }
     }
