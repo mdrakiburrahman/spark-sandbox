@@ -51,6 +51,12 @@ Then browse each `dbt-...` project and follow the READMEs:
 - [dbt-jaffle-shop](dbt-jaffle-shop/README.md) to test the simple Jaffle Shop simple dataset.
 - [dbt-adventureworks](dbt-adventureworks/README.md) to test the Adventureworks Kimball STAR Schema dataset.
 
+## 🚀 Using nx
+
+```bash
+npx nx run spark-dbt:run --PROJECT="dbt-adventureworks" --skip-nx-cache --verbose
+```
+
 ## 🤖 Using MCP
 
 The following tutorials was used to setup an MCP server:
