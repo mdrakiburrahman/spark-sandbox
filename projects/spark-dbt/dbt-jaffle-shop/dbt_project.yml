@@ -22,6 +22,13 @@ clean-targets:
 
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
+seeds:
+  jaffle_shop:
+    +database: dbt_jaffle_shop_seed
+    +schema: dbt_jaffle_shop_seed
+    +docs:
+      show: false
+
 models:
   jaffle_shop:
     materialized: table

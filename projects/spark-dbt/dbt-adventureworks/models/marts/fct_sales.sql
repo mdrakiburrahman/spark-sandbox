@@ -6,7 +6,7 @@ with stg_salesorderheader as (
         shiptoaddressid,
         status as order_status,
         cast(orderdate as date) as orderdate
-    from {{ ref('salesorderheader') }}
+    from {{ source('adventureworks_seed', 'salesorderheader') }}
 ),
 
 stg_salesorderdetail as (
@@ -17,7 +17,7 @@ stg_salesorderdetail as (
         orderqty,
         unitprice,
         unitprice * orderqty as revenue
-    from {{ ref('salesorderdetail') }}
+    from {{ source('adventureworks_seed', 'salesorderdetail') }}
 )
 
 select

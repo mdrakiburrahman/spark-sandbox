@@ -73,7 +73,7 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy"],
+      "dependsOn": ["clean-livy", "unmount-onelake"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db onelake spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
           },
           {
@@ -200,6 +200,23 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [".scripts/mount-onelake.sh unmount"],
+        "parallel": false
+      }
+    },
+    "init": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["clean"],
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {}
+      },
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          "npx nx run spark-scala:mount-onelake",
+          "npx nx run spark-scala:run --JOB='delta-mount'"
+        ],
         "parallel": false
       }
     }

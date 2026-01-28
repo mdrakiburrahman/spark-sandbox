@@ -3,7 +3,7 @@ version: 2
 seeds:
   - name: productcategory
     config:
-      schema: dbt_adventureworks
+      schema: dbt_adventureworks_seed
       column_types:
         productcategoryid: integer
         name: string

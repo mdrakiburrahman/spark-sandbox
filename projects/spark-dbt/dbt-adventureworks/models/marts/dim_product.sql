@@ -1,16 +1,16 @@
 with stg_product as (
     select *
-    from {{ ref('product') }}
+    from {{ source('adventureworks_seed', 'product') }}
 ),
 
 stg_product_subcategory as (
     select *
-    from {{ ref('productsubcategory') }}
+    from {{ source('adventureworks_seed', 'productsubcategory') }}
 ),
 
 stg_product_category as (
     select *
-    from {{ ref('productcategory') }}
+    from {{ source('adventureworks_seed', 'productcategory') }}
 )
 
 select

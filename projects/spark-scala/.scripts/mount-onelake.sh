@@ -4,6 +4,9 @@
 #       Mount/Unmount OneLake Blob Storage containers using Blobfuse2.
 #       Reads lakehouse mappings from lakehouse-mapping.csv and mounts each.
 #
+#       The --read-only flag is REQUIRED to prevent accidental writes/deletes to OneLake.
+#       File permissions are set via libfuse config to allow read access for all users.
+#
 #       Usage: ./mount-onelake.sh [mount|unmount]
 #
 # ---------------------------------------------------------------------------------------
