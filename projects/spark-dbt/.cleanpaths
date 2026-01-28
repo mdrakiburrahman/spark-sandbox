@@ -12,3 +12,6 @@ htmlcov
 **/*.pyc
 **/*.pyo
 **/*.pyd
+dbt-*/dbt_packages
+dbt-*/target
+dbt-*/logs
