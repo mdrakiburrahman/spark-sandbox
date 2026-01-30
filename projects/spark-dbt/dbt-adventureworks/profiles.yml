@@ -2,10 +2,10 @@ adventureworks:
   target: fabric-dev
   outputs:
     fabric-dev:
-      authentication: CLI
+      authentication: fabric_notebook
       method: livy
       livy_mode: fabric
-      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      session_id_file: /tmp/dbt-fabric-bundle/projects/spark-dbt/livy-session-id.txt
       connect_retries: 25
       connect_timeout: 10
       endpoint: https://api.fabric.microsoft.com/v1
