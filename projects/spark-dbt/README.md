@@ -54,7 +54,11 @@ Then browse each `dbt-...` project and follow the READMEs:
 ## 🚀 Using nx
 
 ```bash
-npx nx run spark-dbt:run --PROJECT="dbt-adventureworks" --skip-nx-cache --verbose
+# Initiate dbt and Spark
+npx nx run spark-dbt:init --skip-nx-cache --verbose
+
+# Run model
+npx nx run spark-dbt:run --PROJECT="dbt-adventureworks"
 ```
 
 ## 🤖 Using MCP

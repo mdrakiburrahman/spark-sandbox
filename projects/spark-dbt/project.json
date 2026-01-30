@@ -32,7 +32,7 @@
         "parallel": false
       }
     },
-    "run": {
+    "init": {
       "executor": "nx:run-commands",
       "dependsOn": [
         {
@@ -41,6 +41,18 @@
         },
         "install"
       ],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [
+          {
+            "command": "echo 'Initialization completed.'",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-dbt",
         "PROJECT": "dbt-jaffle-shop",
