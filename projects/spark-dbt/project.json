@@ -63,6 +63,13 @@
           }
         ]
       }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [".scripts/package-fabric.sh"]
+      }
     }
   }
 }
