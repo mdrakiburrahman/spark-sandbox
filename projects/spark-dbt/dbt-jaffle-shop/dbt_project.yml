@@ -33,5 +33,6 @@ models:
   jaffle_shop:
     materialized: table
     file_format: delta
+    location_root: "{{ 'abfss://' ~ target.workspaceid ~ '@msit-onelake.dfs.fabric.microsoft.com/' ~ target.lakehouseid ~ '/Files/onelake/warehouse/dbt_jaffle_shop_dwh.db' if target.name in ['local-fabric', 'fabric-fabric'] else none }}"
     staging:
       materialized: view

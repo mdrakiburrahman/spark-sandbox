@@ -37,6 +37,7 @@ source .venv/bin/activate
 cd "${DBT_PROJECT}"
 
 export DBT_PROFILES_DIR=$(pwd)
+export DBT_DEBUG="${DBT_DEBUG:-false}"
 
 echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}'"
 
