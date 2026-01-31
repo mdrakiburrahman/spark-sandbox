@@ -12,3 +12,7 @@ htmlcov
 **/*.pyc
 **/*.pyo
 **/*.pyd
+dbt-*/dbt_packages
+dbt-*/target
+dbt-*/logs
+livy-session-id.txt

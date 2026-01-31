@@ -1,10 +1,27 @@
 jaffle_shop:
-  target: fabric-dev
+  target: local-local
   outputs:
-    fabric-dev:
-      authentication: CLI
+    # Local dbt client + Local spark server (default for development)
+    local-local:
+      authentication: cli
       method: livy
       livy_mode: local
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      lakehouse: dbt_jaffle_shop_dwh
+      schema: dbt_jaffle_shop_dwh
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-jaffle-shop
+
+    # Local dbt client + Fabric spark server
+    local-fabric:
+      authentication: cli
+      method: livy
+      livy_mode: fabric
       session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
       connect_retries: 25
       connect_timeout: 10
@@ -18,3 +35,24 @@ jaffle_shop:
       retry_all: true
       spark_config:
         name: dbt-jaffle-shop
+
+    # Fabric dbt client + Fabric spark server
+    fabric-fabric:
+      authentication: fabric_notebook
+      method: livy
+      livy_mode: fabric
+      session_id_file: /tmp/dbt-fabric-bundle/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 50
+      connect_timeout: 10
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 58374f03-58b3-48f8-ae96-758f86aed72d
+      lakehouseid: 9dc2752a-5144-4016-8eac-b6e989149700
+      lakehouse: dbt_jaffle_shop_dwh
+      schema: dbt_jaffle_shop_dwh
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-jaffle-shop
+        conf:
+          spark.fabric.environmentDetails: '{"id": "9e56dfc5-82c2-4be2-9527-7910df7de70d"}'

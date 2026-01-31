@@ -31,6 +31,46 @@
         "commands": ["hatch env create"],
         "parallel": false
       }
+    },
+    "init": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "init",
+          "projects": ["spark-scala"]
+        },
+        "install"
+      ],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [
+          {
+            "command": "echo 'Initialization completed.'",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "PROJECT": "dbt-jaffle-shop",
+        "TARGET": "local-local",
+        "commands": [
+          {
+            "command": ".scripts/run-dbt-local.sh {args.PROJECT} {args.TARGET}",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "package": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [".scripts/package-fabric.sh"]
+      }
     }
   }
 }
