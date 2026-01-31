@@ -56,9 +56,10 @@
       "options": {
         "cwd": "projects/spark-dbt",
         "PROJECT": "dbt-jaffle-shop",
+        "TARGET": "local-local",
         "commands": [
           {
-            "command": ".scripts/run-dbt.sh {args.PROJECT}",
+            "command": ".scripts/run-dbt-local.sh {args.PROJECT} {args.TARGET}",
             "forwardAllArgs": false
           }
         ]
