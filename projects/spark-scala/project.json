@@ -223,15 +223,10 @@
     "metastore-up": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["get-postgres-driver"],
+      "dependsOn": ["metastore-down"],
       "options": {
         "cwd": "projects/spark-scala",
-        "commands": [
-          "docker compose -f ../../docker-compose.yml up -d",
-          "until docker compose -f ../../docker-compose.yml exec -T postgres pg_isready -U hive; do sleep 1; done",
-          ".scripts/init-metastore-schema.sh",
-          ".scripts/configure-metastore.sh"
-        ],
+        "commands": [".scripts/init-metastore.sh"],
         "parallel": false
       }
     },
@@ -243,15 +238,6 @@
         "commands": [
           "docker compose -f ../../docker-compose.yml down --volumes --remove-orphans"
         ]
-      }
-    },
-    "get-postgres-driver": {
-      "cache": false,
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "projects/spark-scala",
-        "commands": [".scripts/get-postgres-driver.sh"],
-        "parallel": false
       }
     }
   }
