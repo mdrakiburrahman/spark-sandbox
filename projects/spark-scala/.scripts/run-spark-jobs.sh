@@ -114,6 +114,7 @@ mkdir -p ${HEAP_DUMP_DIR}
 
 if ! command -v yq &>/dev/null; then
     echo "yq is not installed for YAML parsing, installing"
+    sudo rm -f /etc/apt/sources.list.d/yarn.list 2>/dev/null
     sudo add-apt-repository ppa:rmescandon/yq -y
     sudo apt update
     sudo apt install yq -y

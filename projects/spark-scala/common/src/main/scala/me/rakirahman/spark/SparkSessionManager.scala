@@ -111,8 +111,9 @@ class SparkSessionManager(
       //
       .config("spark.sql.streaming.stateStore.providerClass", s"${envConfig.StateStoreProviderClass}")
 
-    // Configure Hive MetaStore with Derby, if path set.
-    // Do not use for tests due to single-session lock:
+    // Configure Hive MetaStore with PostgreSQL, if path set.
+    // PostgreSQL supports concurrent sessions unlike Derby.
+    // Do not use for tests to avoid external dependencies:
     //
     // >>> https://issues.apache.org/jira/browse/SPARK-4758
     //
@@ -121,7 +122,6 @@ class SparkSessionManager(
     ) {
       builder = builder
         .config("spark.sql.catalogImplementation", "hive")
-        .config("spark.driver.extraJavaOptions", s"-Dderby.system.home='${envConfig.MetastoreRootPath}'")
     } else {
       builder = builder.config("spark.sql.catalogImplementation", "in-memory")
     }

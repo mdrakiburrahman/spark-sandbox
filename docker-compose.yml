@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+      POSTGRES_DB: metastore
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "hive"]
+      interval: 5s
+      retries: 5
+    restart: always
+    ports:
+      - "5432:5432"
