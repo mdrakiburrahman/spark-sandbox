@@ -7,8 +7,8 @@
 A metastore is what you interact when you talk to a Database. It stores schema information.
 
 Spark by default comes with a transient in-memory metastore that's gone as soon as you turn off that Spark Session/Scala Job. This makes it difficult to chain
-different Spark Sessions together for local development of Fabric Jobs that run off one another's output. To support concurrent Spark Sessions, we use a [PostgreSQL](https://www.postgresql.org/)-backed Hive Metastore
-running in Docker, which supports multiple concurrent connections.
+different Spark Sessions together for local development of Fabric Jobs that run off one another's output. To support concurrent Spark Sessions, we use a [MSSQL Server](https://www.microsoft.com/en-us/sql-server/)-backed Hive Metastore
+running in Docker (2025-latest), which supports multiple concurrent connections.
 
 > It's recommended to use the in-memory Metastore for tests, [see here](https://issues.apache.org/jira/browse/SPARK-4758)
 > So we keep this off for tests.

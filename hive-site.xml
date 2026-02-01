@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
-  <!-- PostgreSQL metastore connection -->
+  <!-- MSSQL Server metastore connection -->
   <property>
     <name>javax.jdo.option.ConnectionDriverName</name>
-    <value>org.postgresql.Driver</value>
+    <value>com.microsoft.sqlserver.jdbc.SQLServerDriver</value>
   </property>
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:postgresql://host.docker.internal:5432/metastore</value>
+    <value>jdbc:sqlserver://host.docker.internal:1433;databaseName=metastore;encrypt=false;trustServerCertificate=true</value>
   </property>
   <property>
     <name>javax.jdo.option.ConnectionUserName</name>
-    <value>hive</value>
+    <value>sa</value>
   </property>
   <property>
     <name>javax.jdo.option.ConnectionPassword</name>
-    <value>hive</value>
+    <value>Hive@Pass123</value>
   </property>
   <!-- Default warehouse location -->
   <property>

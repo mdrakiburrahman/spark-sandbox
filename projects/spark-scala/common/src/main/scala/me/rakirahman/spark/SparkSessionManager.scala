@@ -111,8 +111,8 @@ class SparkSessionManager(
       //
       .config("spark.sql.streaming.stateStore.providerClass", s"${envConfig.StateStoreProviderClass}")
 
-    // Configure Hive MetaStore with PostgreSQL, if path set.
-    // PostgreSQL supports concurrent sessions unlike Derby.
+    // Configure Hive MetaStore with MSSQL Server, if path set.
+    // MSSQL Server supports concurrent sessions unlike Derby.
     // Do not use for tests to avoid external dependencies:
     //
     // >>> https://issues.apache.org/jira/browse/SPARK-4758
