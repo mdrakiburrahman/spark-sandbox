@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports derby.log test.log *.log .logs .temp metastore_db spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
           },
           {
@@ -122,7 +122,7 @@
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["build-jar"],
+      "dependsOn": ["build-jar", "metastore-up"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -206,7 +206,7 @@
     "init": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["clean"],
+      "dependsOn": ["clean", "metastore-up"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -218,6 +218,26 @@
           "npx nx run spark-scala:run --JOB='delta-mount'"
         ],
         "parallel": false
+      }
+    },
+    "metastore-up": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["metastore-down"],
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/init-metastore.sh"],
+        "parallel": false
+      }
+    },
+    "metastore-down": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [
+          "docker compose -f ../../docker-compose.yml down --volumes --remove-orphans"
+        ]
       }
     }
   }

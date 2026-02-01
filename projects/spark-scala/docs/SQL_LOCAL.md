@@ -7,14 +7,12 @@
 A metastore is what you interact when you talk to a Database. It stores schema information.
 
 Spark by default comes with a transient in-memory metastore that's gone as soon as you turn off that Spark Session/Scala Job. This makes it difficult to chain
-different Spark Sessions together for local development of Fabric Jobs that run off one another's output. Luckily, Spark comes built in with an [Apache Derby](https://db.apache.org/derby/)-backed Hive Metastore,
-the caveat is, only one Spark Session (including `spark-shell` or `spark-sql`) may use it - because
-Derby only has single user lock guarantee. This is fine for our use case, since only a single developer uses the Devcontainer.
+different Spark Sessions together for local development of Fabric Jobs that run off one another's output. To support concurrent Spark Sessions, we use a [MSSQL Server](https://www.microsoft.com/en-us/sql-server/)-backed Hive Metastore
+running in Docker (2025-latest), which supports multiple concurrent connections.
 
 > It's recommended to use the in-memory Metastore for tests, [see here](https://issues.apache.org/jira/browse/SPARK-4758)
 > So we keep this off for tests.
 
-If we want concurrent Spark Session support, a good option is [SQL on Linux to back the Hive Metastore](https://pivotalbi.com/the-hive-metastore-and-local-development/), we can always do this when needed but installing SQL Linux on the Devcontainer.
 
 ## SQL CLI
 
