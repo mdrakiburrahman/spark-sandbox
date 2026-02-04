@@ -1,7 +1,6 @@
 package me.rakirahman.config
 
-/** Configuration values used for Delta lake, contains both internal and
-  * external configuration values.
+/** Configuration values used for Delta lake, contains both internal and external configuration values.
   */
 // @formatter:off
 object DeltaLakeConfiguration {

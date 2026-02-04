@@ -20,14 +20,14 @@ object DemoEtl extends App with Logging {
   Array("customers", "orders", "products", "sales").foreach { table =>
     logInfo(s"Creating table: ${table}")
     spark.read
-         .format("csv")
-         .option("header", "true")
-         .option("inferSchema", "true")
-         .load(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
-         .write
-         .format("delta")
-         .mode("append")
-         .saveAsTable(s"${dbName}.${table}")
+      .format("csv")
+      .option("header", "true")
+      .option("inferSchema", "true")
+      .load(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
+      .write
+      .format("delta")
+      .mode("append")
+      .saveAsTable(s"${dbName}.${table}")
   }
 
   Seq(
