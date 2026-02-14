@@ -25,9 +25,16 @@
    ```bash
    cd ~/
 
-   git config --global user.name "Raki Rahman"
-   git config --global user.email "mdrakiburrahman@gmail.com"
+   read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
+   read -p "Enter your Microsoft email (e.g. 'your-msft-alias@blah.com'): " user_email
+   read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
+    
    git clone https://github.com/mdrakiburrahman/spark-sandbox.git
+
+   git config --global user.name "$user_name"
+   git config --global user.email "$user_email"
+   git pull origin
+   git switch "$branch_name"
 
    cd spark-sandbox/
    code .
