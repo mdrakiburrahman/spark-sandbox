@@ -24,4 +24,24 @@ sudo chmod 666 /var/run/docker.sock
 docker container ls
 docker ps -q | xargs -r docker kill
 
+# Remove Windows paths from PATH to avoid using Windows az CLI
+# This allows us to mount ~/.azure from WSL.
+#
+export PATH=$(echo "$PATH" | tr ':' '\n' | grep -v "/mnt/c" | tr '\n' ':' | sed 's/:$//')
+AZ_PATH=$(which az 2>/dev/null)
+if [[ -z "$AZ_PATH" || "$AZ_PATH" == *"/mnt/c"* ]]; then
+  echo "Native Linux Azure CLI not found, installing..."
+  curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+  export PATH="$HOME/bin:$PATH"
+  [[ -f "$HOME/.bashrc" ]] && source "$HOME/.bashrc"
+else
+  echo "Native Linux Azure CLI already installed at: $AZ_PATH"
+fi
+
+az account get-access-token --query "expiresOn" -o tsv >/dev/null 2>&1
+if [[ $? -ne 0 ]]; then
+    echo "az is not logged in, logging in..."
+    az login >/dev/null
+fi
+
 echo "Docker: $(docker --version)"
