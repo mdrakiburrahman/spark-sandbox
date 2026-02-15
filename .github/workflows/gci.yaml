@@ -27,9 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: rakirahman.azurecr.io/devcontainer/spark:c215302f66dd429d9beac95c617232501f019835328f568f03e4445d049b0d6f
-      credentials:
-        username: ${{ secrets.ACR_USERNAME }}
-        password: ${{ secrets.ACR_PASSWORD }}
       options: >-
         --cap-add=SYS_ADMIN
         --device=/dev/fuse
