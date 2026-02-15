@@ -1,16 +1,27 @@
 {
     "name": "devcontainer",
-    "image": "rakirahman.azurecr.io/devcontainer/spark:898e5a03283267a0c5d470c599bd01676ef19d9c4b418146d26a517b84438d33",
+    "image": "rakirahman.azurecr.io/devcontainer/spark:c56c850e1ba7e45aa7e1fa08a4cf478d05c3bd9f5b3ea5e5b1a5ca3c6c01c2e0",
     "remoteUser": "vscode",
     "containerUser": "vscode",
     "runArgs": [
         "--cap-add=SYS_ADMIN",
         "--device=/dev/fuse",
         "--security-opt=apparmor:unconfined",
-        "--add-host=host.docker.internal:host-gateway"
+        "--add-host=host.docker.internal:host-gateway",
+        "--pids-limit=-1"
     ],
     "mounts": [
         "type=bind,source=/dev/fuse,target=/dev/fuse",
         "type=bind,source=${localEnv:HOME}/.azure,target=/home/vscode/.azure"
-    ]
+    ],
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.gpuAcceleration": "off",
+                "terminal.integrated.enablePersistentSessions": false,
+                "terminal.integrated.scrollback": 5000,
+                "remote.autoForwardPorts": false
+            }
+        }
+    }
 }

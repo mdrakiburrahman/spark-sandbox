@@ -36,9 +36,9 @@ spark:
 DeltaMountDriver:
   Mounts:
     - Database: dbt_adventureworks_seed
-      RootPath: "file://{GIT_ROOT}/projects/spark-scala/onelake/dbt_adventureworks_seed/Tables"
+      RootPath: "file:///tmp/.mnt/onelake/dbt_adventureworks_seed"
     - Database: dbt_jaffle_shop_seed
-      RootPath: "file://{GIT_ROOT}/projects/spark-scala/onelake/dbt_jaffle_shop_seed/Tables"
+      RootPath: "file:///tmp/.mnt/onelake/dbt_jaffle_shop_seed"
 
 # Local secret store
 #

@@ -1,0 +1,14 @@
+{
+  "name": "spark-devcontainer",
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "cache": true,
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "jest.config.js"
+      }
+    }
+  }
+}

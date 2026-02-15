@@ -73,7 +73,7 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy", "unmount-onelake"],
+      "dependsOn": ["clean-livy", "unmount-onelake", "imds-router-down"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse* ../../warehouse",
             "forwardAllArgs": false
           },
           {
@@ -140,15 +140,22 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": ["test-scala"],
+      "dependsOn": ["test-scala", "test-jest"],
       "options": {
         "commands": ["echo 'All tests completed.'"]
+      }
+    },
+    "test-jest": {
+      "cache": true,
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "projects/spark-scala/jest.config.js"
       }
     },
     "test-scala": {
       "cache": true,
       "executor": "nx:run-commands",
-      "dependsOn": [],
+      "dependsOn": ["clean"],
       "options": {
         "cwd": "projects/spark-scala",
         "env": {
@@ -184,8 +191,25 @@
         "parallel": false
       }
     },
+    "imds-router-up": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/imds-router.sh"],
+        "parallel": false
+      }
+    },
+    "imds-router-down": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "command": "fuser -k -TERM 6020/tcp 2>/dev/null || true"
+      }
+    },
     "mount-onelake": {
-      "dependsOn": ["refresh-az-login"],
+      "dependsOn": ["refresh-az-login", "imds-router-up"],
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
@@ -214,8 +238,8 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [
-          "npx nx run spark-scala:mount-onelake",
-          "npx nx run spark-scala:run --JOB='delta-mount'"
+          "npx nx run spark-scala:mount-onelake --verbose --output-style=stream",
+          "npx nx run spark-scala:run --JOB='delta-mount' --verbose --output-style=stream"
         ],
         "parallel": false
       }

@@ -1,3 +1,3 @@
-lakehouse_name,lakehouse_guid
-dbt_jaffle_shop_seed,26f003da-02dd-469f-b418-7f7ad7d28d18
-dbt_adventureworks_seed,5f60fe29-ff73-4b67-ba60-2c471c4849aa
+lakehouse_name,lakehouse_guid,folder_to_mount
+dbt_jaffle_shop_seed,26f003da-02dd-469f-b418-7f7ad7d28d18,Tables
+dbt_adventureworks_seed,5f60fe29-ff73-4b67-ba60-2c471c4849aa,Tables

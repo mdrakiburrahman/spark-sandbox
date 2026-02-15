@@ -1,0 +1,85 @@
+name: GCI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IS_GH_ACTION: "1"
+  IMDS_ROUTER_PORT: "8080"
+  IMDS_METADATA_ENDPOINT: "http://localhost:8080/metadata/instance?api-version=2025-04-07"
+  IDENTITY_ENDPOINT: "http://localhost:8080/metadata/identity/oauth2/token"
+  IDENTITY_HEADER: "local-dev-secret"
+  UAMI_CLIENT_ID: "00000000-0000-0000-0000-000000000000"
+  UAMI_SUBSCRIPTION: "00000000-0000-0000-0000-000000000000"
+
+jobs:
+  gci-linux:
+    runs-on: self-hosted
+    container:
+      image: rakirahman.azurecr.io/devcontainer/spark:c56c850e1ba7e45aa7e1fa08a4cf478d05c3bd9f5b3ea5e5b1a5ca3c6c01c2e0
+      options: >-
+        --cap-add=SYS_ADMIN
+        --device=/dev/fuse
+        --security-opt=apparmor:unconfined
+        --add-host=host.docker.internal:host-gateway
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🔐 Start IMDS Relay Router"
+        env:
+          IMDS_RELAY_URL: ${{ secrets.IMDS_RELAY_URL }}
+          IMDS_RELAY_SENDER_KEY: ${{ secrets.IMDS_RELAY_SENDER_KEY }}
+          IMDS_SUBSCRIPTION_ID: ${{ env.UAMI_SUBSCRIPTION }}
+        run: |
+          set -euo pipefail
+          nohup python3 .github/scripts/imds_relay_router.py > /tmp/imds-router.log 2>&1 &
+          echo "IMDS_ROUTER_PID=$!" >> "$GITHUB_ENV"
+          for i in $(seq 1 10); do
+            curl -sf http://localhost:${IMDS_ROUTER_PORT}/healthz > /dev/null 2>&1 && break
+            [ "$i" -eq 10 ] && { cat /tmp/imds-router.log; exit 1; }
+            sleep 1
+          done
+
+      - name: "🔐 Verify IMDS Relay Router"
+        run: |
+          set -euo pipefail
+          SUB=$(curl -sf -H "Metadata: true" "$IMDS_METADATA_ENDPOINT" | jq -r '.compute.subscriptionId')
+          [[ "$SUB" == "$UAMI_SUBSCRIPTION" ]] || { echo "subscriptionId mismatch: expected '$UAMI_SUBSCRIPTION', got '$SUB'"; exit 1; }
+
+      - name: "🔐 Az Login with Fake UAMI"
+        run: |
+          set -euo pipefail
+          az login --identity --client-id "$UAMI_CLIENT_ID" > /dev/null 2>&1
+
+      - name: "🔒 Configure container permissions and PATH"
+        run: |
+          sudo usermod -a -G sdkman vscode
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          echo "/usr/local/sdkman/candidates/java/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/sbt/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/scala/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/scalacli/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/maven/current/bin" >> "$GITHUB_PATH"
+
+      - name: "⚙️ Post create commands"
+        run: /tmp/overlay/post-create-commands.sh
+
+      - name: "⚙️ Post attach commands"
+        run: /tmp/overlay/post-attach-commands.sh
+
+      - name: "📦 Build Projects"
+        run: npx nx run-many -t build --parallel=3 --configuration=ci --output-style=stream
+
+      - name: "🧹 Lint Projects"
+        run: npx nx run-many -t lint --parallel=3 --configuration=ci --verbose --output-style=stream
+
+      - name: "🧪 Test Projects"
+        run: npx nx run-many -t test --configuration=ci --verbose --output-style=stream
