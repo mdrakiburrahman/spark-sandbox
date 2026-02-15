@@ -231,8 +231,8 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [
-          "npx nx run spark-scala:mount-onelake",
-          "npx nx run spark-scala:run --JOB='delta-mount'"
+          "npx nx run spark-scala:mount-onelake --verbose --output-style=stream",
+          "npx nx run spark-scala:run --JOB='delta-mount' --verbose --output-style=stream"
         ],
         "parallel": false
       }
