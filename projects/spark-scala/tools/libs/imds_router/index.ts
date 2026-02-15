@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * IMDS Router - Bridges MSI auth to a token relay (App Service mode).
+ * IMDS Router - Serves tokens via `az account get-access-token` (App Service mode).
  * Set IDENTITY_ENDPOINT=http://localhost:6020/token and IDENTITY_HEADER=<secret>
  */
 import http from 'http'
@@ -12,7 +12,6 @@ import { execSync } from 'child_process'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const PORT = parseInt(process.env.IMDS_ROUTER_PORT ?? '6020', 10)
-const RELAY_URL = process.env.IMDS_RELAY_URL ?? 'https://monitoring-1es.servicebus.windows.net/mdrrahman/token'
 const EXPECTED_HEADER = 'local-dev-secret'
 const LOG_DIR = path.join(__dirname, '../../../.logs')
 const LOG_FILE = path.join(LOG_DIR, 'imds-router.log')
@@ -23,13 +22,13 @@ const log = (msg: string) => {
     fs.appendFileSync(LOG_FILE, line)
 }
 
-async function fetchToken(resource: string): Promise<{ access_token: string; expires_on: number }> {
-    const relayToken = execSync("az account get-access-token --resource 'https://relay.azure.net' -o tsv --query accessToken", { encoding: 'utf-8' }).trim()
-    const res = await fetch(`${RELAY_URL}?resource=${encodeURIComponent(resource)}`, {
-        headers: { Authorization: `Bearer ${relayToken}` },
-    })
-    if (!res.ok) throw new Error(`Relay error: ${res.status}`)
-    return res.json() as Promise<{ access_token: string; expires_on: number }>
+function fetchToken(resource: string): { access_token: string; expires_on: number } {
+    const json = execSync(`az account get-access-token --resource '${resource}' -o json`, { encoding: 'utf-8' }).trim()
+    const result = JSON.parse(json)
+    return {
+        access_token: result.accessToken,
+        expires_on: Math.floor(new Date(result.expiresOn).getTime() / 1000),
+    }
 }
 
 http.createServer(async (req, res) => {
@@ -50,7 +49,7 @@ http.createServer(async (req, res) => {
     }
 
     try {
-        const token = await fetchToken(resource)
+        const token = fetchToken(resource)
         log(`Token acquired (expires: ${new Date(token.expires_on * 1000).toISOString()})`)
         res.writeHead(200, { 'Content-Type': 'application/json' })
         res.end(JSON.stringify({ access_token: token.access_token, expires_on: String(token.expires_on), resource, token_type: 'Bearer' }))
@@ -61,7 +60,6 @@ http.createServer(async (req, res) => {
     }
 }).listen(PORT, 'localhost', () => {
     log(`IMDS Router on http://localhost:${PORT}`)
-    log(`Relay: ${RELAY_URL}`)
     log(`Log file: ${LOG_FILE}`)
 })
 

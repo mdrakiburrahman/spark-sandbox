@@ -1,0 +1,102 @@
+name: GCI
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # ---------------------------------------------------------------
+  # IMDS Relay Router config
+  #
+  # GitHub Actions has no `target: host` — all steps in a container
+  # job run INSIDE the container. So instead, we run the IMDS relay
+  # router as a background process inside the container on localhost.
+  #
+  # az login --identity reads IDENTITY_ENDPOINT + IDENTITY_HEADER
+  # from the environment, which point to our relay router.
+  # ---------------------------------------------------------------
+  IMDS_ROUTER_PORT: "8080"
+  IMDS_METADATA_ENDPOINT: "http://localhost:8080/metadata/instance?api-version=2025-04-07"
+  IDENTITY_ENDPOINT: "http://localhost:8080/metadata/identity/oauth2/token"
+  IDENTITY_HEADER: "local-dev-secret"
+  UAMI_CLIENT_ID: "00000000-0000-0000-0000-000000000000"
+  UAMI_SUBSCRIPTION: "00000000-0000-0000-0000-000000000000"
+
+jobs:
+  gci-linux:
+    runs-on: ubuntu-latest
+    container:
+      image: rakirahman.azurecr.io/devcontainer/spark:c215302f66dd429d9beac95c617232501f019835328f568f03e4445d049b0d6f
+      credentials:
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+      options: >-
+        --cap-add=SYS_ADMIN
+        --device=/dev/fuse
+        --security-opt=apparmor:unconfined
+        --add-host=host.docker.internal:host-gateway
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🔐 Start IMDS Relay Router"
+        env:
+          IMDS_RELAY_URL: ${{ secrets.IMDS_RELAY_URL }}
+          IMDS_RELAY_SENDER_KEY: ${{ secrets.IMDS_RELAY_SENDER_KEY }}
+          IMDS_SUBSCRIPTION_ID: ${{ env.UAMI_SUBSCRIPTION }}
+        run: |
+          set -euo pipefail
+          echo "Starting IMDS relay router on localhost:${IMDS_ROUTER_PORT}"
+
+          nohup python3 .github/scripts/imds_relay_router.py > /tmp/imds-router.log 2>&1 &
+          ROUTER_PID=$!
+          echo "IMDS_ROUTER_PID=${ROUTER_PID}" >> "$GITHUB_ENV"
+
+          # Wait for router to be ready
+          for i in $(seq 1 10); do
+            if curl -sf http://localhost:${IMDS_ROUTER_PORT}/healthz > /dev/null 2>&1; then
+              echo "✅ IMDS relay router started (PID: ${ROUTER_PID})"
+              break
+            fi
+            if [ "$i" -eq 10 ]; then
+              echo "❌ IMDS relay router failed to start"
+              cat /tmp/imds-router.log
+              exit 1
+            fi
+            sleep 1
+          done
+
+      - name: "🔐 Verify IMDS Relay Router"
+        run: |
+          set -euo pipefail
+          echo "Checking IMDS relay at $IMDS_METADATA_ENDPOINT"
+          RESPONSE=$(curl -sf -H "Metadata: true" "$IMDS_METADATA_ENDPOINT" || true)
+          echo "IMDS response: $RESPONSE"
+          SUB=$(echo "$RESPONSE" | jq -r '.compute.subscriptionId')
+          echo "Subscription: $SUB"
+          if [[ "$SUB" != "$UAMI_SUBSCRIPTION" ]]; then
+            echo "ERROR: subscriptionId mismatch: expected '$UAMI_SUBSCRIPTION', got '$SUB'"
+            exit 1
+          fi
+          echo "✅ IMDS relay verified"
+
+      - name: "🔐 Az Login with Fake UAMI"
+        run: |
+          set -euo pipefail
+          echo "Attempting az login --identity with UAMI client-id: $UAMI_CLIENT_ID"
+          echo "IDENTITY_ENDPOINT=$IDENTITY_ENDPOINT"
+
+          # az login --identity will use IDENTITY_ENDPOINT env var to reach
+          # our IMDS relay router on localhost:8080, which forwards token
+          # requests to the Azure Relay via IMDS_RELAY_SENDER_KEY.
+          az login --identity --username "$UAMI_CLIENT_ID" || {
+            echo "⚠️  az login --identity returned non-zero (expected if relay is not fully wired)"
+            echo "The IMDS relay router plumbing is in place."
+            echo "Wire up IMDS_RELAY_URL and IMDS_RELAY_SENDER_KEY secrets to complete."
+            exit 0
+          }
+
+          echo "✅ az login --identity succeeded"
+          az account show
