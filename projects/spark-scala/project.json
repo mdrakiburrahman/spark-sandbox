@@ -73,7 +73,7 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy", "unmount-onelake"],
+      "dependsOn": ["clean-livy", "unmount-onelake", "imds-router-down"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -184,8 +184,25 @@
         "parallel": false
       }
     },
+    "imds-router-up": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/imds-router.sh"],
+        "parallel": false
+      }
+    },
+    "imds-router-down": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "command": "fuser -k -TERM 6020/tcp 2>/dev/null || true"
+      }
+    },
     "mount-onelake": {
-      "dependsOn": ["refresh-az-login"],
+      "dependsOn": ["refresh-az-login", "imds-router-up"],
       "cache": false,
       "executor": "nx:run-commands",
       "options": {
