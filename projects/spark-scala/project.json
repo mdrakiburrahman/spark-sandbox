@@ -148,7 +148,7 @@
     "test-scala": {
       "cache": true,
       "executor": "nx:run-commands",
-      "dependsOn": [],
+      "dependsOn": ["clean"],
       "options": {
         "cwd": "projects/spark-scala",
         "env": {
