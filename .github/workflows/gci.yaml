@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 
 env:
+  IS_GH_ACTION: "1"
   IMDS_ROUTER_PORT: "8080"
   IMDS_METADATA_ENDPOINT: "http://localhost:8080/metadata/instance?api-version=2025-04-07"
   IDENTITY_ENDPOINT: "http://localhost:8080/metadata/identity/oauth2/token"
