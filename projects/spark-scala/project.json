@@ -83,7 +83,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse*",
+            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse* ../../warehouse",
             "forwardAllArgs": false
           },
           {

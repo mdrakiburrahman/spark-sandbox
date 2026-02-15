@@ -1,6 +1,6 @@
 {
     "name": "devcontainer",
-    "image": "rakirahman.azurecr.io/devcontainer/spark:c215302f66dd429d9beac95c617232501f019835328f568f03e4445d049b0d6f",
+    "image": "rakirahman.azurecr.io/devcontainer/spark:58969f4c051164da202956b0fdc41f413b9e808efb6a202504273909df137d59",
     "remoteUser": "vscode",
     "containerUser": "vscode",
     "runArgs": [
