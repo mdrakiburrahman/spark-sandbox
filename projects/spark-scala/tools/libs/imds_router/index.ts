@@ -11,7 +11,7 @@ import { execSync } from 'child_process'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const PORT = parseInt(process.env.IMDS_ROUTER_PORT ?? '6020', 10)
+const PORT = 6020
 const EXPECTED_HEADER = 'local-dev-secret'
 const LOG_DIR = path.join(__dirname, '../../../.logs')
 const LOG_FILE = path.join(LOG_DIR, 'imds-router.log')
