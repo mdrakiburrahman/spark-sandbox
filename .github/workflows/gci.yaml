@@ -92,7 +92,7 @@ jobs:
           # az login --identity will use IDENTITY_ENDPOINT env var to reach
           # our IMDS relay router on localhost:8080, which forwards token
           # requests to the Azure Relay via IMDS_RELAY_SENDER_KEY.
-          az login --identity --username "$UAMI_CLIENT_ID"
+          az login --identity --client-id "$UAMI_CLIENT_ID"
 
           echo "✅ az login --identity succeeded"
           az account show
