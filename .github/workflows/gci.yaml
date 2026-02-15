@@ -61,6 +61,7 @@ jobs:
       - name: "🔒 Configure container permissions and PATH"
         run: |
           sudo usermod -a -G sdkman vscode
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
           echo "/usr/local/sdkman/candidates/java/current/bin" >> "$GITHUB_PATH"
           echo "/usr/local/sdkman/candidates/sbt/current/bin" >> "$GITHUB_PATH"
           echo "/usr/local/sdkman/candidates/scala/current/bin" >> "$GITHUB_PATH"
