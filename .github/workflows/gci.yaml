@@ -89,10 +89,25 @@ jobs:
           echo "Attempting az login --identity with UAMI client-id: $UAMI_CLIENT_ID"
           echo "IDENTITY_ENDPOINT=$IDENTITY_ENDPOINT"
 
+          # Diagnostic: test token endpoint directly before az login
+          echo "--- Diagnostic: testing token endpoint ---"
+          TOKEN_RESPONSE=$(curl -sv \
+            -H "X-IDENTITY-HEADER: ${IDENTITY_HEADER}" \
+            "${IDENTITY_ENDPOINT}?resource=https://management.azure.com/&client_id=${UAMI_CLIENT_ID}&api-version=2019-08-01" 2>&1 || true)
+          echo "Token endpoint response: $TOKEN_RESPONSE"
+          echo "--- IMDS router logs ---"
+          cat /tmp/imds-router.log 2>/dev/null || echo "(no log file)"
+          echo "--- End diagnostics ---"
+
           # az login --identity will use IDENTITY_ENDPOINT env var to reach
           # our IMDS relay router on localhost:8080, which forwards token
           # requests to the Azure Relay via IMDS_RELAY_SENDER_KEY.
-          az login --identity --client-id "$UAMI_CLIENT_ID"
+          if ! az login --identity --client-id "$UAMI_CLIENT_ID"; then
+            echo "--- IMDS router logs after failure ---"
+            cat /tmp/imds-router.log 2>/dev/null || echo "(no log file)"
+            echo "--- End failure diagnostics ---"
+            exit 1
+          fi
 
           echo "✅ az login --identity succeeded"
           az account show

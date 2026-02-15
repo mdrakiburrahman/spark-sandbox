@@ -47,6 +47,8 @@ class IMDSHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
+        self.log_message("GET %s  headers=%s", self.path,
+                         {k: v for k, v in self.headers.items()})
 
         if parsed.path == "/healthz":
             self._json_response(200, {"Healthy": True})
@@ -63,8 +65,18 @@ class IMDSHandler(BaseHTTPRequestHandler):
         self._json_response(404, {"error": "Not found"})
 
     def _handle_token_request(self, parsed):
+        # App Service MSI protocol: validate X-IDENTITY-HEADER
+        incoming_header = self.headers.get("X-IDENTITY-HEADER", "")
+        if incoming_header != IDENTITY_HEADER_VALUE:
+            self.log_message("X-IDENTITY-HEADER mismatch: got '%s', expected '%s'",
+                             incoming_header, IDENTITY_HEADER_VALUE)
+            self._json_response(403, {"error": "Invalid or missing X-IDENTITY-HEADER"})
+            return
+
         qs = urllib.parse.parse_qs(parsed.query)
         resource = qs.get("resource", ["https://management.azure.com/"])[0]
+        client_id = qs.get("client_id", [None])[0]
+        self.log_message("Token request: resource=%s client_id=%s", resource, client_id)
 
         if not RELAY_URL or not RELAY_SENDER_KEY:
             self._json_response(500, {"error": "IMDS_RELAY_URL or IMDS_RELAY_SENDER_KEY not configured"})
@@ -72,14 +84,19 @@ class IMDSHandler(BaseHTTPRequestHandler):
 
         try:
             relay_uri = f"{RELAY_URL}?resource={urllib.parse.quote_plus(resource)}"
+            if client_id:
+                relay_uri += f"&client_id={urllib.parse.quote_plus(client_id)}"
             sas_token = _generate_sas_token(RELAY_URL, RELAY_SENDER_KEY)
 
+            self.log_message("Calling relay: %s", relay_uri)
             req = urllib.request.Request(relay_uri, headers={
                 "Authorization": sas_token,
                 "Content-Type": "application/json",
             })
             with urllib.request.urlopen(req, timeout=30) as resp:
-                body = json.loads(resp.read().decode())
+                raw = resp.read().decode()
+                self.log_message("Relay response: %s", raw[:500])
+                body = json.loads(raw)
 
             self._json_response(200, {
                 "access_token": body.get("access_token", ""),
@@ -87,6 +104,10 @@ class IMDSHandler(BaseHTTPRequestHandler):
                 "resource": resource,
                 "token_type": "Bearer",
             })
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode() if e.fp else ""
+            self.log_message("Relay HTTP error %s: %s  body=%s", e.code, e.reason, err_body[:500])
+            self._json_response(502, {"error": f"Relay returned {e.code}: {e.reason}", "detail": err_body[:500]})
         except Exception as e:
             self.log_message("Relay error: %s", e)
             self._json_response(500, {"error": str(e)})
