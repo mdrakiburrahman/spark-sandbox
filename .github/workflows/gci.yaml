@@ -33,6 +33,10 @@ jobs:
         --security-opt=apparmor:unconfined
         --add-host=host.docker.internal:host-gateway
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - uses: actions/checkout@v4
         with:
