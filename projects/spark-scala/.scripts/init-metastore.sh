@@ -9,10 +9,12 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-COMPOSE_FILE="../../docker-compose.yml"
-CONTAINER="spark-sandbox-mssql-1"
+COMPOSE_FILE="../../docker/Compose.sqlserver.metastore.yaml"
+CONTAINER="metastore-mssql-1"
 SCHEMA_FILE="$SCRIPT_DIR/hive-schema-4.0.0.mssql.sql"
+QUERY_TABLE="SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'"
 SA_PASSWORD="Hive@Pass123"
+EXPECTED_TABLE_COUNT=82
 
 sqlcmd() {
     docker exec "$CONTAINER" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -C "$@"
@@ -29,15 +31,13 @@ echo "MSSQL Server is ready."
 
 DB_EXISTS=$(sqlcmd -h -1 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM sys.databases WHERE name='metastore'" 2>/dev/null | tr -d ' \r\n')
 if [ "$DB_EXISTS" -eq "0" ]; then
-    echo "Creating metastore database..."
     sqlcmd -Q "CREATE DATABASE metastore"
 fi
 
-TABLE_COUNT=$(sqlcmd -d metastore -h -1 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'" 2>/dev/null | tr -d ' \r\n')
-if [ "$TABLE_COUNT" -lt "10" ]; then
-    echo "Initializing Hive metastore schema from $SCHEMA_FILE..."
-    cat "$SCHEMA_FILE" | docker exec -i "$CONTAINER" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -C -d metastore -b
-    NEW_TABLE_COUNT=$(sqlcmd -d metastore -h -1 -Q "SET NOCOUNT ON; SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'" 2>/dev/null | tr -d ' \r\n')
+TABLE_COUNT=$(sqlcmd -d metastore -h -1 -Q "$QUERY_TABLE" 2>/dev/null | tr -d ' \r\n')
+if [ "$TABLE_COUNT" != "$EXPECTED_TABLE_COUNT" ]; then
+    cat "$SCHEMA_FILE" | docker exec -i "$CONTAINER" /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$SA_PASSWORD" -C -d metastore -b >/dev/null
+    NEW_TABLE_COUNT=$(sqlcmd -d metastore -h -1 -Q "$QUERY_TABLE" 2>/dev/null | tr -d ' \r\n')
     echo "Schema initialized ($NEW_TABLE_COUNT tables)"
 else
     echo "Schema exists ($TABLE_COUNT tables)"
