@@ -27,16 +27,31 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 LISTEN_PORT = int(os.environ.get("IMDS_ROUTER_PORT", "8080"))
 RELAY_URL = os.environ.get("IMDS_RELAY_URL", "")
 RELAY_SENDER_KEY = os.environ.get("IMDS_RELAY_SENDER_KEY", "")
+RELAY_KEY_NAME = os.environ.get("IMDS_RELAY_KEY_NAME", "Send")
 IDENTITY_HEADER_VALUE = os.environ.get("IDENTITY_HEADER", "local-dev-secret")
 
 
-def _generate_sas_token(uri: str, key: str, key_name: str = "sender", expiry_seconds: int = 3600) -> str:
-    """Generate a SharedAccessSignature token for Azure Relay."""
+def _relay_sas_uri(url: str) -> str:
+    """Derive the SAS resource URI: strip /token suffix and force http:// scheme."""
+    parsed = urllib.parse.urlparse(url)
+    path = parsed.path.rstrip("/")
+    if path.endswith("/token"):
+        path = path[: -len("/token")]
+    return f"http://{parsed.hostname}{path}"
+
+
+def _generate_sas_token(uri: str, key: str, key_name: str = "Send", expiry_seconds: int = 3600) -> str:
+    """Generate a SharedAccessSignature token for Azure Relay Hybrid Connections.
+
+    Matches the hyco-https Node.js SDK behaviour:
+      - SAS resource URI uses http:// scheme
+      - HMAC key is the raw SAS key string (NOT base64-decoded)
+    """
     expiry = int(time.time()) + expiry_seconds
-    string_to_sign = f"{urllib.parse.quote_plus(uri)}\n{expiry}"
+    string_to_sign = f"{urllib.parse.quote(uri, safe='')}\n{expiry}"
     sig = hmac.new(key.encode("utf-8"), string_to_sign.encode("utf-8"), hashlib.sha256).digest()
-    sig_b64 = urllib.parse.quote_plus(base64.b64encode(sig).decode("utf-8"))
-    return f"SharedAccessSignature sr={urllib.parse.quote_plus(uri)}&sig={sig_b64}&se={expiry}&skn={key_name}"
+    sig_b64 = urllib.parse.quote(base64.b64encode(sig).decode("utf-8"), safe="")
+    return f"SharedAccessSignature sr={urllib.parse.quote(uri, safe='')}&sig={sig_b64}&se={expiry}&skn={key_name}"
 
 
 class IMDSHandler(BaseHTTPRequestHandler):
@@ -86,11 +101,12 @@ class IMDSHandler(BaseHTTPRequestHandler):
             relay_uri = f"{RELAY_URL}?resource={urllib.parse.quote_plus(resource)}"
             if client_id:
                 relay_uri += f"&client_id={urllib.parse.quote_plus(client_id)}"
-            sas_token = _generate_sas_token(RELAY_URL, RELAY_SENDER_KEY)
+            sas_uri = _relay_sas_uri(RELAY_URL)
+            sas_token = _generate_sas_token(sas_uri, RELAY_SENDER_KEY, RELAY_KEY_NAME)
 
             self.log_message("Calling relay: %s", relay_uri)
             req = urllib.request.Request(relay_uri, headers={
-                "Authorization": sas_token,
+                "ServiceBusAuthorization": sas_token,
                 "Content-Type": "application/json",
             })
             with urllib.request.urlopen(req, timeout=30) as resp:
