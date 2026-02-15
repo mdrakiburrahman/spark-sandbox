@@ -71,6 +71,18 @@
         "cwd": "projects/spark-dbt",
         "commands": [".scripts/package-fabric.sh"]
       }
+    },
+    "test": {
+      "dependsOn": ["init"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [
+          "npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local",
+          "npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local"
+        ],
+        "parallel": true
+      }
     }
   }
 }

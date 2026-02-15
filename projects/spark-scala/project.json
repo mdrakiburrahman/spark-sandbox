@@ -223,7 +223,6 @@
     "metastore-up": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["metastore-down"],
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [".scripts/init-metastore.sh"],
@@ -236,7 +235,7 @@
       "options": {
         "cwd": "projects/spark-scala",
         "commands": [
-          "docker compose -f ../../docker-compose.yml down --volumes --remove-orphans"
+          "docker compose -f ../../docker/Compose.sqlserver.metastore.yaml down --volumes --remove-orphans"
         ]
       }
     }

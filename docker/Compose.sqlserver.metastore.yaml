@@ -1,5 +1,8 @@
+name: metastore
+
 services:
   mssql:
+    container_name: metastore-mssql-1
     image: mcr.microsoft.com/mssql/server:2025-latest
     environment:
       ACCEPT_EULA: "Y"
@@ -12,6 +15,13 @@ services:
       retries: 10
       start_period: 30s
     restart: always
+    stop_signal: SIGKILL
     stop_grace_period: 0s
     ports:
-      - "1433:1433"
+      - "11434:1433"
+    networks:
+      - metastore-network
+
+networks:
+  metastore-network:
+    name: metastore-network
