@@ -57,4 +57,3 @@ jobs:
         run: |
           set -euo pipefail
           az login --identity --client-id "$UAMI_CLIENT_ID"
-          az account show
