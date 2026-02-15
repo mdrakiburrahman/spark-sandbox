@@ -75,15 +75,11 @@ jobs:
       - name: "⚙️ Post attach commands"
         run: /tmp/overlay/post-attach-commands.sh
 
-      # --------------------------------------------------------------------------------
-      # - name: "📦 Build Projects"
-      #   run: npx nx run-many -t build --parallel=3 --configuration=ci --output-style=stream
-      #
-      # - name: "🧹 Lint Projects"
-      #   run: npx nx run-many -t lint --parallel=3 --configuration=ci --verbose --output-style=stream
-      #
-      # - name: "🧪 Test Projects"
-      #   run: npx nx run-many -t test --configuration=ci --verbose --output-style=stream
-      # --------------------------------------------------------------------------------
-      - name: "😭 Test dbt why hung?"
-        run: npx nx run spark-dbt:test --verbose --output-style=stream
+      - name: "📦 Build Projects"
+        run: npx nx run-many -t build --parallel=3 --configuration=ci --output-style=stream
+
+      - name: "🧹 Lint Projects"
+        run: npx nx run-many -t lint --parallel=3 --configuration=ci --verbose --output-style=stream
+
+      - name: "🧪 Test Projects"
+        run: npx nx run-many -t test --configuration=ci --verbose --output-style=stream

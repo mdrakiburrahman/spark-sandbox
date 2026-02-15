@@ -18,8 +18,8 @@ export SPARK_SCALA_DIR="${GIT_ROOT}/projects/spark-scala"
 
 cd ${SPARK_SCALA_DIR}
 
-export IDENTITY_ENDPOINT="http://localhost:6020/token"
-export IDENTITY_HEADER="local-dev-secret"
+export IDENTITY_ENDPOINT="${IDENTITY_ENDPOINT:-http://localhost:6020/token}"
+export IDENTITY_HEADER="${IDENTITY_HEADER:-local-dev-secret}"
 export ONELAKE_WORKSPACE_ID="58374f03-58b3-48f8-ae96-758f86aed72d"
 
 ACTION=${1:-mount}
