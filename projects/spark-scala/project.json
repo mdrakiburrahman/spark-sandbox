@@ -140,9 +140,16 @@
     },
     "test": {
       "executor": "nx:run-commands",
-      "dependsOn": ["test-scala"],
+      "dependsOn": ["test-scala", "test-jest"],
       "options": {
         "commands": ["echo 'All tests completed.'"]
+      }
+    },
+    "test-jest": {
+      "cache": true,
+      "executor": "@nx/jest:jest",
+      "options": {
+        "jestConfig": "projects/spark-scala/jest.config.js"
       }
     },
     "test-scala": {
