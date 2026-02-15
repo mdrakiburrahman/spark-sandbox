@@ -58,6 +58,15 @@ jobs:
           set -euo pipefail
           az login --identity --client-id "$UAMI_CLIENT_ID"
 
+      - name: "🔒 Configure container permissions and PATH"
+        run: |
+          sudo usermod -a -G sdkman vscode
+          echo "/usr/local/sdkman/candidates/java/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/sbt/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/scala/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/scalacli/current/bin" >> "$GITHUB_PATH"
+          echo "/usr/local/sdkman/candidates/maven/current/bin" >> "$GITHUB_PATH"
+
       - name: "⚙️ Post create commands"
         run: /tmp/overlay/post-create-commands.sh
 
