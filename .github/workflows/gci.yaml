@@ -17,7 +17,7 @@ jobs:
   gci-linux:
     runs-on: self-hosted
     container:
-      image: rakirahman.azurecr.io/devcontainer/spark:b8582eed547dcf7f9f6d068f61427015734996a0c63ef285eadd26d91a517b38
+      image: rakirahman.azurecr.io/devcontainer/spark:addfd21defd75b21ce3d20a67404decc138ff8a7d53e93eb7ba4943270ca42ee
       options: >-
         --cap-add=SYS_ADMIN
         --device=/dev/fuse
