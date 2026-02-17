@@ -65,6 +65,7 @@ lazy val common = project
     testSettings,
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
+      ++ deltaDependencies
       ++ sparkDependencies
       ++ sparkTestDependencies
       ++ synapseDependencies

@@ -1,6 +1,15 @@
 {
   "folders": [
     {
+      "path": "../docs",
+    },
+    {
+      "path": "../docker",
+    },
+    {
+      "path": "../logs",
+    },
+    {
       "path": "spark-dbt",
     },
     {

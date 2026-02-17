@@ -45,5 +45,9 @@ object DeltaLakeConfiguration {
   /** Instructs Spark to enable Change Data Feed (Capture).
     */
   val DELTA_CONF_CDC = "delta.enableChangeDataFeed"
+
+  /** The Delta table version.
+    */
+  val DELTA_VERSION = "version"
 }
 // @formatter:on
