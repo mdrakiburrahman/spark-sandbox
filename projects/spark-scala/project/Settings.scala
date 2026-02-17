@@ -35,7 +35,8 @@ object Settings {
     * An aggregated report is available after running: sbt coverageAggregate
     */
   val coverageSettings = Seq(
-    coverageFailOnMinimum := false,
+    coverageFailOnMinimum := true,
+    coverageMinimumStmtTotal := 95,
     coverageHighlighting := true,
   )
 

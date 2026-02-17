@@ -145,6 +145,117 @@ class FileSystemHandlerTest extends AnyFunSpec with Matchers {
         dir.delete()
       }
     }
+
+    it("can rm non-existent file returns false") {
+      LocalFileSystemHandler.rm("/tmp/nonexistent_test_file_xyz") shouldBe false
+    }
+
+    it("can put without overwrite returns false for existing file") {
+      withTempDir { tempDir =>
+        val file = new File(tempDir.toFile, "no_overwrite.txt")
+        LocalFileSystemHandler.put(file.getPath, "first", overwrite = true)
+        LocalFileSystemHandler.put(file.getPath, "second", overwrite = false) shouldBe false
+        LocalFileSystemHandler.read(file.getPath) shouldBe "first"
+        file.delete()
+      }
+    }
+
+    it("can append to non-existent file without createFile returns false") {
+      withTempDir { tempDir =>
+        val file = new File(tempDir.toFile, "no_create.txt")
+        LocalFileSystemHandler.append(file.getPath, "content", createFile = false) shouldBe false
+      }
+    }
+
+    it("can ls empty or non-existent directory returns empty") {
+      LocalFileSystemHandler.ls("/tmp/nonexistent_dir_xyz") shouldBe empty
+    }
+
+    it("can ls empty directory") {
+      withTempDir { tempDir =>
+        val dir = new File(tempDir.toFile, "emptydir")
+        dir.mkdir()
+        LocalFileSystemHandler.ls(dir.getPath) shouldBe empty
+        dir.delete()
+      }
+    }
+
+    it("can cp directory recursively") {
+      withTempDir { tempDir =>
+        val srcDir = new File(tempDir.toFile, "srcdir")
+        srcDir.mkdir()
+        val file = new File(srcDir, "file.txt")
+        LocalFileSystemHandler.put(file.getPath, "content", overwrite = true)
+        val dstDir = new File(tempDir.toFile, "dstdir")
+        LocalFileSystemHandler.cp(srcDir.getPath, dstDir.getPath, recurse = true) shouldBe true
+        LocalFileSystemHandler.exists(new File(dstDir, "file.txt").getPath) shouldBe true
+        file.delete()
+        srcDir.delete()
+        new File(dstDir, "file.txt").delete()
+        dstDir.delete()
+      }
+    }
+
+    it("can mv with createPath") {
+      withTempDir { tempDir =>
+        val file = new File(tempDir.toFile, "mv_src.txt")
+        LocalFileSystemHandler.put(file.getPath, "data", overwrite = true)
+        val destDir = new File(tempDir.toFile, "newdir")
+        val dest = new File(destDir, "mv_dst.txt")
+        LocalFileSystemHandler.mv(file.getPath, dest.getPath, createPath = true) shouldBe true
+        LocalFileSystemHandler.exists(dest.getPath) shouldBe true
+        dest.delete()
+        destDir.delete()
+      }
+    }
+
+    it("can mv with overwrite") {
+      withTempDir { tempDir =>
+        val src = new File(tempDir.toFile, "mv_ow_src.txt")
+        val dst = new File(tempDir.toFile, "mv_ow_dst.txt")
+        LocalFileSystemHandler.put(src.getPath, "src_data", overwrite = true)
+        LocalFileSystemHandler.put(dst.getPath, "dst_data", overwrite = true)
+        LocalFileSystemHandler.mv(src.getPath, dst.getPath, overwrite = true) shouldBe true
+        LocalFileSystemHandler.read(dst.getPath) shouldBe "src_data"
+        dst.delete()
+      }
+    }
+
+    it("can ls files with correct FileInfo metadata") {
+      withTempDir { tempDir =>
+        val file = new File(tempDir.toFile, "meta.txt")
+        LocalFileSystemHandler.put(file.getPath, "hello", overwrite = true)
+        val files = LocalFileSystemHandler.ls(tempDir.toFile.getPath)
+        files should have length 1
+        files.head.name shouldBe "meta.txt"
+        files.head.isFile shouldBe true
+        files.head.isDir shouldBe false
+        files.head.size should be > 0L
+        file.delete()
+      }
+    }
+    it("can rm directory recursively with nested subdirectories") {
+      withTempDir { tempDir =>
+        val dir = new File(tempDir.toFile, "nested_rm")
+        dir.mkdir()
+        val subdir = new File(dir, "subdir")
+        subdir.mkdir()
+        new File(subdir, "nested.txt").createNewFile()
+        new File(dir, "root.txt").createNewFile()
+        LocalFileSystemHandler.rm(dir.getPath, recurse = true) shouldBe true
+        dir.exists() shouldBe false
+      }
+    }
+
+    it("can append to non-existent file with createFile=true") {
+      withTempDir { tempDir =>
+        val file = new File(tempDir.toFile, "append_create.txt")
+        file.exists() shouldBe false
+        LocalFileSystemHandler.append(file.getPath, "created", createFile = true) shouldBe true
+        LocalFileSystemHandler.read(file.getPath) shouldBe "created"
+        file.delete()
+      }
+    }
   }
 }
 // @formatter:on

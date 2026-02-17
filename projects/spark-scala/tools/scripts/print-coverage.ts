@@ -29,8 +29,7 @@ function parseReport(path: string): Omit<CoverageData, "project"> {
   const parser = new XMLParser({ ignoreAttributes: false });
   const doc = parser.parse(xml);
   const root = doc["statement-coverage"] ?? doc["scoverage"] ?? {};
-  const attrs = (key: string) =>
-    root[`@_${key}`] ?? root[key] ?? 0;
+  const attrs = (key: string) => root[`@_${key}`] ?? root[key] ?? 0;
 
   return {
     statementRate: parseFloat(attrs("statement-rate")),
@@ -57,7 +56,7 @@ function main(): void {
 
   if (reports.length === 0) {
     console.log(
-      "\n⚠  No scoverage reports found. Coverage may not have been generated.\n"
+      "\n⚠  No scoverage reports found. Coverage may not have been generated.\n",
     );
     return;
   }
@@ -71,10 +70,10 @@ function main(): void {
   console.log("  📊  Line Coverage Summary (scoverage)");
   console.log(SEP);
   console.log(
-    `  ${pad("Project", 25, true)} ${pad("Lines", 14)} ${pad("Statement", 12)} ${pad("Branch", 10)}`
+    `  ${pad("Project", 25, true)} ${pad("Lines", 14)} ${pad("Statement", 12)} ${pad("Branch", 10)}`,
   );
   console.log(
-    `  ${"─".repeat(25)} ${"─".repeat(14)} ${"─".repeat(12)} ${"─".repeat(10)}`
+    `  ${"─".repeat(25)} ${"─".repeat(14)} ${"─".repeat(12)} ${"─".repeat(10)}`,
   );
 
   let totalInvoked = 0;
@@ -85,19 +84,18 @@ function main(): void {
     totalStmts += row.statementCount;
     const lines = `${row.statementsInvoked}/${row.statementCount}`;
     console.log(
-      `  ${pad(row.project, 25, true)} ${pad(lines, 14)} ${pad(`${row.statementRate.toFixed(1)}%`, 12)} ${pad(`${row.branchRate.toFixed(1)}%`, 10)}`
+      `  ${pad(row.project, 25, true)} ${pad(lines, 14)} ${pad(`${row.statementRate.toFixed(1)}%`, 12)} ${pad(`${row.branchRate.toFixed(1)}%`, 10)}`,
     );
   }
 
   if (rows.length > 1) {
-    const overall =
-      totalStmts > 0 ? (totalInvoked / totalStmts) * 100 : 0;
+    const overall = totalStmts > 0 ? (totalInvoked / totalStmts) * 100 : 0;
     const lines = `${totalInvoked}/${totalStmts}`;
     console.log(
-      `  ${"─".repeat(25)} ${"─".repeat(14)} ${"─".repeat(12)} ${"─".repeat(10)}`
+      `  ${"─".repeat(25)} ${"─".repeat(14)} ${"─".repeat(12)} ${"─".repeat(10)}`,
     );
     console.log(
-      `  ${pad("TOTAL", 25, true)} ${pad(lines, 14)} ${pad(`${overall.toFixed(1)}%`, 12)}`
+      `  ${pad("TOTAL", 25, true)} ${pad(lines, 14)} ${pad(`${overall.toFixed(1)}%`, 12)}`,
     );
   }
 
@@ -113,6 +111,19 @@ function main(): void {
       console.log(`    → ${r}`);
     }
     console.log();
+  }
+
+  const MIN_COVERAGE = 95;
+  const overall = totalStmts > 0 ? (totalInvoked / totalStmts) * 100 : 0;
+  if (overall < MIN_COVERAGE) {
+    console.error(
+      `  ❌  Coverage ${overall.toFixed(1)}% is below the minimum threshold of ${MIN_COVERAGE}%\n`,
+    );
+    process.exit(1);
+  } else {
+    console.log(
+      `  ✅  Coverage ${overall.toFixed(1)}% meets the minimum threshold of ${MIN_COVERAGE}%\n`,
+    );
   }
 }
 

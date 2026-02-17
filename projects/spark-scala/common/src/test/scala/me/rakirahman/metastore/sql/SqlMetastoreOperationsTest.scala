@@ -800,5 +800,507 @@ class SqlMetastoreOperationsTest extends AnyFunSpec with Matchers with BeforeAnd
 
       sqlMetastoreOperations.dropTable(testDatabaseName, testTableName)
     }
+
+    it("must correctly check databaseExists") {
+      sqlMetastoreOperations.databaseExists(testDatabaseName) mustBe true
+      sqlMetastoreOperations.databaseExists("nonexistent_db_xyz_42") mustBe false
+    }
+
+    it("must correctly listDatabases") {
+      val dbs = sqlMetastoreOperations.listDatabases()
+      dbs must contain(testDatabaseName)
+    }
+
+    it("must correctly listUserDatabases") {
+      val dbs = sqlMetastoreOperations.listUserDatabases()
+      dbs must contain(testDatabaseName)
+      dbs must not contain "default"
+    }
+
+    it("must correctly check tableExists") {
+      val tbl = "table_exists_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      sqlMetastoreOperations.tableExists(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.tableExists(testDatabaseName, "nonexistent_table_xyz") mustBe false
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly listTables") {
+      val tbl = "list_tables_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val tables = sqlMetastoreOperations.listTables(testDatabaseName)
+      tables must contain(tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly listTablesWithPrefix") {
+      val tbl1 = "pfx_test_table_1"
+      val tbl2 = "pfx_test_table_2"
+      val tbl3 = "other_table"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl1}")
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl2}")
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl3}")
+      val tables = sqlMetastoreOperations.listTablesWithPrefix(testDatabaseName, "pfx_")
+      tables must contain(tbl1)
+      tables must contain(tbl2)
+      tables must not contain tbl3
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl1)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl2)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl3)
+    }
+
+    it("must correctly listDeltaTables") {
+      val tbl = "delta_list_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val deltaTables = sqlMetastoreOperations.listDeltaTables(testDatabaseName)
+      deltaTables must contain(tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly listDeltaTablesWithPrefix") {
+      val tbl1 = "dltp_table_a"
+      val tbl2 = "dltp_table_b"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl1}")
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl2}")
+      val tables = sqlMetastoreOperations.listDeltaTablesWithPrefix(testDatabaseName, "dltp_")
+      tables must contain(tbl1)
+      tables must contain(tbl2)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl1)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl2)
+    }
+
+    it("must correctly check tableHasData") {
+      val tbl = "has_data_test"
+      spark.range(5).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      sqlMetastoreOperations.tableHasData(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly refreshTable") {
+      val tbl = "refresh_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      noException must be thrownBy sqlMetastoreOperations.refreshTable(testDatabaseName, tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly truncateTable") {
+      val tbl = "truncate_test"
+      spark.range(10).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      sqlMetastoreOperations.tableHasData(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.truncateTable(testDatabaseName, tbl)
+      sqlMetastoreOperations.tableHasData(testDatabaseName, tbl) mustBe false
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly findTablesLike") {
+      val tbl1 = "like_alpha_table"
+      val tbl2 = "like_beta_table"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl1}")
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl2}")
+      val found = sqlMetastoreOperations.findTablesLike(testDatabaseName, "like_*")
+      found must contain(tbl1)
+      found must contain(tbl2)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl1)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl2)
+    }
+
+    it("must correctly isView") {
+      val tbl = "view_check_table"
+      val view = "view_check_view"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      spark.sql(s"CREATE VIEW ${testDatabaseName}.${view} AS SELECT * FROM ${testDatabaseName}.${tbl}")
+      sqlMetastoreOperations.isView(testDatabaseName, view) mustBe true
+      sqlMetastoreOperations.isView(testDatabaseName, tbl) mustBe false
+      spark.sql(s"DROP VIEW IF EXISTS ${testDatabaseName}.${view}")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly listViews") {
+      val tbl = "views_list_table"
+      val view = "views_list_view"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      spark.sql(s"CREATE VIEW ${testDatabaseName}.${view} AS SELECT * FROM ${testDatabaseName}.${tbl}")
+      val views = sqlMetastoreOperations.listViews(testDatabaseName)
+      views must contain(view)
+      spark.sql(s"DROP VIEW IF EXISTS ${testDatabaseName}.${view}")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly executeQuery") {
+      noException must be thrownBy sqlMetastoreOperations.executeQuery(s"SELECT 1")
+    }
+
+    it("must correctly getTableDescription") {
+      val tbl = "describe_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val df = sqlMetastoreOperations.getTableDescription(testDatabaseName, tbl)
+      df must not be null
+      df.count() must be > 0L
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType") {
+      val tbl = "type_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      sqlMetastoreOperations.getTableType(testDatabaseName, tbl) mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Delta
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getDeltaTableDescription") {
+      val tbl = "delta_desc_test"
+      spark.range(5).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val desc = sqlMetastoreOperations.getDeltaTableDescription(testDatabaseName, tbl)
+      desc.format mustBe "delta"
+      desc.name must include(tbl)
+      desc.numFiles must be > 0L
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getCatalogTableDefinition") {
+      val tbl = "catalog_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val catalog = sqlMetastoreOperations.getCatalogTableDefinition(testDatabaseName, tbl)
+      catalog must not be null
+      catalog.identifier.table mustBe tbl
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getLocation") {
+      val tbl = "location_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val location = sqlMetastoreOperations.getLocation(testDatabaseName, tbl)
+      location must not be null
+      location.toString must include(tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getLatestVersion") {
+      val tbl = "version_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val version = sqlMetastoreOperations.getLatestVersion(testDatabaseName, tbl)
+      version must be >= 0L
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getClosestCommitTimestamp") {
+      val tbl = "commit_ts_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val futureTimestamp = Timestamp.valueOf("9999-12-31 00:00:00")
+      val ts = sqlMetastoreOperations.getClosestCommitTimestamp(testDatabaseName, tbl, futureTimestamp)
+      ts must not be null
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getClosestCommitTimestampFormatted") {
+      val tbl = "commit_ts_fmt_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val futureTimestamp = Timestamp.valueOf("9999-12-31 00:00:00")
+      val formatted = sqlMetastoreOperations.getClosestCommitTimestampFormatted(testDatabaseName, tbl, futureTimestamp)
+      formatted must not be empty
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getPartitions") {
+      val tbl = "partition_test"
+      
+      spark.range(1).toDF("id").withColumn("part_col", lit("a")).write.format("delta").partitionBy("part_col").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val partitions = sqlMetastoreOperations.getPartitions(testDatabaseName, tbl)
+      partitions must contain("part_col")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly createTable with schema") {
+      val tbl = "create_tbl_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-create-${System.currentTimeMillis}/warehouse/${testDatabaseName}/${tbl}"
+      sqlMetastoreOperations.createTable(
+        testDatabaseName, tbl,
+        me.rakirahman.feeds.io.table.TableIOFileTypes.Delta,
+        loc,
+        Array(("id", "INT"), ("name", "STRING")),
+        Array.empty,
+        Array.empty
+      )
+      sqlMetastoreOperations.tableExists(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly createTable with partitions and options") {
+      val tbl = "create_tbl_part_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-create2-${System.currentTimeMillis}/warehouse/${testDatabaseName}/${tbl}"
+      sqlMetastoreOperations.createTable(
+        testDatabaseName, tbl,
+        me.rakirahman.feeds.io.table.TableIOFileTypes.Delta,
+        loc,
+        Array(("id", "INT"), ("name", "STRING"), ("year", "STRING")),
+        Array("year"),
+        Array(("delta.autoOptimize.optimizeWrite", "true"), ("delta.autoOptimize.autoCompact", "true"))
+      )
+      sqlMetastoreOperations.tableExists(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly listTablesInView") {
+      val tbl = "view_tables_src"
+      val view = "view_tables_view"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      spark.sql(s"CREATE VIEW ${testDatabaseName}.${view} AS SELECT * FROM ${testDatabaseName}.${tbl}")
+      val tables = sqlMetastoreOperations.listTablesInView(testDatabaseName, view)
+      tables.exists(_.contains(tbl)) mustBe true
+      spark.sql(s"DROP VIEW IF EXISTS ${testDatabaseName}.${view}")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getCreateTableDefinition for a view") {
+      val tbl = "ctd_src"
+      val view = "ctd_view"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      spark.sql(s"CREATE VIEW ${testDatabaseName}.${view} AS SELECT * FROM ${testDatabaseName}.${tbl}")
+      val definition = sqlMetastoreOperations.getCreateTableDefinition(testDatabaseName, view)
+      assert(definition.nonEmpty)
+      spark.sql(s"DROP VIEW IF EXISTS ${testDatabaseName}.${view}")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getDistinctPartitionValues") {
+      val tbl = "dist_part_test"
+      spark.range(1).toDF("id").withColumn("part_col", lit("x")).write.format("delta").partitionBy("part_col").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      spark.range(1).toDF("id").withColumn("part_col", lit("y")).write.format("delta").partitionBy("part_col").mode("append").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val values = sqlMetastoreOperations.getDistinctPartitionValues(testDatabaseName, tbl, "part_col")
+      values must contain allOf ("x", "y")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly extractTablesInQuery") {
+      val tbl = "extract_tbl_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val tables = sqlMetastoreOperations.extractTablesInQuery(s"SELECT * FROM ${testDatabaseName}.${tbl}")
+      tables.exists(_.contains(tbl)) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly isEqual for identical DataFrames") {
+      val df1 = spark.range(5).toDF("id")
+      val df2 = spark.range(5).toDF("id")
+      sqlMetastoreOperations.isEqual(df1, df2) mustBe true
+    }
+
+    it("must correctly isEqual for different DataFrames") {
+      val df1 = spark.range(5).toDF("id")
+      val df2 = spark.range(10).toDF("id")
+      sqlMetastoreOperations.isEqual(df1, df2) mustBe false
+    }
+
+    it("must correctly mergeSchema with StructType") {
+      val tbl = "merge_struct_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val newSchema = new StructType().add("id", LongType).add("new_col", StringType, true)
+      noException must be thrownBy sqlMetastoreOperations.mergeSchema(testDatabaseName, tbl, newSchema)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly createDeltaTable") {
+      val tbl = "create_delta_tbl_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-delta-${System.currentTimeMillis}/warehouse/${testDatabaseName}/${tbl}"
+      spark.range(1).toDF("id").write.format("delta").save(loc)
+      sqlMetastoreOperations.createDeltaTable(testDatabaseName, tbl, loc)
+      sqlMetastoreOperations.tableExists(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for a delta table") {
+      val tbl = "table_type_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Delta
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for a parquet table") {
+      val tbl = "table_type_parquet_test"
+      spark.range(1).toDF("id").write.format("parquet").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Parquet
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for a csv table") {
+      val tbl = "table_type_csv_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-csv-${System.currentTimeMillis}"
+      spark.range(1).toDF("id").write.format("csv").option("header", "true").save(loc)
+      spark.sql(s"CREATE TABLE ${testDatabaseName}.${tbl} (id STRING) USING csv LOCATION '${loc}'")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Csv
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for a json table") {
+      val tbl = "table_type_json_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-json-${System.currentTimeMillis}"
+      spark.range(1).toDF("id").write.format("json").save(loc)
+      spark.sql(s"CREATE TABLE ${testDatabaseName}.${tbl} (id STRING) USING json LOCATION '${loc}'")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Json
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for an orc table") {
+      val tbl = "table_type_orc_test"
+      spark.range(1).toDF("id").write.format("orc").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Orc
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getTableType for a text table") {
+      val tbl = "table_type_text_test"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-text-${System.currentTimeMillis}"
+      spark.createDataFrame(Seq(Tuple1("hello"))).toDF("value").write.format("text").save(loc)
+      spark.sql(s"CREATE TABLE ${testDatabaseName}.${tbl} (value STRING) USING text LOCATION '${loc}'")
+      val tableType = sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      tableType mustBe me.rakirahman.feeds.io.table.TableIOFileTypes.Text
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getDeltaTableDescription with fields") {
+      val tbl = "delta_desc_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val desc = sqlMetastoreOperations.getDeltaTableDescription(testDatabaseName, tbl)
+      desc.format mustBe "delta"
+      desc.numFiles must be >= 0L
+      desc.sizeInBytes must be >= 0L
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getDeltaTableProperty") {
+      val tbl = "delta_prop_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val result = sqlMetastoreOperations.getDeltaTableProperty(testDatabaseName, tbl, "nonexistent.property")
+      result mustBe None
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly getCreateTableDefinition") {
+      val tbl = "create_def_test"
+      spark.range(1).toDF("id").write.format("parquet").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val definition = sqlMetastoreOperations.getCreateTableDefinition(testDatabaseName, tbl)
+      definition must include("CREATE TABLE")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly createTable with existing path") {
+      val tbl = "create_tbl_existing_path"
+      val loc = s"/tmp/SqlMetastoreOperationsTest-existpath-${System.currentTimeMillis}/warehouse/${testDatabaseName}/${tbl}"
+      spark.range(1).toDF("id").write.format("delta").save(loc)
+      sqlMetastoreOperations.createTable(
+        testDatabaseName, tbl,
+        me.rakirahman.feeds.io.table.TableIOFileTypes.Delta,
+        loc,
+        Array(("id", "INT")),
+        Array.empty,
+        Array.empty
+      )
+      sqlMetastoreOperations.tableExists(testDatabaseName, tbl) mustBe true
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly mergeSchema with column array when no changes needed") {
+      val tbl = "merge_schema_arr_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      noException must be thrownBy sqlMetastoreOperations.mergeSchema(
+        testDatabaseName, tbl, Array(("id", "BIGINT")), Array.empty[String]
+      )
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must throw on breaking schema changes in mergeSchema with column array") {
+      val tbl = "merge_schema_break_test"
+      spark.range(1).toDF("id").withColumn("extra", lit("x")).write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val ex = the[RuntimeException] thrownBy sqlMetastoreOperations.mergeSchema(
+        testDatabaseName, tbl, Array(("id", "BIGINT")), Array.empty[String]
+      )
+      ex.getMessage must include("Breaking schema changes")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly isEqual when schemas differ") {
+      val df1 = spark.range(5).toDF("id")
+      val df2 = spark.range(5).toDF("value")
+      sqlMetastoreOperations.isEqual(df1, df2) mustBe false
+    }
+
+    it("must correctly tableExistsAtPath for delta") {
+      val loc = s"/tmp/SqlMetastoreOperationsTest-existpath2-${System.currentTimeMillis}"
+      spark.range(1).toDF("id").write.format("delta").save(loc)
+      sqlMetastoreOperations.tableExistsAtPath(loc, me.rakirahman.feeds.io.table.TableIOFileTypes.Delta) mustBe true
+    }
+
+    it("must return false for tableExistsAtPath when path does not exist") {
+      val loc = s"/tmp/nonexistent-path-${System.currentTimeMillis}"
+      sqlMetastoreOperations.tableExistsAtPath(loc, me.rakirahman.feeds.io.table.TableIOFileTypes.Delta) mustBe false
+    }
+
+    it("must return false for tableExists when database does not exist") {
+      sqlMetastoreOperations.tableExists("nonexistent_db_xyz", "some_table") mustBe false
+    }
+
+    it("must return empty for listTables when database does not exist") {
+      sqlMetastoreOperations.listTables("nonexistent_db_xyz") mustBe empty
+    }
+
+    it("must return empty for listTablesWithPrefix when database does not exist") {
+      sqlMetastoreOperations.listTablesWithPrefix("nonexistent_db_xyz", "prefix") mustBe empty
+    }
+
+    it("must return empty for findTablesLike when database does not exist") {
+      sqlMetastoreOperations.findTablesLike("nonexistent_db_xyz", "pattern") mustBe empty
+    }
+
+    it("must return false for tableHasData when database does not exist") {
+      sqlMetastoreOperations.tableHasData("nonexistent_db_xyz", "some_table") mustBe false
+    }
+
+    it("must return false for isView when database does not exist") {
+      sqlMetastoreOperations.isView("nonexistent_db_xyz", "some_view") mustBe false
+    }
+
+    it("must return empty for listViews when database does not exist") {
+      sqlMetastoreOperations.listViews("nonexistent_db_xyz") mustBe empty
+    }
+
+    it("must throw for unsupported getTableType") {
+      val tbl = "table_type_unsupported_test"
+      spark.range(1).toDF("id").write.format("parquet").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      noException must be thrownBy sqlMetastoreOperations.getTableType(testDatabaseName, tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must correctly mergeSchema with partition that already exists") {
+      val tbl = "merge_schema_part_exists_test"
+      spark.range(1).toDF("id").withColumn("part_col", lit("x")).write.format("delta").partitionBy("part_col").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      noException must be thrownBy sqlMetastoreOperations.mergeSchema(
+        testDatabaseName, tbl, Array(("id", "BIGINT"), ("part_col", "STRING")), Array("part_col")
+      )
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must throw on breaking partition changes in mergeSchema") {
+      val tbl = "merge_schema_part_break_test"
+      spark.range(1).toDF("id").withColumn("part_col", lit("x")).write.format("delta").partitionBy("part_col").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val ex = the[RuntimeException] thrownBy sqlMetastoreOperations.mergeSchema(
+        testDatabaseName, tbl, Array(("id", "BIGINT")), Array.empty[String]
+      )
+      ex.getMessage must include("Breaking")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
+
+    it("must throw on new partition in mergeSchema") {
+      val tbl = "merge_schema_new_part_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val ex = the[RuntimeException] thrownBy sqlMetastoreOperations.mergeSchema(
+        testDatabaseName, tbl, Array(("id", "BIGINT")), Array("new_partition")
+      )
+      ex.getMessage must include("partition")
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
   }
 }

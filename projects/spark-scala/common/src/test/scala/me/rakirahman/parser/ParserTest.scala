@@ -517,6 +517,30 @@ class ParserTest extends AnyFunSpec with Matchers {
       graphics("colorDepths").asInstanceOf[scala.collection.Seq[scala.math.BigInt]].toArray shouldBe Array(24, 32)
       graphics("isFullScreen") shouldBe false
     }
+
+    it("should throw on invalid JSON in loadMap") {
+      assertThrows[Exception] {
+        JsonParser.loadMap("not valid json {{{")
+      }
+    }
+
+    it("should throw on invalid JSON in loadClass") {
+      assertThrows[Exception] {
+        JsonParser.loadClass("not valid json {{{", classOf[CaseDriverSettings])
+      }
+    }
+
+    it("should throw UnsupportedOperationException when allowCaseInsensitive is true") {
+      assertThrows[UnsupportedOperationException] {
+        JsonParser.loadClass("{}", classOf[CaseDriverSettings], allowCaseInsensitivePropertiesInPayload = true)
+      }
+    }
+
+    it("should throw UnsupportedOperationException when allowForeign is false") {
+      assertThrows[UnsupportedOperationException] {
+        JsonParser.loadClass("{}", classOf[CaseDriverSettings], allowForeignPropertiesInPayload = false)
+      }
+    }
   }
 }
 // @formatter:on

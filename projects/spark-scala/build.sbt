@@ -44,6 +44,13 @@ lazy val commonExecutor = project
     commonExecutorAssemblySettings,
     testSettings,
     coverageSettings,
+    coverageExcludedPackages := Seq(
+      // Spark plugins require full cluster lifecycle and are not unit-testable
+      "me\\.rakirahman\\.spark\\.plugin\\.uncachingplugin\\..*",
+      "me\\.rakirahman\\.spark\\.plugin\\.httpdumperplugin\\.HttpDumper.*Plugin.*",
+      "me\\.rakirahman\\.spark\\.plugin\\.httpdumperplugin\\.HttpDumper.*Server.*",
+      "me\\.rakirahman\\.spark\\.plugin\\.rpcplugin\\..*"
+    ).mkString(";"),
     version := commitVersion.value,
     libraryDependencies ++= deltaDependencies
       ++ fileTypeDependencies
@@ -65,6 +72,17 @@ lazy val common = project
     genericAssemblySettings,
     testSettings,
     coverageSettings,
+    coverageExcludedPackages := Seq(
+      // Fabric/Synapse classes depend on mssparkutils and are not unit-testable
+      "me\\.rakirahman\\.feeds\\.storage\\.filesystem\\.fabric\\..*",
+      "me\\.rakirahman\\.config\\.YamlEnvironmentConfiguration",
+      "me\\.rakirahman\\.spark\\.SparkSessionManager",
+      "me\\.rakirahman\\.spark\\.SparkSessionExtensions.*",
+      // JvmManager uses getBootClassPath which is unsupported on Java 17
+      "me\\.rakirahman\\.jvm\\..*",
+      // DeltaUpserter retry/error paths require mocking concurrent Delta merge failures
+      "me\\.rakirahman\\.etl\\.transformer\\.merge\\.DeltaUpserter.*"
+    ).mkString(";"),
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
       ++ deltaDependencies
@@ -88,6 +106,8 @@ lazy val sparkDemo = project
     genericAssemblySettings,
     testSettings,
     coverageSettings,
+    // App entry points + config requiring mssparkutils (tested via Jest/integration)
+    coverageExcludedPackages := "me\\.rakirahman\\.sparkdemo\\..*",
     version := version.value,
     // The provided scope packages are not available from common, it seems.
     libraryDependencies ++= sparkDependencies
