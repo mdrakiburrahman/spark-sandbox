@@ -2,15 +2,13 @@ package me.rakirahman.etl.schema.extensions
 
 import org.apache.spark.sql.types._
 
-/** Provides extension methods for Spark [[DataType]] objects to support type
-  * conversions.
+/** Provides extension methods for Spark [[DataType]] objects to support type conversions.
   */
 object DataTypeExtensions {
 
   implicit class DataTypeExtensions(sparkType: DataType) {
 
-    /** Converts a Spark [[DataType]] to its corresponding SQL Server type
-      * string representation.
+    /** Converts a Spark [[DataType]] to its corresponding SQL Server type string representation.
       *
       * @return
       *   A string representing the equivalent SQL Server data type

@@ -16,11 +16,9 @@ trait DeltaTimeTravelOperations {
     * @param desiredTimestamp
     *   The desired timestamp.
     * @param returnLastCommitIfDesiredTimestampAfterLatestCommit
-    *   If [[true]], can return the last commit if the desired timestamp is
-    *   after the latest commit.
+    *   If [[true]], can return the last commit if the desired timestamp is after the latest commit.
     * @param returnFirstCommitIfDesiredTimestampBeforeFirstCommit
-    *   If [[true]], can return the first commit if the desired timestamp is
-    *   before the first commit.
+    *   If [[true]], can return the first commit if the desired timestamp is before the first commit.
     */
   def getClosestCommit(
       databaseName: String,
@@ -60,19 +58,12 @@ trait DeltaTimeTravelOperations {
       desiredTimestamp: Timestamp
   ): Long
 
-  /** Get the closest commit timestamp to the desired timestamp for a table -
-    * formatted as a string.
+  /** Get the closest commit timestamp to the desired timestamp for a table - formatted as a string.
     *
-    * Note: It is deterministic to use 'VERSION AS OF
-    * [[getClosestCommitVersion]]' - because, when we pass 'TIMESTAMP AS OF
-    * [[getClosestCommitTimestampFormatted]]' via SQL syntax, there's a
-    * possibility we can run into rounding issues from the SQL parser (e.g. say
-    * the commit was done a few microserconds after the [[desiredTimestamp]],
-    * Delta will throw a [[DeltaErrors.TemporallyUnstableInputException]]]
+    * Note: It is deterministic to use 'VERSION AS OF [[getClosestCommitVersion]]' - because, when we pass 'TIMESTAMP AS OF [[getClosestCommitTimestampFormatted]]' via SQL syntax, there's a possibility we can run into rounding issues from the SQL parser (e.g. say the commit was done a few
+    * microserconds after the [[desiredTimestamp]], Delta will throw a [[DeltaErrors.TemporallyUnstableInputException]]]
     *
-    * Therefore, please prefer to use [[getClosestCommitVersion]] whenever the
-    * situation allows for both options. Otherwise, you need to pick a
-    * [[format]] that is granular enough to avoid rounding issues.
+    * Therefore, please prefer to use [[getClosestCommitVersion]] whenever the situation allows for both options. Otherwise, you need to pick a [[format]] that is granular enough to avoid rounding issues.
     *
     * @param databaseName
     *   The name of the database.

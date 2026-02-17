@@ -4,8 +4,7 @@ package me.rakirahman.etl.transformer.scd
   */
 object SCDTransformationMetadata {
 
-  /** Represents the information required for generating surrogate keys in
-    * Slowly Changing Dimension (SCD) transformations - for a dimension table.
+  /** Represents the information required for generating surrogate keys in Slowly Changing Dimension (SCD) transformations - for a dimension table.
     *
     * @param surrogateKeyCol
     *   The name of the column that stores the surrogate key.
@@ -20,8 +19,7 @@ object SCDTransformationMetadata {
       surrogateKeyHashLogic: String
   )
 
-  /** Represents the information required for performing Slowly Changing
-    * Dimension (SCD) transformations.
+  /** Represents the information required for performing Slowly Changing Dimension (SCD) transformations.
     *
     * @param primaryKeyCol
     *   The name of the primary key column.
@@ -30,8 +28,7 @@ object SCDTransformationMetadata {
     * @param nonSCDColumns
     *   An array of column names that are not part of the SCD transformation.
     * @param fullColumnsUpsertMap
-    *   A map that maps the column names to their corresponding upsert
-    *   statements in the SCD transformation.
+    *   A map that maps the column names to their corresponding upsert statements in the SCD transformation.
     */
   case class SCDTransformationInfo(
       primaryKeyCol: String,
@@ -40,8 +37,7 @@ object SCDTransformationMetadata {
       fullColumnsUpsertMap: Map[String, String]
   )
 
-  /** Represents the information required for performing non-SCD
-    * transformations.
+  /** Represents the information required for performing non-SCD transformations.
     *
     * @param allColumns
     *   An array of all column names in the non-SCD transformation.

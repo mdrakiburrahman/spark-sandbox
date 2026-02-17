@@ -18,11 +18,7 @@ import org.scalatest.matchers.must.Matchers
 
 /** Integration tests for SCD Star Dimension Processing with celebrity data.
   */
-class StarDimensionProcessorIntegrationTest
-    extends AnyFunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach {
+class StarDimensionProcessorIntegrationTest extends AnyFunSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach {
 
   var metadataCalculator: SparkKeyMetadataCalculator = _
   var spark: SparkSession = _
@@ -167,70 +163,79 @@ class StarDimensionProcessorIntegrationTest
     /** A helper function to test the SCD UPSERT functionality for various table types.
       */
     def ddlTestFunc(
-      schema: StarDimension2Schema,
-      testTwist: String,
-      originalContent: Seq[Row],
-      firstUpdates: Seq[Row],
-      secondUpdates: Seq[Row],
-      dataValidations: Seq[Row],
-      originalSchema: StructType,
-      updateSchema: StructType,
-      validationSchema: StructType,
-      validationQuery: String,
-      primaryKey: String,
-      primaryKeyHashCalc: String,
-      tableName: String,
-      naturalKeyCol: String,
-      scdEffectiveStartCol: String
+        schema: StarDimension2Schema,
+        testTwist: String,
+        originalContent: Seq[Row],
+        firstUpdates: Seq[Row],
+        secondUpdates: Seq[Row],
+        dataValidations: Seq[Row],
+        originalSchema: StructType,
+        updateSchema: StructType,
+        validationSchema: StructType,
+        validationQuery: String,
+        primaryKey: String,
+        primaryKeyHashCalc: String,
+        tableName: String,
+        naturalKeyCol: String,
+        scdEffectiveStartCol: String
     ): Unit = {
 
-        // Setup
-        //
-        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
+      // Setup
+      //
+      val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
 
-        spark.createDataFrame(spark.sparkContext.parallelize(originalContent), originalSchema)
+      spark
+        .createDataFrame(spark.sparkContext.parallelize(originalContent), originalSchema)
+        .transform(SCDTransformations.withVersionedPrimaryKey(schema))
+        .withColumn(primaryKey, expr(primaryKeyHashCalc))
+        .withColumn("gold_ingest_time", to_timestamp(col("gold_ingest_time"), timestampFormat))
+        .withColumn("row_effective_start", to_timestamp(col("row_effective_start"), timestampFormat))
+        .withColumn("row_effective_end", to_timestamp(col("row_effective_end"), timestampFormat))
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .option("overwriteSchema", "true")
+        .saveAsTable(s"${testDatabaseName}.${tableName}")
+
+      // Exercise
+      //
+      List((firstUpdates), (secondUpdates)).foreach {
+        case (updateData) => {
+          val updateDF = spark
+            .createDataFrame(spark.sparkContext.parallelize(updateData), updateSchema)
             .transform(SCDTransformations.withVersionedPrimaryKey(schema))
             .withColumn(primaryKey, expr(primaryKeyHashCalc))
             .withColumn("gold_ingest_time", to_timestamp(col("gold_ingest_time"), timestampFormat))
             .withColumn("row_effective_start", to_timestamp(col("row_effective_start"), timestampFormat))
-            .withColumn("row_effective_end", to_timestamp(col("row_effective_end"), timestampFormat))
-            .write
-            .format("delta")
-            .mode("overwrite")
-            .option("overwriteSchema", "true")
-            .saveAsTable(s"${testDatabaseName}.${tableName}")
 
-        // Exercise
-        //
-        List((firstUpdates), (secondUpdates)).foreach {
-            case (updateData) => {
-                val updateDF = spark.createDataFrame(spark.sparkContext.parallelize(updateData),updateSchema)
-                    .transform(SCDTransformations.withVersionedPrimaryKey(schema))
-                    .withColumn(primaryKey, expr(primaryKeyHashCalc))
-                    .withColumn("gold_ingest_time",to_timestamp(col("gold_ingest_time"), timestampFormat))
-                    .withColumn("row_effective_start",to_timestamp(col("row_effective_start"), timestampFormat))
-
-                scdProcessor.processTableDim(
-                    sourceDF = updateDF,
-                    destinationDatabase = testDatabaseName,
-                    destinationTableName = tableName,
-                    sourceNaturalKeyCol = naturalKeyCol,
-                    destinationNaturalKeyCol = naturalKeyCol,
-                    timestampOrderCol = scdEffectiveStartCol,
-                    colScdEffectiveStartTimeName = scdEffectiveStartCol
-                )
-            }
+          scdProcessor.processTableDim(
+            sourceDF = updateDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = tableName,
+            sourceNaturalKeyCol = naturalKeyCol,
+            destinationNaturalKeyCol = naturalKeyCol,
+            timestampOrderCol = scdEffectiveStartCol,
+            colScdEffectiveStartTimeName = scdEffectiveStartCol
+          )
         }
-        // @formatter:on
+      }
+      // @formatter:on
 
-        // Validate
-        //
-        assert(spark.sql(s"""|SELECT * FROM ${testDatabaseName}.${tableName}
+      // Validate
+      //
+      assert(
+        spark
+          .sql(s"""|SELECT * FROM ${testDatabaseName}.${tableName}
                              |WHERE  is_row_effective = true
                              |  AND  row_effective_end != '${endOfTime}'
-                             |""".stripMargin).count() == 0, s"Found rows with is_row_effective = true, but row_effective_end != '${endOfTime}'")
+                             |""".stripMargin)
+          .count() == 0,
+        s"Found rows with is_row_effective = true, but row_effective_end != '${endOfTime}'"
+      )
 
-        assert(spark.sql(s"""|SELECT * FROM ${testDatabaseName}.${tableName}
+      assert(
+        spark
+          .sql(s"""|SELECT * FROM ${testDatabaseName}.${tableName}
                              |WHERE ${naturalKeyCol} IN (
                              |    SELECT ${naturalKeyCol}
                              |    FROM ${testDatabaseName}.${tableName}
@@ -238,219 +243,423 @@ class StarDimensionProcessorIntegrationTest
                              |    GROUP BY ${naturalKeyCol}
                              |    HAVING COUNT(*) > 1
                              |)
-                             |""".stripMargin).count() == 0, "Found multiple natural keys with is_row_effective = true")
+                             |""".stripMargin)
+          .count() == 0,
+        "Found multiple natural keys with is_row_effective = true"
+      )
 
-        val expectedValuesDF = spark.createDataFrame(spark.sparkContext.parallelize(dataValidations), validationSchema)
-        val actualValuesDF = spark.sql(s"""|SELECT ${validationQuery}
+      val expectedValuesDF = spark.createDataFrame(spark.sparkContext.parallelize(dataValidations), validationSchema)
+      val actualValuesDF = spark.sql(s"""|SELECT ${validationQuery}
                                            |FROM ${testDatabaseName}.${tableName}
                                            |WHERE is_row_effective IS TRUE
                                            |""".stripMargin)
 
-        assert(actualValuesDF.collect().toSet == expectedValuesDF.collect().toSet, "One or more rows have incorrect values after UPSERT.")
+      assert(actualValuesDF.collect().toSet == expectedValuesDF.collect().toSet, "One or more rows have incorrect values after UPSERT.")
 
-        val duplicatePkCount = metadataCalculator.getDuplicateKeyCount(testDatabaseName, tableName, primaryKey)
-        val expiredDuplicatePkCount = metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, tableName, primaryKey, "is_row_effective")
+      val duplicatePkCount = metadataCalculator.getDuplicateKeyCount(testDatabaseName, tableName, primaryKey)
+      val expiredDuplicatePkCount = metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, tableName, primaryKey, "is_row_effective")
 
-        assert(duplicatePkCount - expiredDuplicatePkCount == 0, s"Found non-expired duplicate primary keys in the table even though they should never exist; Total: ${duplicatePkCount} | Expired: ${expiredDuplicatePkCount}.")
+      assert(
+        duplicatePkCount - expiredDuplicatePkCount == 0,
+        s"Found non-expired duplicate primary keys in the table even though they should never exist; Total: ${duplicatePkCount} | Expired: ${expiredDuplicatePkCount}."
+      )
     }
 
     serialDdlTestFormats.foreach {
       case (schema, testTwist, originalContent, firstUpdates, secondUpdates, dataValidations, originalSchema, updateSchema, validationSchema, validationQuery, primaryKey, primaryKeyHashCalc, tableName, naturalKeyCol, scdEffectiveStartCol) => {
         it(s"must be able to SCD UPSERT ${tableName} dimension table in serial: ${testTwist}") {
-            ddlTestFunc(schema, testTwist, originalContent, firstUpdates, secondUpdates, dataValidations, originalSchema, updateSchema, validationSchema, validationQuery, primaryKey, primaryKeyHashCalc, tableName, naturalKeyCol, scdEffectiveStartCol)
+          ddlTestFunc(
+            schema,
+            testTwist,
+            originalContent,
+            firstUpdates,
+            secondUpdates,
+            dataValidations,
+            originalSchema,
+            updateSchema,
+            validationSchema,
+            validationQuery,
+            primaryKey,
+            primaryKeyHashCalc,
+            tableName,
+            naturalKeyCol,
+            scdEffectiveStartCol
+          )
         }
       }
     }
 
     it("must generate deterministic and unique primary keys per hash version") {
 
-        val session = spark
-        import session.implicits._
+      val session = spark
+      import session.implicits._
 
-        val df = Seq((            1,      "elon musk",     "south africa",        "pretoria",                    true,     originalTableCreationTime,                      endOfTime))
-                 .toDF( "celeb_id",           "name",          "country",          "region",      "is_row_effective",         "row_effective_start",             "row_effective_end")
+      val df = Seq((1, "elon musk", "south africa", "pretoria", true, originalTableCreationTime, endOfTime))
+        .toDF("celeb_id", "name", "country", "region", "is_row_effective", "row_effective_start", "row_effective_end")
 
-        val schema = CelebDim
-        val pk = schema.primaryKey._1
-        val pkv = schema.primaryKeyHashVersionColumn._1
+      val schema = CelebDim
+      val pk = schema.primaryKey._1
+      val pkv = schema.primaryKeyHashVersionColumn._1
 
-        val dfV1 = df.withColumn(pkv, lit(1))
-                     .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
+      val dfV1 = df
+        .withColumn(pkv, lit(1))
+        .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
 
-        val dfV2 = df.withColumn(pkv, lit(1))
-                     .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
+      val dfV2 = df
+        .withColumn(pkv, lit(1))
+        .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
 
-        val dfV3 = df.withColumn(pkv, lit(3))
-                     .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
+      val dfV3 = df
+        .withColumn(pkv, lit(3))
+        .withColumn(pk, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(pk)))
 
-        assert(dfV1.select(pk).collect().head(0) == dfV2.select(pk).collect().head(0), "Received different primary keys for same hash version.")
-        assert(dfV3.select(pk).collect().head(0) != dfV2.select(pk).collect().head(0), "Received same primary keys for different hash version.")
+      assert(dfV1.select(pk).collect().head(0) == dfV2.select(pk).collect().head(0), "Received different primary keys for same hash version.")
+      assert(dfV3.select(pk).collect().head(0) != dfV2.select(pk).collect().head(0), "Received same primary keys for different hash version.")
     }
 
     it("must be able to identify non-expired duplicate primary keys") {
 
-        // Setup
-        //
-        val primaryKey = "celeb_key"
+      // Setup
+      //
+      val primaryKey = "celeb_key"
+
+      val session = spark
+      import session.implicits._
+
+      // Exercise: Original table with no duplicates
+      //
+      Seq(
+        (1, "elon musk", "south africa", "pretoria", true, originalTableCreationTime, endOfTime),
+        (2, "jeff bezos", "us", "albuquerque", true, originalTableCreationTime, endOfTime),
+        (3, "bill gates", "us", "seattle", true, originalTableCreationTime, endOfTime)
+      ).toDF("celeb_id", "name", "country", "region", "is_row_effective", "row_effective_start", "row_effective_end")
+        .transform(SCDTransformations.withVersionedPrimaryKey(CelebDim))
+        .withColumn(primaryKey, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(primaryKey)))
+        .withColumn("row_effective_start", to_timestamp(col("row_effective_start"), timestampFormat))
+        .withColumn("row_effective_end", to_timestamp(col("row_effective_end"), timestampFormat))
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .option("overwriteSchema", "true")
+        .saveAsTable(s"${testDatabaseName}.celeb_dim")
+      assert(
+        metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) == 0,
+        "Found duplicate primary keys in the table even though they should not exist right now."
+      )
+      assert(
+        metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") == 0,
+        "Found expired duplicate primary keys in the table even though they should not exist right now."
+      )
+
+      // Exercise: Force insert non-effective duplicates for bill
+      //
+      val billPk = spark.sql(s"SELECT ${primaryKey} FROM ${testDatabaseName}.celeb_dim WHERE celeb_id = 3").collect().head.getString(0)
+      val numIneffectiveDuplicatesBill = 2
+      for (i <- 1 to numIneffectiveDuplicatesBill) {
+        spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
+                             (celeb_id,
+                              name,
+                              country,
+                              region,
+                              is_row_effective,
+                              row_effective_start,
+                              row_effective_end,
+                              ${primaryKey},
+                              ${CelebDim.primaryKeyHashVersionColumn._1})
+                      VALUES (3,
+                              'bill gates',
+                              'us',
+                              'seattle',
+                              false,
+                              '${firstScdPerformedTime}',
+                              '${endOfTime}',
+                              '${billPk}',
+                              2)
+                  """)
+        assert(metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) == i + 1, "Did not find expected duplicate primary keys in the table.")
+        assert(
+          metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") == i + 1,
+          "Did not find expected expired duplicate primary keys in the table."
+        )
+      }
+
+      // Exercise: Force insert effective duplicates for bill
+      //
+      spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
+                             (celeb_id,
+                              name,
+                              country,
+                              region,
+                              is_row_effective,
+                              row_effective_start,
+                              row_effective_end,
+                              ${primaryKey},
+                              ${CelebDim.primaryKeyHashVersionColumn._1})
+                      VALUES (3,
+                              'bill gates',
+                              'us',
+                              'seattle',
+                              true,
+                              '${firstScdPerformedTime}',
+                              '${endOfTime}',
+                              '${billPk}',
+                              2)
+                  """)
+
+      val numTotalDuplicateKeysBill = 1 + numIneffectiveDuplicatesBill + 1 // Original + Ineffective + Effective
+      assert(
+        metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
+          numTotalDuplicateKeysBill,
+        "Did not find expected duplicate primary keys in the table."
+      )
+      assert(
+        metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
+          0, // The Effective insert above has nullified integrity
+        "Did not find expected expired duplicate primary keys in the table."
+      )
+
+      // Exercise: Force insert non-effective duplicates for jeff bezos
+      // This proves that keys scale independently despite having bad data present in other keys.
+      //
+      val jeffPk = spark.sql(s"SELECT ${primaryKey} FROM ${testDatabaseName}.celeb_dim WHERE celeb_id = 2 AND is_row_effective = true").collect().head.getString(0)
+      val numIneffectiveDuplicatesJeff = 3
+      for (i <- 1 to numIneffectiveDuplicatesJeff) {
+        spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
+                             (celeb_id,
+                              name,
+                              country,
+                              region,
+                              is_row_effective,
+                              row_effective_start,
+                              row_effective_end,
+                              ${primaryKey},
+                              ${CelebDim.primaryKeyHashVersionColumn._1})
+                      VALUES (2,
+                              'jeff bezos',
+                              'us',
+                              'albuquerque',
+                              false,
+                              '${firstScdPerformedTime}',
+                              '${endOfTime}',
+                              '${jeffPk}',
+                              2)
+                  """)
+        assert(
+          metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
+            numTotalDuplicateKeysBill + i + 1,
+          "Did not find expected duplicate primary keys in the table."
+        )
+        assert(
+          metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
+            i + 1,
+          "Did not find expected expired duplicate primary keys in the table."
+        )
+      }
+
+      // Exercise: Force insert effective duplicates for jeff
+      //
+      spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
+                             (celeb_id,
+                              name,
+                              country,
+                              region,
+                              is_row_effective,
+                              row_effective_start,
+                              row_effective_end,
+                              ${primaryKey},
+                              ${CelebDim.primaryKeyHashVersionColumn._1})
+                      VALUES (2,
+                              'jeff bezos',
+                              'us',
+                              'albuquerque',
+                              true,
+                              '${firstScdPerformedTime}',
+                              '${endOfTime}',
+                              '${jeffPk}',
+                              2)
+                  """)
+
+      val numTotalDuplicateKeysJeff = 1 + numIneffectiveDuplicatesJeff + 1 // Original + Ineffective + Effective
+      assert(
+        metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
+          numTotalDuplicateKeysBill + numTotalDuplicateKeysJeff,
+        "Did not find expected duplicate primary keys in the table."
+      )
+      assert(
+        metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
+          0, // The Effective insert above has nullified integrity
+        "Did not find expected expired duplicate primary keys in the table."
+      )
+    }
+
+  }
+
+  describe("SCDDeltaUpsertDataFrameProcessor.processTableFact") {
+
+    // @formatter:off
+    it("must select configured columns, deduplicate by primary key, and register temp view") {
+
+        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
 
         val session = spark
         import session.implicits._
 
-        // Exercise: Original table with no duplicates
-        //
-        Seq((            1,      "elon musk",     "south africa",        "pretoria",                    true,     originalTableCreationTime,                      endOfTime),
-            (            2,     "jeff bezos",               "us",     "albuquerque",                    true,     originalTableCreationTime,                      endOfTime),
-            (            3,     "bill gates",               "us",         "seattle",                    true,     originalTableCreationTime,                      endOfTime)
-        ).toDF("celeb_id",           "name",          "country",          "region",      "is_row_effective",         "row_effective_start",             "row_effective_end")
-         .transform(SCDTransformations.withVersionedPrimaryKey(CelebDim))
-         .withColumn(primaryKey, expr(CelebSCDTransformationMetadataMappings.SurrogateColumnToHashMap(primaryKey)))
-         .withColumn("row_effective_start", to_timestamp(col("row_effective_start"), timestampFormat))
-         .withColumn("row_effective_end", to_timestamp(col("row_effective_end"), timestampFormat))
-         .write
-         .format("delta")
-         .mode("overwrite")
-         .option("overwriteSchema", "true")
-         .saveAsTable(s"${testDatabaseName}.celeb_dim")
-        assert(metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) == 0, "Found duplicate primary keys in the table even though they should not exist right now.")
-        assert(metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") == 0, "Found expired duplicate primary keys in the table even though they should not exist right now.")
+        val sourceDF = Seq(
+            (1, 100, "concert",   "2024-01-01", 50000),
+            (2, 200, "gala",      "2024-01-02", 75000),
+            (3, 100, "premiere",  "2024-01-03", 30000),
+            (1, 100, "concert",   "2024-01-01", 50000)   // duplicate event_id = 1
+        ).toDF("event_id", "celeb_id", "event_name", "event_date", "revenue")
 
-        // Exercise: Force insert non-effective duplicates for bill
-        //
-        val billPk = spark.sql(s"SELECT ${primaryKey} FROM ${testDatabaseName}.celeb_dim WHERE celeb_id = 3").collect().head.getString(0)
-        val numIneffectiveDuplicatesBill = 2
-        for (i <- 1 to numIneffectiveDuplicatesBill) {
-            spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
-                             (celeb_id,
-                              name,
-                              country,
-                              region,
-                              is_row_effective,
-                              row_effective_start,
-                              row_effective_end,
-                              ${primaryKey},
-                              ${CelebDim.primaryKeyHashVersionColumn._1})
-                      VALUES (3,
-                              'bill gates',
-                              'us',
-                              'seattle',
-                              false,
-                              '${firstScdPerformedTime}',
-                              '${endOfTime}',
-                              '${billPk}',
-                              2)
-                  """)
-            assert(metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) == i + 1, "Did not find expected duplicate primary keys in the table.")
-            assert(metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") == i + 1, "Did not find expected expired duplicate primary keys in the table.")
-        }
+        val resultDF = scdProcessor.processTableFact(
+            sourceDF = sourceDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = "celeb_event_fact",
+            incomingTableName = "incoming_celeb_events",
+            integrityQuery = "SELECT * FROM incoming_celeb_events",
+            primaryKeyColumnName = "event_id"
+        )
 
-        // Exercise: Force insert effective duplicates for bill
-        //
-        spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
-                             (celeb_id,
-                              name,
-                              country,
-                              region,
-                              is_row_effective,
-                              row_effective_start,
-                              row_effective_end,
-                              ${primaryKey},
-                              ${CelebDim.primaryKeyHashVersionColumn._1})
-                      VALUES (3,
-                              'bill gates',
-                              'us',
-                              'seattle',
-                              true,
-                              '${firstScdPerformedTime}',
-                              '${endOfTime}',
-                              '${billPk}',
-                              2)
-                  """)
-
-        val numTotalDuplicateKeysBill = 1 + numIneffectiveDuplicatesBill + 1 // Original + Ineffective + Effective
-        assert(
-                metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
-                 numTotalDuplicateKeysBill,
-                "Did not find expected duplicate primary keys in the table."
-              )
-        assert(
-                metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
-                0, // The Effective insert above has nullified integrity
-                "Did not find expected expired duplicate primary keys in the table."
-              )
-
-        // Exercise: Force insert non-effective duplicates for jeff bezos
-        // This proves that keys scale independently despite having bad data present in other keys.
-        //
-        val jeffPk = spark.sql(s"SELECT ${primaryKey} FROM ${testDatabaseName}.celeb_dim WHERE celeb_id = 2 AND is_row_effective = true").collect().head.getString(0)
-        val numIneffectiveDuplicatesJeff = 3
-        for (i <- 1 to numIneffectiveDuplicatesJeff) {
-            spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
-                             (celeb_id,
-                              name,
-                              country,
-                              region,
-                              is_row_effective,
-                              row_effective_start,
-                              row_effective_end,
-                              ${primaryKey},
-                              ${CelebDim.primaryKeyHashVersionColumn._1})
-                      VALUES (2,
-                              'jeff bezos',
-                              'us',
-                              'albuquerque',
-                              false,
-                              '${firstScdPerformedTime}',
-                              '${endOfTime}',
-                              '${jeffPk}',
-                              2)
-                  """)
-            assert(
-                    metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
-                    numTotalDuplicateKeysBill + i + 1,
-                    "Did not find expected duplicate primary keys in the table."
-                  )
-            assert(
-                    metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
-                    i + 1,
-                    "Did not find expected expired duplicate primary keys in the table."
-                  )
-        }
-
-        // Exercise: Force insert effective duplicates for jeff
-        //
-        spark.sql(s"""INSERT INTO ${testDatabaseName}.celeb_dim
-                             (celeb_id,
-                              name,
-                              country,
-                              region,
-                              is_row_effective,
-                              row_effective_start,
-                              row_effective_end,
-                              ${primaryKey},
-                              ${CelebDim.primaryKeyHashVersionColumn._1})
-                      VALUES (2,
-                              'jeff bezos',
-                              'us',
-                              'albuquerque',
-                              true,
-                              '${firstScdPerformedTime}',
-                              '${endOfTime}',
-                              '${jeffPk}',
-                              2)
-                  """)
-
-        val numTotalDuplicateKeysJeff = 1 + numIneffectiveDuplicatesJeff + 1 // Original + Ineffective + Effective
-        assert(
-                metadataCalculator.getDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey) ==
-                 numTotalDuplicateKeysBill + numTotalDuplicateKeysJeff,
-                "Did not find expected duplicate primary keys in the table."
-              )
-        assert(
-                metadataCalculator.getScdExpiredDuplicateKeyCount(testDatabaseName, "celeb_dim", primaryKey, "is_row_effective") ==
-                0, // The Effective insert above has nullified integrity
-                "Did not find expected expired duplicate primary keys in the table."
-              )
+        val resultRows = resultDF.collect()
+        assert(resultRows.length == 3, s"Expected 3 rows after deduplication, got ${resultRows.length}")
+        assert(resultDF.columns.toSet == Set("event_id", "celeb_id", "event_name", "event_date", "revenue"), "Result DataFrame should contain exactly the configured fact columns")
     }
+
+    it("must apply referential integrity query to filter fact rows against dimension") {
+
+        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
+
+        val session = spark
+        import session.implicits._
+
+        Seq(
+            (100, "elon musk"),
+            (200, "jeff bezos")
+        ).toDF("celeb_id", "name")
+         .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+         .saveAsTable(s"${testDatabaseName}.celeb_lookup")
+
+        val sourceDF = Seq(
+            (1, 100, "concert",   "2024-01-01", 50000),
+            (2, 200, "gala",      "2024-01-02", 75000),
+            (3, 300, "premiere",  "2024-01-03", 30000),  // celeb_id 300 not in dimension
+            (4, 100, "charity",   "2024-01-04", 20000)
+        ).toDF("event_id", "celeb_id", "event_name", "event_date", "revenue")
+
+        val resultDF = scdProcessor.processTableFact(
+            sourceDF = sourceDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = "celeb_event_fact",
+            incomingTableName = "incoming_celeb_events",
+            integrityQuery = s"""|SELECT f.*
+                                 |FROM incoming_celeb_events f
+                                 |INNER JOIN ${testDatabaseName}.celeb_lookup d
+                                 |ON f.celeb_id = d.celeb_id
+                                 |""".stripMargin,
+            primaryKeyColumnName = "event_id"
+        )
+
+        val resultRows = resultDF.collect()
+        assert(resultRows.length == 3, s"Expected 3 rows after integrity filter (celeb_id 300 excluded), got ${resultRows.length}")
+
+        val eventIds = resultDF.select("event_id").collect().map(_.getInt(0)).toSet
+        assert(eventIds == Set(1, 2, 4), s"Expected event_ids {1, 2, 4} but got ${eventIds}")
+    }
+
+    it("must handle duplicates in integrity query result by deduplicating on primary key") {
+
+        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
+
+        val session = spark
+        import session.implicits._
+
+        Seq(
+            (100, "elon musk",  "tech"),
+            (100, "elon musk",  "space")
+        ).toDF("celeb_id", "name", "industry")
+         .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+         .saveAsTable(s"${testDatabaseName}.celeb_multi_lookup")
+
+        val sourceDF = Seq(
+            (1, 100, "concert",   "2024-01-01", 50000),
+            (2, 100, "gala",      "2024-01-02", 75000)
+        ).toDF("event_id", "celeb_id", "event_name", "event_date", "revenue")
+
+        val resultDF = scdProcessor.processTableFact(
+            sourceDF = sourceDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = "celeb_event_fact",
+            incomingTableName = "incoming_celeb_events",
+            integrityQuery = s"""|SELECT f.*
+                                 |FROM incoming_celeb_events f
+                                 |INNER JOIN ${testDatabaseName}.celeb_multi_lookup d
+                                 |ON f.celeb_id = d.celeb_id
+                                 |""".stripMargin,
+            primaryKeyColumnName = "event_id"
+        )
+        val resultRows = resultDF.collect()
+        assert(resultRows.length == 2, s"Expected 2 rows after deduplication, got ${resultRows.length}")
+    }
+
+    it("must return empty DataFrame when no rows pass integrity check") {
+
+        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
+
+        val session = spark
+        import session.implicits._
+
+        Seq((999, "nobody")).toDF("celeb_id", "name")
+         .write.format("delta").mode("overwrite").option("overwriteSchema", "true")
+         .saveAsTable(s"${testDatabaseName}.celeb_empty_lookup")
+
+        val sourceDF = Seq(
+            (1, 100, "concert",   "2024-01-01", 50000),
+            (2, 200, "gala",      "2024-01-02", 75000)
+        ).toDF("event_id", "celeb_id", "event_name", "event_date", "revenue")
+
+        val resultDF = scdProcessor.processTableFact(
+            sourceDF = sourceDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = "celeb_event_fact",
+            incomingTableName = "incoming_celeb_events",
+            integrityQuery =  s"""|SELECT f.*
+                                  |FROM incoming_celeb_events f
+                                  |INNER JOIN ${testDatabaseName}.celeb_empty_lookup d
+                                  |ON f.celeb_id = d.celeb_id
+                                  |""".stripMargin,
+            primaryKeyColumnName = "event_id"
+        )
+
+        assert(resultDF.isEmpty, "Expected empty DataFrame when no rows pass integrity check")
+    }
+
+    it("must only select columns defined in FactTransformationTableInfoMap, ignoring extra source columns") {
+
+        val scdProcessor = SCDDeltaUpsertDataFrameProcessor(spark, CelebSCDTransformationMetadataMappings)
+
+        val session = spark
+        import session.implicits._
+
+        val sourceDF = Seq(
+            (1, 100, "concert",   "2024-01-01", 50000, "extra_data_1", 999),
+            (2, 200, "gala",      "2024-01-02", 75000, "extra_data_2", 888)
+        ).toDF("event_id", "celeb_id", "event_name", "event_date", "revenue", "extra_col", "another_col")
+
+        val integrityQuery = "SELECT * FROM incoming_celeb_events_extra"
+        val resultDF = scdProcessor.processTableFact(
+            sourceDF = sourceDF,
+            destinationDatabase = testDatabaseName,
+            destinationTableName = "celeb_event_fact",
+            incomingTableName = "incoming_celeb_events_extra",
+            integrityQuery = integrityQuery,
+            primaryKeyColumnName = "event_id"
+        )
+
+        assert(!resultDF.columns.contains("extra_col"), "extra_col should not be in result")
+        assert(!resultDF.columns.contains("another_col"), "another_col should not be in result")
+        assert(resultDF.columns.toSet == Set("event_id", "celeb_id", "event_name", "event_date", "revenue"), "Result should contain only the fact-mapped columns")
+    }
+    // @formatter:on
 
   }
 }
@@ -512,6 +721,8 @@ object CelebSCDTransformationMetadataMappings extends SCDTransformationMetadataM
     "celeb_net_worth_dim" -> SCDTransformationInfo(CelebNetWorthDim.primaryKey._1, CelebNetWorthDim.toMatchStatement(), CelebNetWorthDim.toUpsertableColumns(), CelebNetWorthDim.toFullColumnUpsertMap())
   )
 
-  override val FactTransformationTableInfoMap: scala.collection.immutable.Map[String, NonSCDTransformationInfo] = scala.collection.immutable.Map.empty
+  override val FactTransformationTableInfoMap: scala.collection.immutable.Map[String, NonSCDTransformationInfo] = scala.collection.immutable.Map(
+    "celeb_event_fact" -> NonSCDTransformationInfo(Array("event_id", "celeb_id", "event_name", "event_date", "revenue"))
+  )
 }
 // @formatter:on

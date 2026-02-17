@@ -1,10 +1,6 @@
 package me.rakirahman.etl.transformer.scd
 
-import me.rakirahman.etl.transformer.scd.SCDTransformationMetadata.{
-  KeyGenInfo,
-  NonSCDTransformationInfo,
-  SCDTransformationInfo
-}
+import me.rakirahman.etl.transformer.scd.SCDTransformationMetadata.{KeyGenInfo, NonSCDTransformationInfo, SCDTransformationInfo}
 
 /** Metadata mappings for Slowly Changing Dimension (SCD) transformations.
   */

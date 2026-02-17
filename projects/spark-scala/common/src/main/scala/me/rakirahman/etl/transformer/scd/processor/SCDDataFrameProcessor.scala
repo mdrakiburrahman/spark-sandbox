@@ -20,8 +20,7 @@ trait SCDDataFrameProcessor {
     * @param destinationNaturalKeyCol
     *   The column name representing the natural key from the destination table.
     * @param timestampOrderCol
-    *   The column name representing the order of the table - must evaluate to a
-    *   timestamp.
+    *   The column name representing the order of the table - must evaluate to a timestamp.
     * @param colScdEffectiveStartTimeName
     *   The name of the column representing the effective start time.
     * @param cacheStorageLevel

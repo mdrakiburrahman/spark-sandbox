@@ -8,8 +8,7 @@ import scala.util.matching.Regex
 /** A retry policy for operations that may fail with transient errors.
   *
   * @param patterns
-  *   Array of compiled Regex patterns to match against exception class names
-  *   and messages for determining retryable errors.
+  *   Array of compiled Regex patterns to match against exception class names and messages for determining retryable errors.
   * @param maxAttempts
   *   Maximum number of attempts before giving up (default: 5).
   */

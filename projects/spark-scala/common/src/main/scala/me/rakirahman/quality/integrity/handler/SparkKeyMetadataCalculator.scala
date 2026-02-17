@@ -200,8 +200,7 @@ object SparkKeyMetadataCalculator {
     * @param metastore
     *   The metastore operations handler.
     * @param deltaTimeTravelTimestamp
-    *   The timestamp to use for delta time travel. Defaults to 100 years in the
-    *   future.
+    *   The timestamp to use for delta time travel. Defaults to 100 years in the future.
     * @return
     *   The SparkKeyMetadataCalculator.
     */

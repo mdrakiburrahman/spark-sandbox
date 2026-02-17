@@ -112,8 +112,7 @@ trait TableOperations {
     */
   def listDeltaTables(databaseName: String): Array[String]
 
-  /** Lists all delta tables in the specified database that have the given
-    * prefix.
+  /** Lists all delta tables in the specified database that have the given prefix.
     *
     * @param databaseName
     *   The name of the database.
@@ -180,8 +179,7 @@ trait TableOperations {
       tableName: String
   ): TableIOFileTypes.TableIOFileTypes
 
-  /** Gets the create table definition. Note, this does not support Delta
-    * tables, but works on views.
+  /** Gets the create table definition. Note, this does not support Delta tables, but works on views.
     *
     * @param databaseName
     *   The name of the database.
@@ -237,13 +235,11 @@ trait TableOperations {
     * @param location
     *   The location of the table.
     * @param schema
-    *   The Table Schema as an array of tuples, where each tuple represents a
-    *   column with its name and data type.
+    *   The Table Schema as an array of tuples, where each tuple represents a column with its name and data type.
     * @param partitionColumns
     *   The partition columns.
     * @param tableOptions
-    *   The table options as an array of tuples, where each tuple represents an
-    *   option with its name and value.
+    *   The table options as an array of tuples, where each tuple represents an option with its name and value.
     */
   def createTable(
       databaseName: String,
@@ -338,27 +334,21 @@ trait TableOperations {
     */
   def extractColumnsInPlan(plan: LogicalPlan): Seq[String]
 
-  /** Extracts dependencies from a set of named queries and returns them in
-    * execution order.
+  /** Extracts dependencies from a set of named queries and returns them in execution order.
     *
     * @param namedQueries
     *   A map of table names to their corresponding SQL query definitions
     * @param showExternalDependencies
-    *   Whether to include external dependencies in the output. When false,
-    *   external dependencies are assumed to be satisfied and not included.
+    *   Whether to include external dependencies in the output. When false, external dependencies are assumed to be satisfied and not included.
     * @return
-    *   A sequence of sequences, where each inner sequence contains table names
-    *   that can be executed in parallel, and the outer sequence represents the
-    *   execution order.
+    *   A sequence of sequences, where each inner sequence contains table names that can be executed in parallel, and the outer sequence represents the execution order.
     */
   def extractDependencies(
       namedQueries: Map[String, String],
       showExternalDependencies: Boolean = false
   ): Seq[Seq[String]]
 
-  /** Extract dependency layers as a map where the key is the layer index
-    * (starting at 0) and the value is the sequence of table names in that
-    * layer.
+  /** Extract dependency layers as a map where the key is the layer index (starting at 0) and the value is the sequence of table names in that layer.
     *
     * @param namedQueries
     *   The named queries map
@@ -397,8 +387,7 @@ trait TableOperations {
     * @param value
     *   The property value to set
     * @param force
-    *   If true, always set the property. If false, only set if current value
-    *   differs
+    *   If true, always set the property. If false, only set if current value differs
     */
   def setTableProp(
       databaseName: String,

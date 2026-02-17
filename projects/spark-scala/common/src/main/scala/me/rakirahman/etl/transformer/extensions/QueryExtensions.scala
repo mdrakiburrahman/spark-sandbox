@@ -1,7 +1,6 @@
 package me.rakirahman.etl.transformer.extensions
 
-/** Extension object that provides extension methods for applying
-  * transformations to query conditions.
+/** Extension object that provides extension methods for applying transformations to query conditions.
   */
 object QueryExtensions {
 

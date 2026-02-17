@@ -3,8 +3,7 @@ package me.rakirahman.metastore
 import me.rakirahman.etl.transformer.sorter.SortableColumnNames
 import java.sql.Timestamp
 
-/** Trait representing operations that can be performed for partition
-  * operations.
+/** Trait representing operations that can be performed for partition operations.
   */
 trait PartitionOperations {
 

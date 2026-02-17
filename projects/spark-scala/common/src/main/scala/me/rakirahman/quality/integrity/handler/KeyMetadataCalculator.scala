@@ -18,8 +18,7 @@ trait KeyMetadataCalculator {
     */
   def getDuplicateKeyCount(database: String, table: String, key: String): Int
 
-  /** Returns the count of expected duplicate keys in a table due to SCD
-    * Expiration.
+  /** Returns the count of expected duplicate keys in a table due to SCD Expiration.
     */
   def getScdExpiredDuplicateKeyCount(
       database: String,
@@ -28,8 +27,7 @@ trait KeyMetadataCalculator {
       effectiveColumn: String
   ): Int
 
-  /** Returns the count of missing keys in a dimension table compared to a fact
-    * table.
+  /** Returns the count of missing keys in a dimension table compared to a fact table.
     */
   def getMissingKeysInDimCount(
       database: String,
@@ -39,8 +37,7 @@ trait KeyMetadataCalculator {
       factKey: String
   ): Int
 
-  /** Returns the count of missing keys in a fact table compared to a dimension
-    * table.
+  /** Returns the count of missing keys in a fact table compared to a dimension table.
     */
   def getMissingKeysInFactCount(
       database: String,

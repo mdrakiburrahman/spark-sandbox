@@ -15,8 +15,7 @@ object SchemaExtensions {
     */
   implicit class TupleArrayDeduplicator(items: Array[(String, String)]) {
 
-    /** Deduplicates the array by removing duplicate tuples while preserving
-      * order of first occurrence.
+    /** Deduplicates the array by removing duplicate tuples while preserving order of first occurrence.
       *
       * @return
       *   A new array with duplicates removed.
@@ -31,8 +30,7 @@ object SchemaExtensions {
     */
   implicit class SchemaFlattener(dataFrame: DataFrame) {
 
-    /** Converts a StructType schema into an array of Column expressions by
-      * recursively flattening it.
+    /** Converts a StructType schema into an array of Column expressions by recursively flattening it.
       *
       * @param schema
       *   The StructType schema to be flattened.
@@ -50,7 +48,7 @@ object SchemaExtensions {
 
         f.dataType match {
           case st: StructType => flattenedSchema(st, columnName)
-          case _ => Array(col(columnName).as(columnName.replace(".", "_")))
+          case _              => Array(col(columnName).as(columnName.replace(".", "_")))
         }
       })
     }

@@ -20,12 +20,7 @@ import scala.util.Random
 
 /** Tests for [[SqlMetastoreOperations]].
   */
-class SqlMetastoreOperationsTest
-    extends AnyFunSpec
-    with Matchers
-    with BeforeAndAfterAll
-    with BeforeAndAfterEach
-    with TableDrivenPropertyChecks {
+class SqlMetastoreOperationsTest extends AnyFunSpec with Matchers with BeforeAndAfterAll with BeforeAndAfterEach with TableDrivenPropertyChecks {
 
   var spark: SparkSession = _
   var sqlMetastoreOperations: SqlMetastoreOperations = _
@@ -167,7 +162,8 @@ class SqlMetastoreOperationsTest
 
         val localSpark = spark
         import localSpark.implicits._
-        Seq(("foo", 1), ("bar", 2)).toDF("text", "num")
+        Seq(("foo", 1), ("bar", 2))
+          .toDF("text", "num")
           .write
           .format("delta")
           .mode("overwrite")
@@ -225,7 +221,8 @@ class SqlMetastoreOperationsTest
 
         val localSpark = spark
         import localSpark.implicits._
-        Seq(("foo", 1), ("bar", 2)).toDF("text", "num")
+        Seq(("foo", 1), ("bar", 2))
+          .toDF("text", "num")
           .write
           .format("delta")
           .mode("overwrite")
@@ -247,9 +244,7 @@ class SqlMetastoreOperationsTest
         }
 
         val desiredSchema =
-          currentSchema.toSeq.drop(columnsToDrop).toArray ++ keyValueArray.map(keyValue =>
-            (keyValue, "STRING")
-          )
+          currentSchema.toSeq.drop(columnsToDrop).toArray ++ keyValueArray.map(keyValue => (keyValue, "STRING"))
 
         var threw = false
 

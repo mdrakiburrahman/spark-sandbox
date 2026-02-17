@@ -6,8 +6,7 @@ import org.apache.spark.sql.catalyst.catalog.CatalogTable
   */
 trait CatalogOperations {
 
-  /** Get the [[CatalogTable]] representation of a table containing a rich set
-    * of metadata.
+  /** Get the [[CatalogTable]] representation of a table containing a rich set of metadata.
     *
     * @param databaseName
     *   The name of the database.

@@ -2,13 +2,11 @@ package me.rakirahman.etl.transformer.merge
 
 import org.apache.spark.sql.DataFrame
 
-/** Trait representing an UPSERT handler, which is responsible for performing
-  * UPSERT (UPDATE or INSERT) operations on a destination table.
+/** Trait representing an UPSERT handler, which is responsible for performing UPSERT (UPDATE or INSERT) operations on a destination table.
   */
 trait Upserter {
 
-  /** UPSERTs the provided DataFrame into the specified destination table using
-    * the Slowly Changing Dimension Type 2 (SCD2).
+  /** UPSERTs the provided DataFrame into the specified destination table using the Slowly Changing Dimension Type 2 (SCD2).
     *
     * @param destinationDatabase
     *   The name of the destination database.
@@ -23,8 +21,7 @@ trait Upserter {
     * @param matchStatement
     *   The SQL match statement used to identify matching records.
     * @param fullColumnsUpsertMap
-    *   A map of column names in the destination table to their corresponding
-    *   column names in the DataFrame.
+    *   A map of column names in the destination table to their corresponding column names in the DataFrame.
     * @param maxRetriesDuringConcurrentUpdates
     *   The maximum number of retries to perform in case of concurrent updates.
     * @param retryAfterInMilliseconds

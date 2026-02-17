@@ -25,8 +25,7 @@ object DataFrameExtensions {
       * @param orderCol
       *   The name of the column used for ordering.
       * @return
-      *   A new DataFrame containing the latest updates for each unique natural
-      *   key.
+      *   A new DataFrame containing the latest updates for each unique natural key.
       */
     def withUniqueLatestNaturalKey(
         naturalKeyCol: String,

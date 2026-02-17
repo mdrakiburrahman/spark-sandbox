@@ -2,8 +2,7 @@ package me.rakirahman.metastore
 
 import org.apache.spark.sql.types.StructType
 
-/** Trait defining operations for schema conversion between different storage
-  * systems.
+/** Trait defining operations for schema conversion between different storage systems.
   */
 trait SchemaConversionOperations {
 
