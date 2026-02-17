@@ -43,6 +43,7 @@ lazy val commonExecutor = project
     credentials ++= Seq.empty,
     commonExecutorAssemblySettings,
     testSettings,
+    coverageSettings,
     version := commitVersion.value,
     libraryDependencies ++= deltaDependencies
       ++ fileTypeDependencies
@@ -63,6 +64,7 @@ lazy val common = project
     credentials ++= Seq.empty,
     genericAssemblySettings,
     testSettings,
+    coverageSettings,
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
       ++ deltaDependencies
@@ -85,6 +87,7 @@ lazy val sparkDemo = project
     credentials := Seq.empty,
     genericAssemblySettings,
     testSettings,
+    coverageSettings,
     version := version.value,
     // The provided scope packages are not available from common, it seems.
     libraryDependencies ++= sparkDependencies

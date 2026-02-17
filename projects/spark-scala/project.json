@@ -163,15 +163,23 @@
         },
         "commands": [
           {
-            "command": "sbt test",
+            "command": "sbt coverage test coverageReport",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "npx tsx tools/scripts/print-coverage.ts",
             "forwardAllArgs": false
           }
-        ]
+        ],
+        "parallel": false
       },
       "inputs": [
         "{projectRoot}/**/*.scala",
         "{projectRoot}/**/*.sbt",
         "{projectRoot}/**/*.yaml"
+      ],
+      "outputs": [
+        "{projectRoot}/**/scoverage-report/**"
       ]
     },
     "get-azcopy": {

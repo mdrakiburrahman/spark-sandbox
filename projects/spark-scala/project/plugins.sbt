@@ -11,6 +11,9 @@ addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "2.1.5")
 //
 addSbtPlugin("org.scalameta" % "sbt-scalafmt" % "2.5.2")
 
+// Code coverage: https://github.com/scoverage/sbt-scoverage
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.12")
+
 // Dependency tree:
 //
 // >>> https://www.baeldung.com/scala/sbt-dependency-tree
