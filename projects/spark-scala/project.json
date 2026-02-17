@@ -155,7 +155,6 @@
     "test-scala": {
       "cache": true,
       "executor": "nx:run-commands",
-      "dependsOn": ["clean"],
       "options": {
         "cwd": "projects/spark-scala",
         "env": {
@@ -178,9 +177,7 @@
         "{projectRoot}/**/*.sbt",
         "{projectRoot}/**/*.yaml"
       ],
-      "outputs": [
-        "{projectRoot}/**/scoverage-report/**"
-      ]
+      "outputs": ["{projectRoot}/**/scoverage-report/**"]
     },
     "get-azcopy": {
       "executor": "nx:run-commands",
@@ -238,7 +235,7 @@
     "init": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["clean", "metastore-up"],
+      "dependsOn": ["metastore-up"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
