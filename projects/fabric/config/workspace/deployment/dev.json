@@ -1,0 +1,179 @@
+{
+  "operation": "dryRun",
+  "common": {
+    "local": {
+      "rootFolder": "{git-root}"
+    },
+    "endpoint": {
+      "analysisService": "https://df-msit-scus-redirect.analysis.windows.net",
+      "cicd": "https://msitapi.fabric.microsoft.com/",
+      "powerBi": "https://api.powerbi.com"
+    },
+    "scope": {
+      "analysisService": "https://analysis.windows.net/powerbi/api"
+    },
+    "arm": {
+      "location": "westcentralus",
+      "resourceGroup": "fabric-dev-{unique-env-id}",
+      "subscriptionId": "ce859648-30e1-4135-9d0f-8358aebfe789",
+      "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+    },
+    "identities": [
+      {
+        "givenName": "{user-display-name}",
+        "objectId": "{user-oid}",
+        "aadAppId": "{user-appid}",
+        "principalType": "{user-principal-type}"
+      }
+    ],
+    "fabric": {
+      "workspaces": [
+        {
+          "name": "Sandbox - Dev - {unique-env-id}",
+          "description": "{unique-env-id}'s Personal Sandbox.",
+          "datasetStorageMode": 2,
+          "skipDeploy": false,
+          "monitoring": {
+            "kusto": {
+              "databaseEnabled": false,
+              "ingestionEnabled": false
+            }
+          },
+          "spark": {
+            "enableCustomizedComputeConf": true,
+            "machineLearningAutoLog": {
+              "enabled": true
+            },
+            "jobManagement": {
+              "conservativeJobAdmissionEnabled": false,
+              "sessionTimeoutInMinutes": 20
+            },
+            "highConcurrency": {
+              "enabled": true,
+              "notebookPipelineRunEnabled": false
+            },
+            "currentPoolId": "00000000-0000-0000-0000-000000000000",
+            "runtimeVersion": "1.3",
+            "pools": []
+          },
+          "shortcutAuthZRoleName": "Storage Blob Data Reader",
+          "iconPath": "projects/fabric/config/workspace/deployment/innovation.png",
+          "template": {
+            "artifactsFolder": "projects/fabric/template/sandbox",
+            "parameterFilePath": "projects/fabric/template/sandbox/parameter.yml",
+            "itemTypesInScope": [
+              "Lakehouse",
+              "Notebook",
+              "Report",
+              "SemanticModel"
+            ],
+            "environmentKey": "{unique-env-id}",
+            "featureFlags": [
+              "enable_lakehouse_unpublish",
+              "enable_shortcut_publish"
+            ],
+            "unpublishOrphans": true,
+            "sparkJobDefinitions": [],
+            "customLibraries": [],
+            "generator": {
+              "monitoring": []
+            },
+            "restartPipelinesPostDeployment": false
+          },
+          "capacity": {
+            "name": "sandbox{unique-env-id}",
+            "sku": "F32",
+            "administrators": ["{user-fabric-admin-func()}"],
+            "autoscale": {
+              "sparkCore": {
+                "workloadAutoscaleLimit": 0
+              },
+              "warehouse": {
+                "workloadAutoscaleLimit": 0
+              }
+            }
+          },
+          "shortcut": {
+            "kqlDatabase": []
+          },
+          "rbac": {
+            "purgeUnmatchedRoleAssignments": true,
+            "universalSecurity": {
+              "sqlEndpoint": {
+                "enabled": false
+              }
+            },
+            "workspace": [
+              {
+                "permissions": 15,
+                "objectId": "{user-oid}",
+                "purpose": "Original deployer of Workspace inherits Owner role for further automation to occur."
+              }
+            ],
+            "items": [
+              {
+                "type": "SQLEndpoint",
+                "displayName": "dbt_adventureworks_seed",
+                "detail": [
+                  {
+                    "permissions": 7,
+                    "artifactPermissions": 7,
+                    "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  }
+                ]
+              },
+              {
+                "type": "Lakehouse",
+                "displayName": "dbt_adventureworks_seed",
+                "detail": [
+                  {
+                    "permissions": 71,
+                    "artifactPermissions": 15,
+                    "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  }
+                ]
+              },
+              {
+                "type": "SQLEndpoint",
+                "displayName": "dbt_jaffle_shop_seed",
+                "detail": [
+                  {
+                    "permissions": 7,
+                    "artifactPermissions": 7,
+                    "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  }
+                ]
+              },
+              {
+                "type": "Lakehouse",
+                "displayName": "dbt_jaffle_shop_seed",
+                "detail": [
+                  {
+                    "permissions": 71,
+                    "artifactPermissions": 15,
+                    "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  }
+                ]
+              }
+            ]
+          },
+          "model": []
+        }
+      ],
+      "storage": {
+        "account": "fabricdevmdrrahman",
+        "container": "onelake",
+        "location": "westcentralus",
+        "resourceGroup": "fabric-dev-mdrrahman",
+        "subscriptionId": "ce859648-30e1-4135-9d0f-8358aebfe789",
+        "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
+        "shortcutDataConnectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
+        "seedFiles": []
+      }
+    }
+  }
+}

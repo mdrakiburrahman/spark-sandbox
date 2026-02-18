@@ -1,0 +1,13 @@
+# ===============================================================================
+# https://microsoft.github.io/fabric-cicd/0.1.7/how_to/parameterization/
+# ===============================================================================
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+#
+#   * "find_value" represents the 'prod' env id.
+#     Replace with your '{unique-env-id}' to override.
+#     Leave it as is to point your workspace to the
+#     'prod' env.
+#
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+find_replace: []

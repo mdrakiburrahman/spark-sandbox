@@ -1,6 +1,9 @@
 {
   "folders": [
     {
+      "path": "../.github",
+    },
+    {
       "path": "../docs",
     },
     {
@@ -8,6 +11,9 @@
     },
     {
       "path": "../logs",
+    },
+    {
+      "path": "fabric",
     },
     {
       "path": "spark-dbt",

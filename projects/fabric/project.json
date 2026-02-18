@@ -1,0 +1,78 @@
+{
+  "name": "fabric",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "init": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/fabric",
+        "commands": [".scripts/get-pkgs.sh"],
+        "parallel": false
+      }
+    },
+    "deploy": {
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {},
+        "ci": {},
+        "stg": {}
+      },
+      "dependsOn": [
+        "get-azcopy",
+        {
+          "target": "build",
+          "projects": ["spark-scala"]
+        },
+        {
+          "target": "refresh-az-login",
+          "projects": ["spark-scala"]
+        },
+        {
+          "target": "package",
+          "projects": ["spark-dbt"]
+        }
+      ],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/fabric",
+        "commands": [
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=dryRun",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployFabricCapacity",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployFabricWorkspace",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deploySeed",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployMonitoring",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deploySpark",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployTemplate",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployModel",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployShortcut",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployRbac"
+        ],
+        "parallel": false
+      }
+    },
+    "deploy-fabric": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["init"],
+      "options": {
+        "cwd": "projects/fabric",
+        "OPERATION": "dryRun",
+        "commands": [
+          {
+            "command": ".scripts/deploy-fabric.sh --config-file-absolute-path $(git rev-parse --show-toplevel)/{projectRoot}/config/workspace/deployment/dev.json --operation {args.OPERATION}",
+            "forwardAllArgs": true
+          }
+        ]
+      }
+    },
+    "get-azcopy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/fabric",
+        "commands": [".scripts/get-azcopy.sh ${HOME}/.azure/bin"],
+        "parallel": false
+      }
+    }
+  }
+}
