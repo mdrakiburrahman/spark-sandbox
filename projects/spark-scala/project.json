@@ -73,7 +73,12 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy", "unmount-onelake", "imds-router-down"],
+      "dependsOn": [
+        "clean-livy",
+        "metastore-down",
+        "unmount-onelake",
+        "imds-router-down"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -146,10 +151,12 @@
       }
     },
     "test-jest": {
-      "cache": true,
-      "executor": "@nx/jest:jest",
+      "cache": false,
+      "dependsOn": ["build-jar", "metastore-up", "mount-onelake"],
+      "executor": "nx:run-commands",
       "options": {
-        "jestConfig": "projects/spark-scala/jest.config.js"
+        "command": "npx jest --config jest.config.js --verbose",
+        "cwd": "projects/spark-scala"
       }
     },
     "test-scala": {

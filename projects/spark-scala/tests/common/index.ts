@@ -1,3 +1,3 @@
-export { NxRunner } from './nx-runner';
-export { SparkSql } from './spark-sql';
-export { SparkConfig } from './spark-config';
+export { SparkJobRunner } from "./spark-job-runner";
+export { SparkSql } from "./spark-sql";
+export { SparkConfig } from "./spark-config";
