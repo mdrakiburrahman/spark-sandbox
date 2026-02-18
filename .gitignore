@@ -1,6 +1,5 @@
 # Node
 node_modules/
-**/warehouse/
 
 # nx
 .nx/*
@@ -12,3 +11,6 @@ node_modules/
 # Scala
 .metals/*
 .scala-build/*
+
+# Spark
+**/warehouse/

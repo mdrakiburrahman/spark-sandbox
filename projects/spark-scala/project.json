@@ -73,7 +73,12 @@
     },
     "clean": {
       "cache": false,
-      "dependsOn": ["clean-livy", "unmount-onelake", "imds-router-down"],
+      "dependsOn": [
+        "clean-livy",
+        "metastore-down",
+        "unmount-onelake",
+        "imds-router-down"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
@@ -122,7 +127,7 @@
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["build-jar", "metastore-up"],
+      "dependsOn": ["build-jar", "metastore-up", "pre-cache-ivy"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -146,16 +151,22 @@
       }
     },
     "test-jest": {
-      "cache": true,
-      "executor": "@nx/jest:jest",
+      "cache": false,
+      "dependsOn": [
+        "build-jar",
+        "metastore-up",
+        "mount-onelake",
+        "pre-cache-ivy"
+      ],
+      "executor": "nx:run-commands",
       "options": {
-        "jestConfig": "projects/spark-scala/jest.config.js"
+        "command": "npx jest --config jest.config.js --verbose --bail",
+        "cwd": "projects/spark-scala"
       }
     },
     "test-scala": {
       "cache": true,
       "executor": "nx:run-commands",
-      "dependsOn": ["clean"],
       "options": {
         "cwd": "projects/spark-scala",
         "env": {
@@ -163,16 +174,22 @@
         },
         "commands": [
           {
-            "command": "sbt test",
+            "command": "sbt coverage test coverageReport",
+            "forwardAllArgs": false
+          },
+          {
+            "command": "npx tsx tools/scripts/print-coverage.ts",
             "forwardAllArgs": false
           }
-        ]
+        ],
+        "parallel": false
       },
       "inputs": [
         "{projectRoot}/**/*.scala",
         "{projectRoot}/**/*.sbt",
         "{projectRoot}/**/*.yaml"
-      ]
+      ],
+      "outputs": ["{projectRoot}/**/scoverage-report/**"]
     },
     "get-azcopy": {
       "executor": "nx:run-commands",
@@ -230,7 +247,7 @@
     "init": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["clean", "metastore-up"],
+      "dependsOn": ["metastore-up", "pre-cache-ivy"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -261,6 +278,15 @@
         "commands": [
           "docker compose -f ../../docker/Compose.sqlserver.metastore.yaml down --volumes --remove-orphans"
         ]
+      }
+    },
+    "pre-cache-ivy": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/pre-cache-ivy.sh"],
+        "parallel": false
       }
     }
   }

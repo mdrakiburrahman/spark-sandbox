@@ -3,6 +3,7 @@ import sbt._
 import sbt.Keys._
 import sbtassembly._
 import sbtassembly.AssemblyKeys._
+import scoverage.ScoverageKeys._
 import scala.collection.JavaConverters._
 import scala.sys.process._
 import scala.util.{Try, Success, Failure}
@@ -23,6 +24,20 @@ object Settings {
       "test-reports",
       "-fW",
       "test-reports/TEST-summary.log"
+  )
+
+  /** Code coverage settings (sbt-scoverage)
+    *
+    * Usage:
+    *   sbt clean coverage test coverageReport
+    *
+    * Reports are generated in each sub-project's target/scoverage-report/ directory.
+    * An aggregated report is available after running: sbt coverageAggregate
+    */
+  val coverageSettings = Seq(
+    coverageFailOnMinimum := true,
+    coverageMinimumStmtTotal := 95,
+    coverageHighlighting := true,
   )
 
   /** Shading - the game changer for escaping Synapse Spark dependency hell:

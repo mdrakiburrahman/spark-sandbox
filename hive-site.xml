@@ -21,7 +21,7 @@
   <!-- Default warehouse location -->
   <property>
     <name>hive.metastore.warehouse.dir</name>
-    <value>/workspaces/spark-sandbox/projects/spark-scala/warehouse</value>
+    <value>/workspaces/spark-sandbox/warehouse</value>
   </property>
   <!-- Schema is pre-initialized, disable auto-create -->
   <property>

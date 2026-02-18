@@ -5,8 +5,8 @@
 Github copilot needs no introduction.
 
 ```bash
-command -v copilot &>/dev/null || { curl -fsSL https://gh.io/copilot-install | bash; }
-copilot --yolo
+curl -fsSL https://gh.io/copilot-install | bash;
+${HOME}/.local/bin/copilot --yolo
 ```
 
 ## Useful Commands
