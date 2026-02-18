@@ -36,16 +36,10 @@ describe("spark-scala integration tests", () => {
     it(
       "all tables exist and have rows",
       async () => {
-        const results = await Promise.all(
-          ALL_TABLES.map(async (table) => {
-            const rows = await SparkSql.queryRowsAsync(
-              `SELECT COUNT(*) AS cnt FROM ${DEMO_ETL_DB}.${table}`,
-            );
-            return { table, rows };
-          }),
-        );
-
-        for (const { table, rows } of results) {
+        for (const table of ALL_TABLES) {
+          const rows = await SparkSql.queryRowsAsync(
+            `SELECT COUNT(*) AS cnt FROM ${DEMO_ETL_DB}.${table}`,
+          );
           const dataRows = rows.filter((r) => !isNaN(Number(r)));
           expect(dataRows.length).toBeGreaterThan(0);
 
@@ -53,7 +47,7 @@ describe("spark-scala integration tests", () => {
           expect(count).toBeGreaterThan(0);
         }
       },
-      120_000,
+      300_000,
     );
 
     it("OpenLineage events are captured in http_dumper_plugin table and contain valid JSON", async () => {
@@ -90,14 +84,8 @@ describe("spark-scala integration tests", () => {
     it(
       "all databases have at least 1 table",
       async () => {
-        const results = await Promise.all(
-          databases.map(async (db) => {
-            const rows = await SparkSql.queryRowsAsync(`SHOW TABLES IN ${db}`);
-            return { db, rows };
-          }),
-        );
-
-        for (const { db, rows } of results) {
+        for (const db of databases) {
+          const rows = await SparkSql.queryRowsAsync(`SHOW TABLES IN ${db}`);
           const dataRows = rows.filter(
             (r) => !r.startsWith("namespace") && !r.startsWith("database"),
           );
