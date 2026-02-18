@@ -41,6 +41,9 @@ if [ "$fabric_cicd_version" != "0.1.34.3" ] || [ "$fabric_deployment_version" !=
     retry pip install "${BLOB_BASE}/${FABRIC_DEPLOY_WHL}"
 fi
 
+fabric_deploy_location=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}')
+
 echo "7-Zip: $(7z --help | grep -oP "Version \d+\.\d+")"
 echo "CMake: $(cmake --version | head -n 1)"
 echo "Fabric CLI version: $(fab version)"
+echo "Fabric Deploy location: ${fabric_deploy_location}"

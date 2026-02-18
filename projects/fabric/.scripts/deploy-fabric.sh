@@ -32,7 +32,7 @@ fi
 
 source "$(realpath $(dirname $0))/common.sh"
 
-export FAB_PATH="${FAB_PATH:-$([[ $IS_GH_ACTION == "1" ]] && echo "/home/vscode/.local/bin" || echo "$HOME/.local/bin")}"
+export FAB_PATH="${FAB_PATH:-$(pip show ms-fabric-cli 2>/dev/null | grep Location | awk '{print $2}')}"
 export FAB_TENANT_ID="72f988bf-86f1-41af-91ab-2d7cd011db47"
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 
@@ -48,4 +48,6 @@ fi
 
 export FAB_TOKEN_ONELAKE=${FAB_TOKEN}
 
-${FAB_PATH}/fabric-workspace-deployment "${args[@]}"
+FABRIC_DEPLOY_BIN="$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}')/../../../bin/fabric-workspace-deployment"
+echo "Running: ${FABRIC_DEPLOY_BIN} ${args[*]}"
+"${FABRIC_DEPLOY_BIN}" "${args[@]}"
