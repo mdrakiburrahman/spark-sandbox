@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "dbt_jaffle_shop_seed",
+    "description": ""
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "05961083-b21b-4955-ac22-b900c7f6b056"
+  }
+}

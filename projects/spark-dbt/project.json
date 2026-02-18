@@ -66,6 +66,7 @@
       }
     },
     "package": {
+      "dependsOn": ["init"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-dbt",
