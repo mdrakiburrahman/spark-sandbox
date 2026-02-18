@@ -88,7 +88,7 @@
             "forwardAllArgs": false
           },
           {
-            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse* ../../warehouse",
+            "command": "rm -rf ~/.ivy2 out test-reports test.log *.log .logs .temp spark-warehouse checkpoints* warehouse*",
             "forwardAllArgs": false
           },
           {
@@ -160,7 +160,7 @@
       ],
       "executor": "nx:run-commands",
       "options": {
-        "command": "npx jest --config jest.config.js --verbose",
+        "command": "npx jest --config jest.config.js --verbose --bail",
         "cwd": "projects/spark-scala"
       }
     },

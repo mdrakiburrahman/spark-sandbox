@@ -89,3 +89,6 @@ jobs:
 
       - name: "🧪 Test Projects"
         run: npx nx run-many -t test --configuration=ci --verbose --output-style=stream
+
+      - name: "📁 Verify No Untracked Files"
+        run: npx nx fail-on-untracked-files
