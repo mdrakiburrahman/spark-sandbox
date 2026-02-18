@@ -127,7 +127,7 @@
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["build-jar", "metastore-up"],
+      "dependsOn": ["build-jar", "metastore-up", "pre-cache-ivy"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -152,7 +152,12 @@
     },
     "test-jest": {
       "cache": false,
-      "dependsOn": ["build-jar", "metastore-up", "mount-onelake"],
+      "dependsOn": [
+        "build-jar",
+        "metastore-up",
+        "mount-onelake",
+        "pre-cache-ivy"
+      ],
       "executor": "nx:run-commands",
       "options": {
         "command": "npx jest --config jest.config.js --verbose",
@@ -273,6 +278,15 @@
         "commands": [
           "docker compose -f ../../docker/Compose.sqlserver.metastore.yaml down --volumes --remove-orphans"
         ]
+      }
+    },
+    "pre-cache-ivy": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-scala",
+        "commands": [".scripts/pre-cache-ivy.sh"],
+        "parallel": false
       }
     }
   }

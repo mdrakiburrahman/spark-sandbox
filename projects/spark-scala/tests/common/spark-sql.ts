@@ -39,7 +39,7 @@ export class SparkSql {
       execFile(
         "bash",
         ["-c", `${SPARK_SQL_BIN} ${SPARK_SQL_ARGS} -e "${sql}" --silent 2>/dev/null`],
-        { cwd: SPARK_SCALA_DIR, encoding: "utf-8", timeout: timeoutMs },
+        { cwd: SPARK_SCALA_DIR, encoding: "utf-8", timeout: timeoutMs, maxBuffer: 50 * 1024 * 1024 },
         (err, stdout) => {
           const elapsed = ((performance.now() - start) / 1000).toFixed(2);
           if (err) {
