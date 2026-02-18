@@ -37,9 +37,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path in ("/metadata/identity/oauth2/token", "/token"):
             return self._handle_token(parsed)
         if parsed.path.startswith("/metadata/instance"):
-            return self._json(200, {"compute": {
-                "subscriptionId": os.environ.get("IMDS_SUBSCRIPTION_ID", "00000000-0000-0000-0000-000000000000"),
-                "resourceGroupName": "github-actions", "name": "github-runner"}})
+            return self._json(200, {"compute": {"subscriptionId": os.environ.get("IMDS_SUBSCRIPTION_ID", "00000000-0000-0000-0000-000000000000"), "resourceGroupName": "github-actions", "name": "github-runner"}})
         self._json(404, {"error": "Not found"})
 
     def _handle_token(self, parsed):
@@ -63,10 +61,7 @@ class Handler(BaseHTTPRequestHandler):
             with urllib.request.urlopen(req, timeout=30) as resp:
                 body = json.loads(resp.read().decode())
 
-            self._json(200, {
-                "access_token": body.get("access_token", ""),
-                "expires_on": str(body.get("expires_on", "")),
-                "resource": resource, "token_type": "Bearer"})
+            self._json(200, {"access_token": body.get("access_token", ""), "expires_on": str(body.get("expires_on", "")), "resource": resource, "token_type": "Bearer"})
         except urllib.error.HTTPError as e:
             detail = e.read().decode() if e.fp else ""
             self.log_message("Relay error %s: %s", e.code, detail[:200])
