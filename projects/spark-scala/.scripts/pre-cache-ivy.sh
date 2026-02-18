@@ -28,8 +28,8 @@ cat > ${IVY_SETTINGS} << EOF
 </ivysettings>
 EOF
 
-# All packages used by run-spark-jobs.sh and spark-sql tests
-PACKAGES="io.openlineage:openlineage-spark_2.12:1.26.0,org.apache.hadoop:hadoop-azure-datalake:3.3.4,org.apache.hadoop:hadoop-azure:3.3.4,io.delta:delta-spark_2.12:3.2.0"
+# All packages used by run-spark-jobs.sh
+PACKAGES="io.openlineage:openlineage-spark_2.12:1.26.0,org.apache.hadoop:hadoop-azure-datalake:3.3.4,org.apache.hadoop:hadoop-azure:3.3.4"
 
 echo ":quit" | /opt/spark/bin/spark-shell \
   --conf spark.jars.ivySettings=${IVY_SETTINGS} \
