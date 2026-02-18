@@ -26,7 +26,7 @@ object DemoEtl extends App with Logging {
       .load(s"wasbs://public@rakirahman.blob.core.windows.net/datasets/${table}.csv")
       .write
       .format("delta")
-      .mode("append")
+      .mode("overwrite")
       .saveAsTable(s"${dbName}.${table}")
   }
 
@@ -105,7 +105,7 @@ object DemoEtl extends App with Logging {
       .sql(sqlQuery)
       .write
       .format("delta")
-      .mode("append")
+      .mode("overwrite")
       .saveAsTable(s"${dbName}.${table}")
   }
 
