@@ -32,7 +32,7 @@ fi
 
 source "$(realpath $(dirname $0))/common.sh"
 
-export FAB_PATH="${FAB_PATH:-$(pip show ms-fabric-cli 2>/dev/null | grep Location | awk '{print $2}')}"
+export FAB_PATH="$HOME/.local/bin"
 export FAB_TENANT_ID="72f988bf-86f1-41af-91ab-2d7cd011db47"
 export GIT_ROOT=$(git rev-parse --show-toplevel)
 
