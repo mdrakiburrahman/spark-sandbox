@@ -25,6 +25,10 @@
           "projects": ["spark-scala"]
         },
         {
+          "target": "refresh-az-login",
+          "projects": ["spark-scala"]
+        },
+        {
           "target": "package",
           "projects": ["spark-dbt"]
         }
