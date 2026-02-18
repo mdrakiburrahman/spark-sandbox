@@ -3,7 +3,8 @@ name: Deploy Fabric
 on:
   push:
     branches:
-      - main
+      # - main
+      - dev/mdrrahman/cicd
   workflow_dispatch:
 
 env:
