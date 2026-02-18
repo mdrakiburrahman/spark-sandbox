@@ -70,7 +70,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/fabric",
-        "commands": [".scripts/get-azcopy.sh ~/.azure/bin"],
+        "commands": [".scripts/get-azcopy.sh ${HOME}/.azure/bin"],
         "parallel": false
       }
     }

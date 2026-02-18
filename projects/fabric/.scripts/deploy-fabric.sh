@@ -48,4 +48,4 @@ fi
 
 export FAB_TOKEN_ONELAKE=${FAB_TOKEN}
 
-~/.local/bin/fabric-workspace-deployment "${args[@]}"
+${FAB_PATH}/fabric-workspace-deployment "${args[@]}"
