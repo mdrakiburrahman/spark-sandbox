@@ -247,7 +247,7 @@
     "init": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["metastore-up"],
+      "dependsOn": ["metastore-up", "pre-cache-ivy"],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
