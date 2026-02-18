@@ -17,7 +17,7 @@ spark:
   offHeapMemory: "24g"
   shufflePartitions: 1
 
-  warehouseRootPath: "file://{GIT_ROOT}/projects/spark-scala/warehouse"
+  warehouseRootPath: "file://{GIT_ROOT}/warehouse"
   checkpointsRootPath: "file://{GIT_ROOT}/projects/spark-scala/checkpoints"
   metastoreRootPath: "file://{GIT_ROOT}/projects/spark-scala"
   seedRootPath: "file://{GIT_ROOT}/projects/spark-scala/seed"

@@ -11,3 +11,6 @@ node_modules/
 # Scala
 .metals/*
 .scala-build/*
+
+# Spark
+**/warehouse/
