@@ -3,6 +3,19 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/fabric",
+        "commands": [
+          {
+            "command": "rm -rf app_*.log",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
     "init": {
       "executor": "nx:run-commands",
       "options": {
