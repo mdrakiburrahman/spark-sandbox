@@ -10,6 +10,10 @@ config-version: 2
 #
 profile: "adventureworks"
 
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ['adventureworks', 'dbt_utils']
+
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -36,8 +40,8 @@ models:
   adventureworks:
     +materialized: table
     +file_format: delta
-    location_root: "{{ 'abfss://' ~ target.workspaceid ~ '@msit-onelake.dfs.fabric.microsoft.com/' ~ target.lakehouseid ~ '/Files/onelake/warehouse/dbt_adventureworks_dwh.db' if target.name in ['local-fabric', 'fabric-fabric'] else none }}"
+    location_root: "none"
     marts:
       +materialized: table
       +file_format: delta
-      location_root: "{{ 'abfss://' ~ target.workspaceid ~ '@msit-onelake.dfs.fabric.microsoft.com/' ~ target.lakehouseid ~ '/Files/onelake/warehouse/dbt_adventureworks_dwh.db' if target.name in ['local-fabric', 'fabric-fabric'] else none }}"
+      location_root: "none"

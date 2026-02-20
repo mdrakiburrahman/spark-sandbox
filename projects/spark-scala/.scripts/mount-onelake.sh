@@ -20,7 +20,7 @@ cd ${SPARK_SCALA_DIR}
 
 export IDENTITY_ENDPOINT="http://localhost:6020/token"
 export IDENTITY_HEADER="local-dev-secret"
-export ONELAKE_WORKSPACE_ID="58374f03-58b3-48f8-ae96-758f86aed72d"
+export ONELAKE_WORKSPACE_ID="3ea60ae5-e979-4d31-a317-66491ab497fb"
 
 ACTION=${1:-mount}
 MOUNT_BASE_PATH="/tmp/.mnt/onelake"

@@ -10,5 +10,41 @@
         "subpath": "/onelake/raw/dbt_jaffle_shop_seed/raw_customers"
       }
     }
+  },
+  {
+    "name": "raw_orders",
+    "path": "/Tables",
+    "target": {
+      "type": "AdlsGen2",
+      "adlsGen2": {
+        "connectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
+        "location": "https://fabricdevmdrrahman.dfs.core.windows.net",
+        "subpath": "/onelake/raw/dbt_jaffle_shop_seed/raw_orders"
+      }
+    }
+  },
+  {
+    "name": "raw_payments",
+    "path": "/Tables",
+    "target": {
+      "type": "AdlsGen2",
+      "adlsGen2": {
+        "connectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
+        "location": "https://fabricdevmdrrahman.dfs.core.windows.net",
+        "subpath": "/onelake/raw/dbt_jaffle_shop_seed/raw_payments"
+      }
+    }
+  },
+  {
+    "name": "onelake",
+    "path": "/Files",
+    "target": {
+      "type": "AdlsGen2",
+      "adlsGen2": {
+        "connectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
+        "location": "https://fabricdevmdrrahman.dfs.core.windows.net",
+        "subpath": "/onelake"
+      }
+    }
   }
 ]
