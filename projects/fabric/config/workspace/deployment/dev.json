@@ -172,7 +172,16 @@
         "subscriptionId": "ce859648-30e1-4135-9d0f-8358aebfe789",
         "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
         "shortcutDataConnectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
-        "seedFiles": []
+        "seedFiles": [
+          {
+            "localConcreteFile": {
+              "filePath": "projects/spark-dbt/dist/dbt-fabric-bundle.tar.gz"
+            },
+            "storageAccountFile": {
+              "filePath": "pkgs/dbt-fabric-bundle.tar.gz"
+            }
+          }
+        ]
       }
     }
   }
