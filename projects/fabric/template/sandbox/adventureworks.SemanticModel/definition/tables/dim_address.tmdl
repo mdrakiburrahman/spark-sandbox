@@ -1,0 +1,56 @@
+table dim_address
+	lineageTag: 6690961c-af1b-40f9-97e1-31e96da5bf05
+	sourceLineageTag: [dbo].[dim_address]
+
+	column address_key
+		dataType: string
+		lineageTag: b10b37e3-a417-468f-be4c-a93d1f40b189
+		sourceLineageTag: address_key
+		summarizeBy: none
+		sourceColumn: address_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column addressid
+		dataType: int64
+		formatString: 0
+		lineageTag: 43332c1f-7d5d-42ac-a36f-5a0307ced636
+		sourceLineageTag: addressid
+		summarizeBy: sum
+		sourceColumn: addressid
+
+		annotation SummarizationSetBy = Automatic
+
+	column city_name
+		dataType: string
+		lineageTag: d32a7388-9e09-4ad3-98da-3e0587b7dfe9
+		sourceLineageTag: city_name
+		summarizeBy: none
+		sourceColumn: city_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column state_name
+		dataType: string
+		lineageTag: 345d51d4-4185-4b8f-8191-ea834a571ee3
+		sourceLineageTag: state_name
+		summarizeBy: none
+		sourceColumn: state_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column country_name
+		dataType: string
+		lineageTag: 52321522-209f-4982-a4c6-5cbd6dfc1874
+		sourceLineageTag: country_name
+		summarizeBy: none
+		sourceColumn: country_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_address = entity
+		mode: directLake
+		source
+			entityName: dim_address
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

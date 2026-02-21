@@ -1,0 +1,24 @@
+relationship fct_sales_customer_key_dim_customer_customer_key
+	fromColumn: fct_sales.customer_key
+	toColumn: dim_customer.customer_key
+
+relationship fct_sales_product_key_dim_product_product_key
+	fromColumn: fct_sales.product_key
+	toColumn: dim_product.product_key
+
+relationship fct_sales_creditcard_key_dim_credit_card_creditcard_key
+	fromColumn: fct_sales.creditcard_key
+	toColumn: dim_credit_card.creditcard_key
+
+relationship fct_sales_order_status_key_dim_order_status_order_status_key
+	fromColumn: fct_sales.order_status_key
+	toColumn: dim_order_status.order_status_key
+
+relationship fct_sales_order_date_key_dim_date_date_key
+	fromColumn: fct_sales.order_date_key
+	toColumn: dim_date.date_key
+
+relationship fct_sales_ship_address_key_dim_address_address_key
+	fromColumn: fct_sales.ship_address_key
+	toColumn: dim_address.address_key
+

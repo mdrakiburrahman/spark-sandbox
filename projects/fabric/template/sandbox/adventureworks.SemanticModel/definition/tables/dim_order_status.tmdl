@@ -1,0 +1,38 @@
+table dim_order_status
+	lineageTag: a8a4bda6-22a8-4c75-b05b-eedf8e28bfb6
+	sourceLineageTag: [dbo].[dim_order_status]
+
+	column order_status_key
+		dataType: string
+		lineageTag: f0da356f-1e4f-4423-b7ec-b5f1d0d7d870
+		sourceLineageTag: order_status_key
+		summarizeBy: none
+		sourceColumn: order_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: int64
+		formatString: 0
+		lineageTag: 37ad254c-b63c-40fa-a9a9-ef67a78d9f9a
+		sourceLineageTag: order_status
+		summarizeBy: sum
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status_name
+		dataType: string
+		lineageTag: 71f7b0b3-e2a6-4ca4-bd51-1a1f4e15440d
+		sourceLineageTag: order_status_name
+		summarizeBy: none
+		sourceColumn: order_status_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_order_status = entity
+		mode: directLake
+		source
+			entityName: dim_order_status
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

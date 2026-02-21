@@ -1,0 +1,11 @@
+expression 'DirectLake - dbt_adventureworks_dwh' =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/3ea60ae5-e979-4d31-a317-66491ab497fb/35800137-d4ac-4f28-8d63-84040cc83f21", [HierarchicalNavigation=true])
+		in
+		    Source
+	lineageTag: 68a860dc-842f-4549-ab90-bd4655636ee1
+
+	annotation PBI_IncludeFutureArtifacts = False
+
+	annotation PBI_RemovedChildren = [{"remoteItemId":{"analysisServicesObject":{"sourceName":null,"sourceLineageTag":"[dbo].[obt_sales]"}},"objectType":"Table"}]
+
