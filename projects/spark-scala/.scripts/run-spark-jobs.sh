@@ -251,7 +251,7 @@ run_demo_etl() {
     #
     # ```bash
     # openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-openlineage.json")
+    # openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-spark-custom-plugin.json")
     # ```
     #
     # To send to HTTP endpoint (e.g., OpenLineage backend):

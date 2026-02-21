@@ -13,7 +13,7 @@ mkdir -p /workspaces/spark-sandbox/projects/spark-scala/.temp/openlineage
     --conf "spark.hadoop.hive.cli.print.header=true" \
     --conf "spark.sql.repl.eagerEval.maxNumRows=2147483647" \
     --conf "spark.sql.repl.eagerEval.truncate=0" \
-     -e "SELECT request_body FROM data_ops_inventory_db.http_dumper_plugin" --silent 2>/dev/null | grep -v -E '^$|^::|^request_body$' > /workspaces/spark-sandbox/projects/spark-scala/.temp/openlineage/lineage-from-delta.json
+     -e "SELECT request_body FROM data_ops_inventory_db.http_dumper_plugin" --silent 2>/dev/null | grep -v -E '^$|^::|^request_body$' > /workspaces/spark-sandbox/projects/spark-scala/.temp/openlineage/lineage-from-spark-custom-plugin.json
 ```
 
 ---
