@@ -15,4 +15,10 @@ spark.sql.sources.default=delta
 spark.databricks.delta.schema.autoMerge.enabled=true
 
 # Warehouse location
-spark.sql.warehouse.dir=/workspaces/spark-sandbox/warehouse
+spark.sql.warehouse.dir=${GIT_ROOT}/warehouse
+
+# OpenLineage configuration
+spark.jars.packages=io.openlineage:openlineage-spark_2.12:1.26.0
+spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
+spark.openlineage.transport.type=file
+spark.openlineage.transport.location=${GIT_ROOT}/projects/spark-scala/.temp/openlineage/lineage-from-spark-default.json

@@ -37,4 +37,4 @@ To build and run the spark jobs, run: `npx nx run run` - see [run-spark-jobs.sh]
 
 ## 📚 Documentation
 
-Explore the [documentation root](./docs/README.md) for deep-dive into design and processes.
+Explore the [documentation root](../../docs/README.md) for deep-dive into design and processes.

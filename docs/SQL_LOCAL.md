@@ -13,7 +13,6 @@ running in Docker (2025-latest), which supports multiple concurrent connections.
 > It's recommended to use the in-memory Metastore for tests, [see here](https://issues.apache.org/jira/browse/SPARK-4758)
 > So we keep this off for tests.
 
-
 ## SQL CLI
 
 > See [SQL CLI docs](https://spark.apache.org/docs/latest/sql-distributed-sql-engine-spark-sql-cli.html) for full capabilities
@@ -28,7 +27,7 @@ If you want to query Delta Lake via `spark-sql` - [see](https://docs.delta.io/la
 
 ```bash
 /opt/spark/bin/spark-sql \
-    --packages io.delta:delta-spark_2.12:3.2.0 \
+    --packages "io.delta:delta-spark_2.12:3.2.0,io.openlineage:openlineage-spark_2.12:1.26.0" \
     --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
     --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
     --conf "spark.hadoop.hive.cli.print.header=true"
@@ -40,7 +39,7 @@ You can also pretty print the result in `spark-shell` interactively:
 
 ```bash
 /opt/spark/bin/spark-shell \
-    --packages io.delta:delta-spark_2.12:3.2.0 \
+    --packages "io.delta:delta-spark_2.12:3.2.0,io.openlineage:openlineage-spark_2.12:1.26.0" \
     --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
     --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"
 ```
