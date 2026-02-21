@@ -22,6 +22,10 @@ This repository contains POCs/POTs in Apache Spark.
 
 1. Follow [CONTRIBUTING](contrib/README.md) to get a windows machine ready to start the devcontainer.
 
+1. Install the `Dev Containers` plugin in your WSL VSCode (`ms-vscode-remote.remote-containers`):
+
+   ![DevContainer Extension](.imgs/devcontainer.png)
+
 1. Inside WSL, start the devcontainer with `Ctrl + Shift + P > Dev Containers: Rebuild and Reopen in Container`
 
 1. Dig into:

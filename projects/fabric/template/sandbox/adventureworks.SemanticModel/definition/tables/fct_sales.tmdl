@@ -1,0 +1,183 @@
+table fct_sales
+	lineageTag: a84e91c8-134e-4bfe-9ba5-bb0f2daed9dc
+	sourceLineageTag: [dbo].[fct_sales]
+
+	/// Sum of all revenue
+	measure 'Total Revenue' = SUM(fct_sales[revenue])
+		formatString: $#,##0
+		displayFolder: Revenue
+		lineageTag: cdf0c6dc-8505-4d3e-8b18-499c80060595
+
+	/// Sum of all order quantities
+	measure 'Total Quantity' = SUM(fct_sales[orderqty])
+		formatString: #,##0
+		displayFolder: Quantity
+		lineageTag: 42594cd0-2f0b-45d7-a5fc-f2328a0ba847
+
+	/// Average unit price across all line items
+	measure 'Avg Unit Price' = AVERAGE(fct_sales[unitprice])
+		formatString: $#,##0.00
+		displayFolder: Pricing
+		lineageTag: 5ca966b7-5dcf-48dc-8623-953f1ed53daf
+
+	/// Average revenue per distinct sales order
+	measure 'Avg Revenue per Order' = DIVIDE([Total Revenue], [Total Orders], 0)
+		formatString: $#,##0.00
+		displayFolder: Revenue
+		lineageTag: 05516ae1-306a-4fcb-993d-d0584bcd706f
+
+	/// Count of distinct sales orders
+	measure 'Total Orders' = DISTINCTCOUNT(fct_sales[salesorderid])
+		formatString: #,##0
+		displayFolder: Orders
+		lineageTag: 973f2371-a71f-4f05-8d5c-162f612baafb
+
+	/// Count of all order line items (rows in the fact table)
+	measure 'Total Order Lines' = COUNTROWS(fct_sales)
+		formatString: #,##0
+		displayFolder: Orders
+		lineageTag: 53777e35-58f3-498d-a7f4-caab69c86cfc
+
+	/// Average quantity per distinct sales order
+	measure 'Avg Qty per Order' = DIVIDE([Total Quantity], [Total Orders], 0)
+		formatString: #,##0.00
+		displayFolder: Quantity
+		lineageTag: d948b0ea-bca7-4e0c-9bd6-ac4848d4a18f
+
+	/// Year-to-date total revenue
+	measure 'Revenue YTD' = TOTALYTD([Total Revenue], dim_date[date_day])
+		formatString: $#,##0
+		displayFolder: Revenue
+		lineageTag: b52bde55-1e44-45e3-9f78-0d08c2ec25f1
+
+	/// Total revenue for the same period in the prior year
+	measure 'Revenue Prior Year' = CALCULATE([Total Revenue], SAMEPERIODLASTYEAR(dim_date[date_day]))
+		formatString: $#,##0
+		displayFolder: Revenue
+		lineageTag: d32843cc-2c66-475c-9af3-b19afceb8f1a
+
+	/// Year-over-year revenue growth percentage
+	measure 'Revenue YoY %' = VAR _current = [Total Revenue] VAR _prior = [Revenue Prior Year] RETURN DIVIDE(_current - _prior, _prior, BLANK())
+		formatString: 0.0%
+		displayFolder: Revenue
+		lineageTag: f29df46c-3075-49cd-88c2-4a526bf41128
+
+	column sales_key
+		dataType: string
+		lineageTag: 281ae39c-06d2-4dc3-b0ef-30e70d3d3e3f
+		sourceLineageTag: sales_key
+		summarizeBy: none
+		sourceColumn: sales_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_key
+		dataType: string
+		lineageTag: 51b9b19a-0d9b-44fe-b781-c75e2260ea3a
+		sourceLineageTag: product_key
+		summarizeBy: none
+		sourceColumn: product_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_key
+		dataType: string
+		lineageTag: 786a85fe-fbee-4c2a-8171-0d17ba182b83
+		sourceLineageTag: customer_key
+		summarizeBy: none
+		sourceColumn: customer_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column creditcard_key
+		dataType: string
+		lineageTag: f100db90-9299-43bf-9ad5-63b717b1ba02
+		sourceLineageTag: creditcard_key
+		summarizeBy: none
+		sourceColumn: creditcard_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column ship_address_key
+		dataType: string
+		lineageTag: 55ca2fea-4416-4616-af20-ab9a2f0e0459
+		sourceLineageTag: ship_address_key
+		summarizeBy: none
+		sourceColumn: ship_address_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status_key
+		dataType: string
+		lineageTag: a05b2845-5755-4027-8fa5-c49a411bde95
+		sourceLineageTag: order_status_key
+		summarizeBy: none
+		sourceColumn: order_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date_key
+		dataType: string
+		lineageTag: 4f1c4040-b6f2-45fe-b6e4-a98006b20210
+		sourceLineageTag: order_date_key
+		summarizeBy: none
+		sourceColumn: order_date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column salesorderid
+		dataType: int64
+		formatString: 0
+		lineageTag: ea7f69a2-a641-4325-870e-165798be49f6
+		sourceLineageTag: salesorderid
+		summarizeBy: sum
+		sourceColumn: salesorderid
+
+		annotation SummarizationSetBy = Automatic
+
+	column salesorderdetailid
+		dataType: int64
+		formatString: 0
+		lineageTag: 31b3da4f-b56d-477b-9b42-758d7c9ae73d
+		sourceLineageTag: salesorderdetailid
+		summarizeBy: sum
+		sourceColumn: salesorderdetailid
+
+		annotation SummarizationSetBy = Automatic
+
+	column unitprice
+		dataType: int64
+		formatString: 0
+		lineageTag: 7d690937-aa62-4974-9b7e-81d408952f97
+		sourceLineageTag: unitprice
+		summarizeBy: sum
+		sourceColumn: unitprice
+
+		annotation SummarizationSetBy = Automatic
+
+	column orderqty
+		dataType: int64
+		formatString: 0
+		lineageTag: 4690eafc-4d75-4502-bb30-69ca29a4bcbe
+		sourceLineageTag: orderqty
+		summarizeBy: sum
+		sourceColumn: orderqty
+
+		annotation SummarizationSetBy = Automatic
+
+	column revenue
+		dataType: int64
+		formatString: 0
+		lineageTag: b6b3f267-ea4f-430d-afb2-46b63e523c8f
+		sourceLineageTag: revenue
+		summarizeBy: sum
+		sourceColumn: revenue
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_sales = entity
+		mode: directLake
+		source
+			entityName: fct_sales
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

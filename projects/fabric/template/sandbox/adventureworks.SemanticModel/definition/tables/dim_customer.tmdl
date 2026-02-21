@@ -1,0 +1,67 @@
+table dim_customer
+	lineageTag: f16d6352-f680-4d8e-b5bd-f1ac5ea56378
+	sourceLineageTag: [dbo].[dim_customer]
+
+	column customer_key
+		dataType: string
+		lineageTag: 23bc4421-0485-4046-bd21-9ca7690d6165
+		sourceLineageTag: customer_key
+		summarizeBy: none
+		sourceColumn: customer_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column customerid
+		dataType: int64
+		formatString: 0
+		lineageTag: b091dcae-75af-4f4e-931e-27695866a409
+		sourceLineageTag: customerid
+		summarizeBy: sum
+		sourceColumn: customerid
+
+		annotation SummarizationSetBy = Automatic
+
+	column businessentityid
+		dataType: int64
+		formatString: 0
+		lineageTag: 7ec89ffa-b433-49b1-90aa-0544eeaab6c8
+		sourceLineageTag: businessentityid
+		summarizeBy: sum
+		sourceColumn: businessentityid
+
+		annotation SummarizationSetBy = Automatic
+
+	column fullname
+		dataType: string
+		lineageTag: 4c79e092-bdbb-4bf8-a96a-93c178ac740a
+		sourceLineageTag: fullname
+		summarizeBy: none
+		sourceColumn: fullname
+
+		annotation SummarizationSetBy = Automatic
+
+	column storebusinessentityid
+		dataType: int64
+		formatString: 0
+		lineageTag: 85686d54-155c-48b7-876d-b5567623ac99
+		sourceLineageTag: storebusinessentityid
+		summarizeBy: sum
+		sourceColumn: storebusinessentityid
+
+		annotation SummarizationSetBy = Automatic
+
+	column storename
+		dataType: string
+		lineageTag: 3e874bd2-9da3-4440-8ff4-1bc56cf8f1d6
+		sourceLineageTag: storename
+		summarizeBy: none
+		sourceColumn: storename
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_customer = entity
+		mode: directLake
+		source
+			entityName: dim_customer
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

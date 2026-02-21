@@ -1,0 +1,83 @@
+table dim_product
+	lineageTag: c0e414b8-7010-4ded-868d-70ffb7468fbf
+	sourceLineageTag: [dbo].[dim_product]
+
+	column product_key
+		dataType: string
+		lineageTag: e9d24005-19e7-48f3-b4e3-d8cc64aea08c
+		sourceLineageTag: product_key
+		summarizeBy: none
+		sourceColumn: product_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column productid
+		dataType: int64
+		formatString: 0
+		lineageTag: 6f351184-105c-404c-83f9-717826799866
+		sourceLineageTag: productid
+		summarizeBy: sum
+		sourceColumn: productid
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: 4ce55f6c-3fc7-43bf-81cc-cfe3659c474d
+		sourceLineageTag: product_name
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column productnumber
+		dataType: string
+		lineageTag: fa4f9065-0bac-461c-bdc2-61f55a06398c
+		sourceLineageTag: productnumber
+		summarizeBy: none
+		sourceColumn: productnumber
+
+		annotation SummarizationSetBy = Automatic
+
+	column color
+		dataType: string
+		lineageTag: 1d1797a2-684d-4c8a-9a81-990f4cdf9395
+		sourceLineageTag: color
+		summarizeBy: none
+		sourceColumn: color
+
+		annotation SummarizationSetBy = Automatic
+
+	column class
+		dataType: string
+		lineageTag: 3a16c3fc-7fae-493e-b165-6d49a337ed1f
+		sourceLineageTag: class
+		summarizeBy: none
+		sourceColumn: class
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_subcategory_name
+		dataType: string
+		lineageTag: 8256fa22-054d-4c8b-96f1-1a6f7146c041
+		sourceLineageTag: product_subcategory_name
+		summarizeBy: none
+		sourceColumn: product_subcategory_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_category_name
+		dataType: string
+		lineageTag: a99a3684-68a4-43b0-b212-4521c94e50c8
+		sourceLineageTag: product_category_name
+		summarizeBy: none
+		sourceColumn: product_category_name
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_product = entity
+		mode: directLake
+		source
+			entityName: dim_product
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

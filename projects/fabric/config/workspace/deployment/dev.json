@@ -24,6 +24,12 @@
         "objectId": "{user-oid}",
         "aadAppId": "{user-appid}",
         "principalType": "{user-principal-type}"
+      },
+      {
+        "givenName": "Redacted",
+        "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
+        "aadAppId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
+        "principalType": "{user-principal-type}"
       }
     ],
     "fabric": {
@@ -108,6 +114,11 @@
                 "permissions": 15,
                 "objectId": "{user-oid}",
                 "purpose": "Original deployer of Workspace inherits Owner role for further automation to occur."
+              },
+              {
+                "permissions": 15,
+                "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
+                "purpose": "A colleague."
               }
             ],
             "items": [
@@ -120,6 +131,12 @@
                     "artifactPermissions": 7,
                     "objectId": "{user-oid}",
                     "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 7,
+                    "artifactPermissions": 7,
+                    "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
+                    "purpose": "Default permission."
                   }
                 ]
               },
@@ -131,6 +148,12 @@
                     "permissions": 71,
                     "artifactPermissions": 15,
                     "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 71,
+                    "artifactPermissions": 15,
+                    "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
                     "purpose": "Default permission."
                   }
                 ]
@@ -144,6 +167,12 @@
                     "artifactPermissions": 7,
                     "objectId": "{user-oid}",
                     "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 7,
+                    "artifactPermissions": 7,
+                    "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
+                    "purpose": "Default permission."
                   }
                 ]
               },
@@ -155,6 +184,12 @@
                     "permissions": 71,
                     "artifactPermissions": 15,
                     "objectId": "{user-oid}",
+                    "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 71,
+                    "artifactPermissions": 15,
+                    "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
                     "purpose": "Default permission."
                   }
                 ]
@@ -172,7 +207,16 @@
         "subscriptionId": "ce859648-30e1-4135-9d0f-8358aebfe789",
         "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47",
         "shortcutDataConnectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
-        "seedFiles": []
+        "seedFiles": [
+          {
+            "localConcreteFile": {
+              "filePath": "projects/spark-dbt/dist/dbt-fabric-bundle.tar.gz"
+            },
+            "storageAccountFile": {
+              "filePath": "pkgs/dbt-fabric-bundle.tar.gz"
+            }
+          }
+        ]
       }
     }
   }

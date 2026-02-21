@@ -1,0 +1,38 @@
+table dim_credit_card
+	lineageTag: 7aac64fa-832e-4060-a526-63de7a22a0e0
+	sourceLineageTag: [dbo].[dim_credit_card]
+
+	column creditcard_key
+		dataType: string
+		lineageTag: 0f25317e-a7f3-4c34-994c-6b52763e96c8
+		sourceLineageTag: creditcard_key
+		summarizeBy: none
+		sourceColumn: creditcard_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column creditcardid
+		dataType: int64
+		formatString: 0
+		lineageTag: 514eeb51-7b23-4ff1-a2fe-b216e850c7c5
+		sourceLineageTag: creditcardid
+		summarizeBy: sum
+		sourceColumn: creditcardid
+
+		annotation SummarizationSetBy = Automatic
+
+	column cardtype
+		dataType: string
+		lineageTag: 52284a6b-f534-47e7-9363-9e7d4ed26e28
+		sourceLineageTag: cardtype
+		summarizeBy: none
+		sourceColumn: cardtype
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_credit_card = entity
+		mode: directLake
+		source
+			entityName: dim_credit_card
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

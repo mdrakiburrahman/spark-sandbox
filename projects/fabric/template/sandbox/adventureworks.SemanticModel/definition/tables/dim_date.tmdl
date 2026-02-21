@@ -1,0 +1,108 @@
+table dim_date
+	lineageTag: be6a5276-8db2-460b-a604-f97df88d043e
+	sourceLineageTag: [dbo].[dim_date]
+
+	column date_key
+		dataType: string
+		lineageTag: c31a3a31-31d4-4d89-ac5f-fd74a5095c34
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_day
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: d68d147f-b4da-4b01-a180-ad3f6fc5a5f6
+		sourceLineageTag: date_day
+		summarizeBy: none
+		sourceColumn: date_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column prior_date_day
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 6b241feb-ecc6-4a7b-8f4c-a64e5fc6e5b7
+		sourceLineageTag: prior_date_day
+		summarizeBy: none
+		sourceColumn: prior_date_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column next_date_day
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 0d970846-417c-4cde-9dce-b54b61fed1bb
+		sourceLineageTag: next_date_day
+		summarizeBy: none
+		sourceColumn: next_date_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column prior_year_date_day
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b69c90ce-b4b0-425c-8a13-1a103671816b
+		sourceLineageTag: prior_year_date_day
+		summarizeBy: none
+		sourceColumn: prior_year_date_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column prior_year_over_year_date_day
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 286a899b-91f0-464d-a58b-e8587b126407
+		sourceLineageTag: prior_year_over_year_date_day
+		summarizeBy: none
+		sourceColumn: prior_year_over_year_date_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_of_week
+		dataType: int64
+		formatString: 0
+		lineageTag: a3ea82dc-a670-48d0-b11d-b2d89a22f6af
+		sourceLineageTag: day_of_week
+		summarizeBy: sum
+		sourceColumn: day_of_week
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_of_week_name
+		dataType: string
+		lineageTag: 7bc87aa1-96d7-409d-8e21-16304939ec84
+		sourceLineageTag: day_of_week_name
+		summarizeBy: none
+		sourceColumn: day_of_week_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_of_month
+		dataType: int64
+		formatString: 0
+		lineageTag: a2692276-d4d7-46ed-ae36-d7945ea3ba44
+		sourceLineageTag: day_of_month
+		summarizeBy: sum
+		sourceColumn: day_of_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column day_of_year
+		dataType: int64
+		formatString: 0
+		lineageTag: b6faffe2-6947-4e49-90dd-0d802e2f6884
+		sourceLineageTag: day_of_year
+		summarizeBy: sum
+		sourceColumn: day_of_year
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_date = entity
+		mode: directLake
+		source
+			entityName: dim_date
+			expressionSource: 'DirectLake - dbt_adventureworks_dwh'
+

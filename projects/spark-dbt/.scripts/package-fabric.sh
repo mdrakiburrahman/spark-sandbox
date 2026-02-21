@@ -2,7 +2,7 @@
 #
 #
 #       Package dbt projects + dependencies for Microsoft Fabric.
-#       Creates a tar.gz bundle and notebook ready to upload to OneLake.
+#       Creates a tar.gz bundle ready to upload to OneLake.
 #
 #       Usage: package-fabric.sh [output-dir]
 #       Example: package-fabric.sh ./dist
@@ -15,7 +15,6 @@ PYTHON_VERSION="3.11"
 PLATFORMS="manylinux2014_x86_64 linux_x86_64 any"
 DBT_PROJECTS=(dbt-adventureworks dbt-jaffle-shop)
 BUNDLE_NAME="dbt-fabric-bundle"
-NOTEBOOK_SRC="run-dbt-fabric.ipynb"
 
 cd "$(dirname "$0")/.."
 source .venv/bin/activate
@@ -32,7 +31,6 @@ for p in "${DBT_PROJECTS[@]}"; do
 done
 
 tar -czf "$OUT/$BUNDLE_NAME.tar.gz" -C "$OUT" "$BUNDLE_NAME" && rm -rf "$OUT/$BUNDLE_NAME"
-cp ".notebooks/$NOTEBOOK_SRC" "$OUT/"
 
 echo ""
 echo "=== Package complete ==="
@@ -40,4 +38,3 @@ du -sh "$OUT"/*
 echo ""
 echo "Upload to Fabric Lakehouse:"
 echo "  1. $OUT/$BUNDLE_NAME.tar.gz  →  Files/$BUNDLE_NAME.tar.gz"
-echo "  2. $OUT/$NOTEBOOK_SRC        →  Import as Notebook"
