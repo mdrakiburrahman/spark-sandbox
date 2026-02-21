@@ -5,7 +5,7 @@ const SPARK_SCALA_DIR = resolve(__dirname, "../..");
 const SPARK_SQL_BIN = "/opt/spark/bin/spark-sql";
 
 const SPARK_SQL_ARGS = [
-  "--packages io.delta:delta-spark_2.12:3.2.0",
+  '--packages "io.delta:delta-spark_2.12:3.2.0,io.openlineage:openlineage-spark_2.12:1.26.0"',
   '--conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension"',
   '--conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog"',
   '--conf "spark.hadoop.hive.cli.print.header=true"',
@@ -38,8 +38,16 @@ export class SparkSql {
     return new Promise((resolve, reject) => {
       execFile(
         "bash",
-        ["-c", `${SPARK_SQL_BIN} ${SPARK_SQL_ARGS} -e "${sql}" --silent 2>/dev/null`],
-        { cwd: SPARK_SCALA_DIR, encoding: "utf-8", timeout: timeoutMs, maxBuffer: 50 * 1024 * 1024 },
+        [
+          "-c",
+          `${SPARK_SQL_BIN} ${SPARK_SQL_ARGS} -e "${sql}" --silent 2>/dev/null`,
+        ],
+        {
+          cwd: SPARK_SCALA_DIR,
+          encoding: "utf-8",
+          timeout: timeoutMs,
+          maxBuffer: 50 * 1024 * 1024,
+        },
         (err, stdout) => {
           const elapsed = ((performance.now() - start) / 1000).toFixed(2);
           if (err) {
@@ -54,7 +62,10 @@ export class SparkSql {
     });
   }
 
-  static async queryRowsAsync(sql: string, timeoutMs = 120_000): Promise<string[]> {
+  static async queryRowsAsync(
+    sql: string,
+    timeoutMs = 120_000,
+  ): Promise<string[]> {
     return this.parseRows(await this.queryAsync(sql, timeoutMs));
   }
 
