@@ -51,9 +51,9 @@ os.environ["DBT_LOG_PATH"] = "/lakehouse/default/Files/onelake/logs/dbt"
 dbt_log_file = os.path.join(os.environ["DBT_LOG_PATH"], "dbt.log")
 if os.path.exists(dbt_log_file):
     from datetime import datetime, timezone
+
     ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    archived = os.path.join(
-        os.environ["DBT_LOG_PATH"], f"dbt-archived-at-{ts}.log")
+    archived = os.path.join(os.environ["DBT_LOG_PATH"], f"dbt-archived-at-{ts}.log")
     os.rename(dbt_log_file, archived)
     print(f"Archived previous dbt.log to {archived}")
 
@@ -64,8 +64,7 @@ def resolve_env_var(yaml_value, env_key):
     env_val = os.environ.get(env_key)
     if env_val:
         return env_val
-    m = re.search(
-        r"\{\{\s*env_var\s*\(\s*'[^']*'\s*,\s*'([^']*)'\s*\)\s*\}\}", yaml_value)
+    m = re.search(r"\{\{\s*env_var\s*\(\s*'[^']*'\s*,\s*'([^']*)'\s*\)\s*\}\}", yaml_value)
     if m:
         return m.group(1)
     return yaml_value
@@ -76,8 +75,7 @@ def close_livy_sessions():
     seen = {}
     for project in PROJECTS:
         try:
-            profiles = yaml.safe_load(
-                open(f"/tmp/dbt-fabric-bundle/projects/{project}/profiles.yml"))
+            profiles = yaml.safe_load(open(f"/tmp/dbt-fabric-bundle/projects/{project}/profiles.yml"))
             profile_name = next(iter(profiles))
             cfg = profiles[profile_name]["outputs"][TARGET]
             session_id = open(cfg["session_id_file"]).read().strip()
@@ -88,15 +86,12 @@ def close_livy_sessions():
 
     for session_id, (project, cfg) in seen.items():
         try:
-            workspace_id = resolve_env_var(
-                cfg["workspaceid"], "FABRIC_WORKSPACE_ID")
-            lakehouse_id = resolve_env_var(
-                cfg["lakehouseid"], "FABRIC_LAKEHOUSE_ID")
+            workspace_id = resolve_env_var(cfg["workspaceid"], "FABRIC_WORKSPACE_ID")
+            lakehouse_id = resolve_env_var(cfg["lakehouseid"], "FABRIC_LAKEHOUSE_ID")
 
             url = f"https://api.fabric.microsoft.com/v1/workspaces/{workspace_id}/lakehouses/{lakehouse_id}/livyApi/versions/2023-12-01/sessions/{session_id}"
             print(f"Deleting session {session_id}: {url}")
-            r = requests.delete(url, headers={
-                                "Authorization": f"Bearer {notebookutils.credentials.getToken('pbi')}"})
+            r = requests.delete(url, headers={"Authorization": f"Bearer {notebookutils.credentials.getToken('pbi')}"})
             print(f"Delete session {session_id}: {r.status_code} {r.reason}")
         except Exception as e:
             print(f"Warning: failed to close Livy session {session_id}: {e}")
