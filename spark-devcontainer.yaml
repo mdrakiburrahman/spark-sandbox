@@ -1,0 +1,5 @@
+version: "1.0"
+
+config:
+  spark_defaults_template: "config/spark-defaults.conf.tmpl"
+  hive_site_template: "config/hive-site.xml.tmpl"

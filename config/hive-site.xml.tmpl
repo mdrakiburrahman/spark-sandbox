@@ -8,7 +8,7 @@
   </property>
   <property>
     <name>javax.jdo.option.ConnectionURL</name>
-    <value>jdbc:sqlserver://host.docker.internal:1433;databaseName=metastore;encrypt=false;trustServerCertificate=true</value>
+    <value>jdbc:sqlserver://host.docker.internal:11434;databaseName=metastore;encrypt=false;trustServerCertificate=true</value>
   </property>
   <property>
     <name>javax.jdo.option.ConnectionUserName</name>
@@ -21,9 +21,9 @@
   <!-- Default warehouse location -->
   <property>
     <name>hive.metastore.warehouse.dir</name>
-    <value>/workspaces/spark-sandbox/warehouse</value>
+    <value>${GIT_ROOT}/warehouse</value>
   </property>
-  <!-- Schema is pre-initialized, disable auto-create -->
+  <!-- Schema is pre-initialized on SQL Server boot, disable auto-create -->
   <property>
     <name>datanucleus.schema.autoCreateAll</name>
     <value>false</value>
@@ -43,7 +43,7 @@
   </property>
   <property>
     <name>datanucleus.connectionPool.maxPoolSize</name>
-    <value>10</value>
+    <value>50</value>
   </property>
   <!-- Disable stats -->
   <property>
