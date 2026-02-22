@@ -1,0 +1,46 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "spark-python"
+version = "0.1.0"
+description = "PySpark notebooks and Python tooling for the spark-sandbox project"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  { name = "Raki Rahman", email = "mdrakiburrahman@gmail.com" },
+]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+skip-install = true
+dependencies = [
+  "marimo>=0.12.0",
+  "pandas>=2.0.0",
+  "pyarrow>=14.0.0",
+  "pyspark==3.5.1",
+  "delta-spark==3.2.0",
+  "setuptools",
+  "pytest>=8.0.0",
+]
+
+[tool.hatch.envs.default.env-vars]
+SPARK_HOME = "/opt/spark"
+JAVA_HOME = "/usr/local/sdkman/candidates/java/current"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 120
+
+[project.urls]
+Documentation = "https://github.com/mdrakiburrahman/spark-sandbox#readme"
+Issues = "https://github.com/mdrakiburrahman/spark-sandbox/issues"
+Source = "https://github.com/mdrakiburrahman/spark-sandbox"

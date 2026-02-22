@@ -21,6 +21,9 @@
     {
       "path": "spark-scala",
     },
+    {
+      "path": "spark-python",
+    },
   ],
   "settings": {
     "files.watcherExclude": {

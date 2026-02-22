@@ -1,0 +1,88 @@
+{
+  "name": "spark-python",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": [
+          "if [ -n \"$HATCH_ENV\" ]; then echo 'ERROR: Exit hatch shell first (type: exit)' && exit 1; fi",
+          "hatch env remove default 2>/dev/null || true",
+          "hatch env prune 2>/dev/null || true",
+          "cat .cleanpaths | xargs rm -rf"
+        ],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": ["hatch run python -m py_compile notebooks/eda/openlineage_explorer.py"],
+        "parallel": false
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "dependsOn": [],
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": ["hatch env create"],
+        "parallel": false
+      }
+    },
+    "init": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": [
+          {
+            "command": "echo 'spark-python initialization completed.'",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "run": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "init",
+        {
+          "target": "run",
+          "projects": ["spark-scala"]
+        }
+      ],
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": [
+          {
+            "command": "hatch run python .scripts/run_notebooks.py",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "init",
+        {
+          "target": "test-jest",
+          "projects": ["spark-scala"]
+        }
+      ],
+      "options": {
+        "cwd": "projects/spark-python",
+        "commands": [
+          {
+            "command": "hatch run pytest tests/ -v",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    }
+  }
+}
