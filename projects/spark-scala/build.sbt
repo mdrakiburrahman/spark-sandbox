@@ -81,7 +81,13 @@ lazy val common = project
       // JvmManager uses getBootClassPath which is unsupported on Java 17
       "me\\.rakirahman\\.jvm\\..*",
       // DeltaUpserter retry/error paths require mocking concurrent Delta merge failures
-      "me\\.rakirahman\\.etl\\.transformer\\.merge\\.DeltaUpserter.*"
+      "me\\.rakirahman\\.etl\\.transformer\\.merge\\.DeltaUpserter.*",
+      // OpenLineage schema constants are tested via sparkDemo integration tests
+      "me\\.rakirahman\\.etl\\.schema\\.openlineage\\..*",
+      // Sequencer execution framework is tested via sparkDemo integration tests
+      "me\\.rakirahman\\.etl\\.execution\\.stateless\\..*",
+      // DataTransformer abstract trait is tested via sparkDemo implementations
+      "me\\.rakirahman\\.etl\\.transformer\\.DataTransformer"
     ).mkString(";"),
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
