@@ -151,6 +151,45 @@ class OpenLineageIntegrationTest extends AnyFunSpec with Matchers with CancelAft
           s"Column '${field.name}' should not be an ArrayType, found: ${field.dataType}"
         )
       }
+
+      // Exploded inputs columns should be present
+      val cols = result.columns.toSet
+      Seq(
+        "inputs_name",
+        "inputs_namespace",
+        "inputs_facets_dataSource_name",
+        "inputs_facets_dataSource_uri"
+      ).foreach { expectedCol =>
+        assert(
+          cols.contains(expectedCol),
+          s"Expected column '${expectedCol}' from exploded inputs, found columns: ${cols.mkString(", ")}"
+        )
+      }
+
+      // Exploded outputs columns should be present
+      Seq(
+        "outputs_name",
+        "outputs_namespace",
+        "outputs_facets_dataSource_name",
+        "outputs_facets_version_datasetVersion",
+        "outputs_facets_storage_storageLayer",
+        "outputs_facets_storage_fileFormat"
+      ).foreach { expectedCol =>
+        assert(
+          cols.contains(expectedCol),
+          s"Expected column '${expectedCol}' from exploded outputs, found columns: ${cols.mkString(", ")}"
+        )
+      }
+
+      // inputs_Json and outputs_Json should NOT be present (arrays are exploded, not jsonized)
+      assert(
+        !cols.contains("inputs_Json"),
+        "inputs_Json should not exist — inputs should be exploded and flattened"
+      )
+      assert(
+        !cols.contains("outputs_Json"),
+        "outputs_Json should not exist — outputs should be exploded and flattened"
+      )
     }
 
     it("should transform all event types and union into a wide table") {

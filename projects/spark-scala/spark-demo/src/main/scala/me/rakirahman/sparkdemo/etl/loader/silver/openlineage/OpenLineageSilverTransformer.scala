@@ -14,6 +14,7 @@ import me.rakirahman.feeds.schema.extensions.SchemaExtensions._
 
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.types.ArrayType
 
 /** Configuration for the OpenLineage Silver output.
   *
@@ -103,6 +104,7 @@ class OpenLineageSilverTransformer extends DataTransformer {
               eventType.toString,
               inDF
                 .transform(withEventTypeFiltered(eventType))
+                .transform(withArraysExploded())
                 .transform(withSchemaFlattened())
                 .withJsonizedArrays("_Json", true)
                 .transform(withTimestampCasted())
@@ -147,6 +149,17 @@ class OpenLineageSilverTransformer extends DataTransformer {
       col(OpenLineageSilverTableMetadata.ColEventType) ===
         eventType.toString
     )
+
+  /** Explodes top-level array columns using `explode_outer` so their struct elements can be flattened.
+    */
+  private def withArraysExploded()(inDF: DataFrame): DataFrame = {
+    val arrayCols = inDF.schema.fields.collect {
+      case f if f.dataType.isInstanceOf[ArrayType] => f.name
+    }
+    arrayCols.foldLeft(inDF) { (df, colName) =>
+      df.withColumn(colName, explode_outer(col(colName)))
+    }
+  }
 
   /** Flattens the DataFrame schema recursively.
     */
