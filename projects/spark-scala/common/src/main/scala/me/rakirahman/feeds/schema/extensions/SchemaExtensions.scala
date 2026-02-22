@@ -44,11 +44,15 @@ object SchemaExtensions {
         prefix: String = null
     ): Array[Column] = {
       schema.fields.flatMap(f => {
-        val columnName = if (prefix == null) f.name else (prefix + "." + f.name)
+        val escapedName = if (f.name.contains(".")) s"`${f.name}`" else f.name
+        val columnName =
+          if (prefix == null) escapedName else (prefix + "." + escapedName)
+        val aliasName = if (prefix == null) f.name else (prefix + "." + f.name)
 
         f.dataType match {
           case st: StructType => flattenedSchema(st, columnName)
-          case _              => Array(col(columnName).as(columnName.replace(".", "_")))
+          case _ =>
+            Array(col(columnName).as(aliasName.replace(".", "_")))
         }
       })
     }
