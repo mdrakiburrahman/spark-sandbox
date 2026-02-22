@@ -21,10 +21,13 @@
     {
       "path": "spark-scala",
     },
+    {
+      "path": "spark-python",
+    },
   ],
   "settings": {
     "files.watcherExclude": {
-      "**/target": true
+      "**/target": true,
     },
     "java.compile.nullAnalysis.mode": "disabled",
   },

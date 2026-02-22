@@ -1,0 +1,15 @@
+.npmrc
+node_modules/
+nx
+.nx/
+dist/
+build/
+__pycache__/
+__marimo__/
+.env.*
+.temp/
+.venv/*
+
+.nx/installation
+.nx/cache
+.nx/workspace-data
