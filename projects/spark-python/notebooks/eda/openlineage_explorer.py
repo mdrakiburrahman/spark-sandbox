@@ -49,15 +49,7 @@ def _():
 
     os.environ["SPARK_CONF_DIR"] = "/opt/spark/conf"
 
-    spark = (
-        SparkSession.builder.appName("OpenLineage Explorer")
-        .master("local[*]")
-        .config("spark.ui.enabled", "false")
-        .config("spark.driver.memory", "2g")
-        .config("spark.driver.extraClassPath", "/opt/spark/jars/*")
-        .enableHiveSupport()
-        .getOrCreate()
-    )
+    spark = SparkSession.builder.appName("OpenLineage Explorer").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "2g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").enableHiveSupport().getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     return (spark,)
 
@@ -116,9 +108,7 @@ def _(mo):
 
 @app.cell
 def _(mo, spark):
-    mo.ui.dataframe(
-        spark.sql("SELECT eventType, COUNT(*) AS count FROM data_ops_inventory_db.openlineage GROUP BY eventType").toPandas()
-    )
+    mo.ui.dataframe(spark.sql("SELECT eventType, COUNT(*) AS count FROM data_ops_inventory_db.openlineage GROUP BY eventType").toPandas())
     return
 
 

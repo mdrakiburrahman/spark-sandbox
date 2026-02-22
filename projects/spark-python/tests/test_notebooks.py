@@ -22,15 +22,7 @@ def _get_notebook_paths():
 
 @pytest.fixture(scope="session")
 def spark():
-    session = (
-        SparkSession.builder.appName("spark-python-tests")
-        .master("local[*]")
-        .config("spark.ui.enabled", "false")
-        .config("spark.driver.memory", "1g")
-        .config("spark.driver.extraClassPath", "/opt/spark/jars/*")
-        .enableHiveSupport()
-        .getOrCreate()
-    )
+    session = SparkSession.builder.appName("spark-python-tests").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "1g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").enableHiveSupport().getOrCreate()
     session.sparkContext.setLogLevel("WARN")
     yield session
     session.stop()
