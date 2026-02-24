@@ -4,7 +4,7 @@ package me.rakirahman.etl.transformer.extensions
   */
 object QueryExtensions {
 
-  implicit class QueryExtensions(query: String) {
+  implicit class QueryStringOperations(query: String) {
 
     /** Applies null equality to the condition string.
       *
