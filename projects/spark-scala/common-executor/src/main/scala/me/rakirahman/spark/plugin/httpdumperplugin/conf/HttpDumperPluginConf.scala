@@ -61,27 +61,14 @@ case class IntHttpDumperProperty(
 }
 
 case class HttpDumperConf(
-    databaseName: String,
-    tableName: String,
-    tableFormat: String,
-    executorPort: Int,
-    driverPort: Int
+    location: String,
+    executorPort: Int
 )
 
 object HttpDumperConf {
-  private val databaseName = StringHttpDumperProperty(
-    key = "spark.plugin.conf.database.name",
-    default = "defaultdb"
-  )
-
-  private val tableName = StringHttpDumperProperty(
-    key = "spark.plugin.conf.table.name",
-    default = "defaulttable"
-  )
-
-  private val tableFormat = StringHttpDumperProperty(
-    key = "spark.plugin.conf.table.format",
-    default = "delta"
+  private val location = StringHttpDumperProperty(
+    key = "spark.plugin.conf.json.location",
+    default = "/tmp/openlineage"
   )
 
   private val executorPort = IntHttpDumperProperty(
@@ -91,20 +78,10 @@ object HttpDumperConf {
     max = Some(65535)
   )
 
-  private val driverPort = IntHttpDumperProperty(
-    key = "spark.plugin.conf.driver.port",
-    default = 19000,
-    min = Some(1024),
-    max = Some(65535)
-  )
-
   def apply(conf: SparkConf): HttpDumperConf = {
     HttpDumperConf(
-      databaseName = databaseName.get(conf),
-      tableName = tableName.get(conf),
-      tableFormat = tableFormat.get(conf),
-      executorPort = executorPort.get(conf),
-      driverPort = driverPort.get(conf)
+      location = location.get(conf),
+      executorPort = executorPort.get(conf)
     )
   }
 }

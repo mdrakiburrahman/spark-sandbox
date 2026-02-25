@@ -1,7 +1,5 @@
 package me.rakirahman.sparkdemo.etl.drivers.demos
 
-import me.rakirahman.spark.SparkSessionExtensions._
-
 import me.rakirahman.spark.SparkSessionManager
 import me.rakirahman.sparkdemo.config.DemoEnvironmentConfiguration
 
@@ -109,6 +107,5 @@ object DemoEtl extends App with Logging {
       .saveAsTable(s"${dbName}.${table}")
   }
 
-  spark.flushPlugin()
   spark.stop()
 }

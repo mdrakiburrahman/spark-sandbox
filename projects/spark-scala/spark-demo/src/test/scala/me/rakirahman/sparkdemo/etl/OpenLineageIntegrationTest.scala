@@ -52,7 +52,7 @@ class OpenLineageIntegrationTest extends AnyFunSpec with Matchers with CancelAft
 
   describe("OpenLineageSilverTransformer") {
 
-    /** Builds a sample DataFrame simulating the http_dumper_plugin table.
+    /** Builds a sample DataFrame simulating the JSONL reader output.
       *
       * @param eventType
       *   The OpenLineage event type.
@@ -71,19 +71,7 @@ class OpenLineageIntegrationTest extends AnyFunSpec with Matchers with CancelAft
           s""""eventType":"${eventType.toString}""""
         )
 
-      Seq(
-        (
-          java.sql.Timestamp.valueOf("2026-02-22 00:21:14.61154"),
-          "20260222",
-          "/api/v1/lineage",
-          "POST",
-          sample
-        )
-      ).toDF(
-        OpenLineageSilverTableMetadata.ColResultTimestamp,
-        OpenLineageSilverTableMetadata.ColEventYearDate,
-        OpenLineageSilverTableMetadata.ColRequestUri,
-        OpenLineageSilverTableMetadata.ColRequestMethod,
+      Seq(sample).toDF(
         OpenLineageSilverTableMetadata.ColRequestBody
       )
     }
@@ -249,59 +237,26 @@ class OpenLineageIntegrationTest extends AnyFunSpec with Matchers with CancelAft
       )
     }
 
-    it("should NOT carry request_uri or request_method into output") {
+    it("should filter out non-matching event types") {
+      import spark.implicits._
       val transformer = new OpenLineageSilverTransformer
 
-      val transformed = transformer.transform(
-        getSampleDataFrame(OpenLineageEventTypes.START)
+      val noEventTypeDf = Seq(
+        """{"producer":"test","schemaURL":"test"}"""
+      ).toDF(
+        OpenLineageSilverTableMetadata.ColRequestBody
       )
 
+      val transformed = transformer.transform(noEventTypeDf)
       val result = transformer
         .transformBatchSequencer(transformed, 0)
         .getMetadata()
         .values
         .filter(!_.isEmpty)
-        .toArray
-        .unionWithMergedSchema()
 
       assert(
-        !result.columns.contains(
-          OpenLineageSilverTableMetadata.ColRequestUri
-        ),
-        "Output should NOT contain request_uri"
-      )
-      assert(
-        !result.columns.contains(
-          OpenLineageSilverTableMetadata.ColRequestMethod
-        ),
-        "Output should NOT contain request_method"
-      )
-    }
-
-    it("should filter out non-OpenLineage events") {
-      import spark.implicits._
-      val transformer = new OpenLineageSilverTransformer
-
-      val nonOpenLineageDf = Seq(
-        (
-          java.sql.Timestamp.valueOf("2026-02-22 00:21:14.61154"),
-          "20260222",
-          "/some/other/endpoint",
-          "GET",
-          """{"foo":"bar"}"""
-        )
-      ).toDF(
-        OpenLineageSilverTableMetadata.ColResultTimestamp,
-        OpenLineageSilverTableMetadata.ColEventYearDate,
-        OpenLineageSilverTableMetadata.ColRequestUri,
-        OpenLineageSilverTableMetadata.ColRequestMethod,
-        OpenLineageSilverTableMetadata.ColRequestBody
-      )
-
-      val transformed = transformer.transform(nonOpenLineageDf)
-      assert(
-        transformed.isEmpty,
-        "Non-OpenLineage events should be filtered out"
+        result.isEmpty,
+        "Events without a recognized eventType should be filtered out by event type sequencer"
       )
     }
   }

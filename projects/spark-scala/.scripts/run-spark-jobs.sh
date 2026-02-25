@@ -249,21 +249,6 @@ run_demo_etl() {
     # >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
     # >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
     #
-    # To send to file directly:
-    #
-    # ```bash
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-spark-custom-plugin.json")
-    # ```
-    #
-    # To send to HTTP endpoint (e.g., OpenLineage backend):
-    #
-    # ```bash
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
-    # ```
-    #
-    export DRIVER_PLUGIN_PORT=19000
     export EXECUTOR_PLUGIN_PORT=19001
 
     openlineage_configs=()
@@ -273,11 +258,8 @@ run_demo_etl() {
     openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
 
     openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
-    openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
     openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
-    openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
-    openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
-    openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+    openlineage_configs+=("--conf" "spark.plugin.conf.json.location=${SPARK_SCALA_DIR}/.temp/openlineage")
 
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
@@ -294,10 +276,11 @@ run_openlineage_silver() {
     echo "=== Running: openlineage-silver (OpenLineageSilverDriver) ==="
     
     local spark_class="$OPENLINEAGE_SILVER_CLASS"
-    local source_db="data_ops_inventory_db"
     local dest_db="data_ops_inventory_db"
+    local source_path="${SPARK_SCALA_DIR}/.temp/openlineage"
+    local archive_path="${SPARK_SCALA_DIR}/.temp/openlineage-archive"
 
-    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG} ${source_db} ${dest_db}
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG} ${dest_db} ${source_path} ${archive_path}
 }
 
 # ┌─────────────┐

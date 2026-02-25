@@ -8,21 +8,23 @@ import me.rakirahman.sparkdemo.etl.loader.silver.openlineage._
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.streaming.Trigger
 
-/** Driver for streaming OpenLineage data from the HttpDumper bronze table into a denormalized columnar Silver table.
+/** Driver for streaming OpenLineage JSONL files into a denormalized columnar Silver table.
   */
 object OpenLineageSilverDriver extends App with Logging {
 
   val driverName = this.getClass.getSimpleName.stripSuffix("$")
   val Array(
     configFileName,
-    inputSourceDatabase,
-    inputDestinationDatabase
+    inputDestinationDatabase,
+    inputSourcePath,
+    inputArchivePath
   ) = args
 
   require(
     (configFileName != null && configFileName.nonEmpty) &&
-      (inputSourceDatabase != null && inputSourceDatabase.nonEmpty) &&
-      (inputDestinationDatabase != null && inputDestinationDatabase.nonEmpty),
+      (inputDestinationDatabase != null && inputDestinationDatabase.nonEmpty) &&
+      (inputSourcePath != null && inputSourcePath.nonEmpty) &&
+      (inputArchivePath != null && inputArchivePath.nonEmpty),
     "Input args must not be null or empty"
   )
 
@@ -40,9 +42,9 @@ object OpenLineageSilverDriver extends App with Logging {
     Trigger.ProcessingTime("0 seconds")
   }
 
-  val loader = OpenLineageSilverLoader(spark, inputSourceDatabase)
+  val loader = OpenLineageSilverLoader(spark, inputSourcePath, inputArchivePath)
 
-  logInfo(s"Starting OpenLineage Silver streaming from ${inputSourceDatabase} to ${inputDestinationDatabase}")
+  logInfo(s"Starting OpenLineage Silver streaming from ${inputSourcePath} to ${inputDestinationDatabase} (archive: ${inputArchivePath})")
 
   val query = loader
     .load()

@@ -26,6 +26,7 @@
 # Temporary folders
 #
 **/tmp/
+**/.archive/
 **/.temp/
 **/.scratch/
 

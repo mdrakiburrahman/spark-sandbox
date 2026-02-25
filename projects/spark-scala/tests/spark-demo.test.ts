@@ -1,4 +1,8 @@
 import { SparkJobRunner, SparkSql, SparkConfig } from "./common";
+import { readdirSync, readFileSync, existsSync, mkdirSync } from "fs";
+import { resolve } from "path";
+
+const OPENLINEAGE_DIR = resolve(__dirname, "../.temp/openlineage");
 
 describe("spark-scala integration tests", () => {
   const JOB_TIMEOUT = 10 * 60 * 1000; // 10 minutes
@@ -25,6 +29,17 @@ describe("spark-scala integration tests", () => {
     ];
     const ALL_TABLES = [...BASE_TABLES, ...DERIVED_TABLES];
 
+    let fileCountBefore = 0;
+
+    it("capture JSONL file count before demo-etl", () => {
+      if (!existsSync(OPENLINEAGE_DIR)) {
+        mkdirSync(OPENLINEAGE_DIR, { recursive: true });
+      }
+      fileCountBefore = readdirSync(OPENLINEAGE_DIR).filter((f) =>
+        f.endsWith(".json"),
+      ).length;
+    });
+
     it(
       "runs DemoEtl successfully",
       () => {
@@ -46,15 +61,26 @@ describe("spark-scala integration tests", () => {
       }
     }, 300_000);
 
-    it("OpenLineage events are captured in http_dumper_plugin table and contain valid JSON", async () => {
-      const rows = await SparkSql.queryRowsAsync(
-        `SELECT request_body FROM data_ops_inventory_db.http_dumper_plugin`,
+    it("OpenLineage events are captured as JSONL files with valid JSON", () => {
+      const filesAfter = readdirSync(OPENLINEAGE_DIR).filter((f) =>
+        f.endsWith(".json"),
       );
-      const dataRows = rows.filter((r) => r !== "request_body");
-      expect(dataRows.length).toBeGreaterThan(0);
+      expect(filesAfter.length).toBeGreaterThan(fileCountBefore);
 
-      for (const row of dataRows) {
-        const parsed = JSON.parse(row);
+      // Read the newest JSONL file and validate content
+      const newestFile = filesAfter.sort().pop()!;
+      const content = readFileSync(
+        resolve(OPENLINEAGE_DIR, newestFile),
+        "utf-8",
+      );
+      const lines = content
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l.length > 0);
+      expect(lines.length).toBeGreaterThan(0);
+
+      for (const line of lines.slice(0, 5)) {
+        const parsed = JSON.parse(line);
         expect(parsed).toHaveProperty("eventType");
         expect(parsed).toHaveProperty("producer");
         expect(
@@ -63,7 +89,7 @@ describe("spark-scala integration tests", () => {
           ),
         ).toBe(true);
       }
-    }, 120_000);
+    });
   });
 
   describe("delta-mount", () => {
