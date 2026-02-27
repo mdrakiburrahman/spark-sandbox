@@ -1,12 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
-    "type": "SparkJobDefinition",
-    "displayName": "sparkDemo",
-    "description": "Spark job definition defines a Spark Job"
+    "type": "DataPipeline",
+    "displayName": "demo_etl"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "4e66b5b7-3e82-4061-9b56-1bdad11c9966"
+    "logicalId": "7c16da29-5891-4bfb-b359-3a59dd8e6d2b"
   }
 }

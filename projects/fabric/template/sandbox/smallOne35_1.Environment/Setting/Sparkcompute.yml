@@ -23,4 +23,10 @@ spark_conf:
   spark.sql.streaming.stateStore.minDeltasForSnapshot: "2"
   spark.sql.streaming.stateStore.providerClass: org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider
   spark.sql.streaming.stateStore.rocksdb.compactOnCommit: "true"
+  spark.extraListeners: io.openlineage.spark.agent.OpenLineageSparkListener
+  spark.openlineage.transport.type: http
+  spark.openlineage.transport.url: http://localhost:19001
+  spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin
+  spark.plugin.conf.executor.port: 19001
+  spark.plugin.conf.json.location: Files/onelake/raw/openlineage
 runtime_version: 1.3

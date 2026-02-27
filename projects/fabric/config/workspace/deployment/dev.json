@@ -85,6 +85,7 @@
             "artifactsFolder": "projects/fabric/template/sandbox",
             "parameterFilePath": "projects/fabric/template/sandbox/parameter.yml.tmpl",
             "itemTypesInScope": [
+              "DataPipeline",
               "Environment",
               "Lakehouse",
               "Notebook",
@@ -100,7 +101,7 @@
             "sparkJobDefinitions": [
               {
                 "defaultLakehouseArtifactName": "dbt_adventureworks_seed",
-                "nestedFolderPath": "projects/fabric/template/sandbox/sparkDemo.SparkJobDefinition"
+                "nestedFolderPath": "projects/fabric/template/sandbox/spark_demo.SparkJobDefinition"
               }
             ],
             "customLibraries": [
