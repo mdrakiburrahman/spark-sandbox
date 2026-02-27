@@ -27,6 +27,6 @@ spark_conf:
   spark.openlineage.transport.type: http
   spark.openlineage.transport.url: http://localhost:19001
   spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin
-  spark.plugin.conf.executor.port: 19001
+  spark.plugin.conf.driver.port: 19001
   spark.plugin.conf.json.location: Files/onelake/raw/openlineage
 runtime_version: 1.3

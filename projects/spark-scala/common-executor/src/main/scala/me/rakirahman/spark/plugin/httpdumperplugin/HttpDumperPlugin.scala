@@ -1,7 +1,6 @@
 package me.rakirahman.spark.plugin.httpdumperplugin
 
 import java.io.{BufferedWriter, File, FileWriter, IOException}
-import java.util
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -39,14 +38,14 @@ case class HttpRequestMetadata(
     requestBody: String
 ) extends Serializable
 
-/** A simple HTTP server that captures request metadata and forwards it to the driver.
+/** A simple HTTP server that captures request metadata and buffers it locally.
   *
   * @param port
   *   The port to serve on.
-  * @param pluginContext
-  *   The plugin context for RPC communication.
+  * @param requestBuffer
+  *   The buffer to store captured request metadata.
   */
-class HttpDumperServer(port: Int, pluginContext: PluginContext) extends NanoHTTPD(port) with Logging {
+class HttpDumperServer(port: Int, requestBuffer: ConcurrentLinkedQueue[HttpRequestMetadata]) extends NanoHTTPD(port) with Logging {
 
   /** @inheritdoc
     */
@@ -86,12 +85,12 @@ class HttpDumperServer(port: Int, pluginContext: PluginContext) extends NanoHTTP
         requestBody = requestBody
       )
 
-      pluginContext.send(metadata)
+      requestBuffer.offer(metadata)
 
       NanoHTTPD.newFixedLengthResponse(
         NanoHTTPD.Response.Status.OK,
         "text/plain",
-        s"Request metadata captured and sent to driver: $method $uri"
+        s"Request metadata captured: $method $uri"
       )
 
     } catch {
@@ -116,15 +115,17 @@ class HttpDumperPlugin extends SparkPlugin with Logging {
 
   /** @inheritdoc
     */
-  override def executorPlugin(): ExecutorPlugin = new HttpDumperExecutorPlugin
+  override def executorPlugin(): ExecutorPlugin = null
 }
 
-/** Driver plugin that receives HTTP request metadata from executors and flushes to JSONL on shutdown.
+/** Driver plugin that starts an HTTP server, buffers request metadata, and flushes to JSONL on shutdown.
   */
 class HttpDumperDriverPlugin extends DriverPlugin with Logging {
 
   var config: HttpDumperConf = _
   private val requestBuffer = new ConcurrentLinkedQueue[HttpRequestMetadata]()
+  var server: HttpDumperServer = _
+  var serverThread: Thread = _
 
   /** @inheritdoc
     */
@@ -133,7 +134,20 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       ctx: PluginContext
   ): java.util.Map[String, String] = {
     config = HttpDumperConf(ctx.conf)
-    logInfo(s"HttpDumperDriverPlugin initialized with config: location=${config.location}")
+    logInfo(s"HttpDumperDriverPlugin initialized with config: location=${config.location}, port=${config.driverPort}")
+
+    server = new HttpDumperServer(config.driverPort, requestBuffer)
+    serverThread = new Thread(() => {
+      try {
+        server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
+        logInfo(s"Started HTTP dumper server on driver port ${config.driverPort}")
+      } catch {
+        case e: IOException => logError("Failed to start HTTP dumper server on driver", e)
+      }
+    })
+    serverThread.setDaemon(true)
+    serverThread.start()
+
     new java.util.HashMap[String, String]
   }
 
@@ -153,6 +167,15 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
   override def shutdown(): Unit = {
     try {
       logInfo("Shutting down HttpDumperDriverPlugin...")
+
+      if (server != null) {
+        server.stop()
+        logInfo("HTTP dumper server stopped")
+      }
+
+      if (serverThread != null) {
+        serverThread.interrupt()
+      }
 
       val requests = scala.collection.mutable.ListBuffer[HttpRequestMetadata]()
       while (!requestBuffer.isEmpty) {
@@ -188,52 +211,6 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
     } catch {
       case e: Exception =>
         logError("Error during HttpDumperDriverPlugin shutdown", e)
-    }
-  }
-}
-
-/** Executor plugin that starts an HTTP server and forwards request metadata to the driver.
-  */
-class HttpDumperExecutorPlugin extends ExecutorPlugin with Logging {
-
-  var pluginContext: PluginContext = null
-  var server: HttpDumperServer = null
-  var serverThread: Thread = null
-  var config: HttpDumperConf = _
-
-  /** @inheritdoc
-    */
-  override def init(ctx: PluginContext, extraConf: util.Map[String, String]): Unit = {
-    config = HttpDumperConf(ctx.conf)
-    logInfo(s"HttpDumperExecutorPlugin initialized with port: ${config.executorPort}")
-
-    this.pluginContext = ctx
-    server = new HttpDumperServer(config.executorPort, pluginContext)
-
-    serverThread = new Thread(() => {
-      try {
-        server.start(NanoHTTPD.SOCKET_READ_TIMEOUT, false)
-        logInfo(s"Started HTTP dumper server on port ${config.executorPort}")
-      } catch {
-        case e: IOException => logError("Failed to start HTTP dumper server", e)
-      }
-    })
-    serverThread.setDaemon(true)
-    serverThread.start()
-  }
-
-  /** @inheritdoc
-    */
-  override def shutdown(): Unit = {
-    logDebug("Shutting down HTTP dumper server and plugin")
-
-    if (server != null) {
-      server.stop()
-      logInfo("HTTP dumper server stopped")
-    }
-
-    if (serverThread != null) {
-      serverThread.interrupt()
     }
   }
 }

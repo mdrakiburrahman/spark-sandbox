@@ -62,7 +62,7 @@ case class IntHttpDumperProperty(
 
 case class HttpDumperConf(
     location: String,
-    executorPort: Int
+    driverPort: Int
 )
 
 object HttpDumperConf {
@@ -71,9 +71,10 @@ object HttpDumperConf {
     default = "/tmp/openlineage"
   )
 
-  private val executorPort = IntHttpDumperProperty(
-    key = "spark.plugin.conf.executor.port",
+  private val driverPort = IntHttpDumperProperty(
+    key = "spark.plugin.conf.driver.port",
     default = 9003,
+    alternativeKeys = Seq("spark.plugin.conf.executor.port"),
     min = Some(1024),
     max = Some(65535)
   )
@@ -81,7 +82,7 @@ object HttpDumperConf {
   def apply(conf: SparkConf): HttpDumperConf = {
     HttpDumperConf(
       location = location.get(conf),
-      executorPort = executorPort.get(conf)
+      driverPort = driverPort.get(conf)
     )
   }
 }

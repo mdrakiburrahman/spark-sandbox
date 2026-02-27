@@ -72,23 +72,30 @@ class HttpDumperConfTest extends AnyFunSpec with Matchers {
       val conf = new SparkConf(false)
       val dumperConf = HttpDumperConf(conf)
       dumperConf.location shouldBe "/tmp/openlineage"
-      dumperConf.executorPort shouldBe 9003
+      dumperConf.driverPort shouldBe 9003
     }
 
     it("should create with custom values") {
       val conf = new SparkConf(false)
         .set("spark.plugin.conf.json.location", "/custom/path")
-        .set("spark.plugin.conf.executor.port", "8080")
+        .set("spark.plugin.conf.driver.port", "8080")
       val dumperConf = HttpDumperConf(conf)
       dumperConf.location shouldBe "/custom/path"
-      dumperConf.executorPort shouldBe 8080
+      dumperConf.driverPort shouldBe 8080
     }
 
     it("should enforce port bounds") {
       val conf = new SparkConf(false)
-        .set("spark.plugin.conf.executor.port", "100")
+        .set("spark.plugin.conf.driver.port", "100")
       val dumperConf = HttpDumperConf(conf)
-      dumperConf.executorPort shouldBe 1024
+      dumperConf.driverPort shouldBe 1024
+    }
+
+    it("should support legacy executor.port key") {
+      val conf = new SparkConf(false)
+        .set("spark.plugin.conf.executor.port", "7777")
+      val dumperConf = HttpDumperConf(conf)
+      dumperConf.driverPort shouldBe 7777
     }
   }
 

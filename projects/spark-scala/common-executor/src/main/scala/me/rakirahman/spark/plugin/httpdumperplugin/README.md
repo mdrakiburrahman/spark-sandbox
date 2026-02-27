@@ -1,13 +1,13 @@
 # HTTP Dumper Plugin
 
-Dumps HTTP Payloads into Driver by sending it via RPC from the Executor. On shutdown, the driver plugin automatically flushes all buffered request bodies to a JSONL file on disk.
+Dumps HTTP Payloads by running an HTTP server on the Driver. On shutdown, the driver plugin automatically flushes all buffered request bodies to a JSONL file on disk.
 
 ## Configuration
 
 | Key                               | Default            | Description                                  |
 | --------------------------------- | ------------------ | -------------------------------------------- |
 | `spark.plugin.conf.json.location` | `/tmp/openlineage` | Directory path where JSONL files are written |
-| `spark.plugin.conf.executor.port` | `9003`             | Port for the executor HTTP server            |
+| `spark.plugin.conf.driver.port`   | `9003`             | Port for the driver HTTP server              |
 
 ## Output
 

@@ -249,16 +249,16 @@ run_demo_etl() {
     # >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
     # >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
     #
-    export EXECUTOR_PLUGIN_PORT=19001
+    export DRIVER_PLUGIN_PORT=19001
 
     openlineage_configs=()
 
     openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
     openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-    openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+    openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${DRIVER_PLUGIN_PORT}")
 
     openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
-    openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
+    openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
     openlineage_configs+=("--conf" "spark.plugin.conf.json.location=${SPARK_SCALA_DIR}/.temp/openlineage")
 
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
