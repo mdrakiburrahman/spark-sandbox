@@ -35,6 +35,9 @@ jaffle_shop:
       retry_all: true
       spark_config:
         name: dbt-jaffle-shop
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''f704ad90-bc71-447f-abb7-69a0716a00d2'') }}"}'
 
     # Fabric dbt client + Fabric spark server
     fabric-fabric:
@@ -54,3 +57,6 @@ jaffle_shop:
       retry_all: true
       spark_config:
         name: dbt-jaffle-shop
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''f704ad90-bc71-447f-abb7-69a0716a00d2'') }}"}'

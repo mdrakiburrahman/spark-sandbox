@@ -91,6 +91,12 @@ object Settings {
     assembly / assemblyMergeStrategy := {
       case _                                                                   =>       MergeStrategy.first
     },
+    assembly := {
+      val jarFile = assembly.value
+      val versionlessJar = jarFile.getParentFile / (name.value + ".jar")
+      IO.copyFile(jarFile, versionlessJar)
+      jarFile
+    },
   )
 
   val genericAssemblySettings = Seq(

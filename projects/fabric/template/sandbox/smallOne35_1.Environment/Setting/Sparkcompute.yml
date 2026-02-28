@@ -29,4 +29,5 @@ spark_conf:
   spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin
   spark.plugin.conf.driver.port: 19001
   spark.plugin.conf.json.location: Files/onelake/raw/openlineage
+  spark.jars: abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com/4d8783be-e822-46d0-82e4-9b77c7f33992/Files/onelake/jars/commonExecutor.jar
 runtime_version: 1.3

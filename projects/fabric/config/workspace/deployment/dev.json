@@ -108,7 +108,7 @@
               {
                 "source": {
                   "folderPath": "projects/spark-scala/common-executor/target/scala-2.12",
-                  "prefix": "commonExecutor",
+                  "prefix": "commonExecutor-",
                   "suffix": ".jar",
                   "errorOnMultiple": true
                 },
@@ -261,6 +261,14 @@
             },
             "storageAccountFile": {
               "filePath": "configs/sparkDemo-fabric.yaml"
+            }
+          },
+          {
+            "localConcreteFile": {
+              "filePath": "projects/spark-scala/common-executor/target/scala-2.12/commonExecutor.jar"
+            },
+            "storageAccountFile": {
+              "filePath": "jars/commonExecutor.jar"
             }
           },
           {
