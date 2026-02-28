@@ -172,4 +172,91 @@ describe("spark-scala integration tests", () => {
       JOB_TIMEOUT,
     );
   });
+
+  describe("demo-delta-log-monitor", () => {
+    const INVENTORY_DB = "delta_log_inventory_db";
+
+    it(
+      "runs DemoDeltaLogMonitor successfully",
+      () => {
+        SparkJobRunner.runJob("demo-delta-log-monitor", JOB_TIMEOUT);
+      },
+      JOB_TIMEOUT,
+    );
+
+    it("commit_history table exists and has rows", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `SELECT COUNT(*) AS cnt FROM ${INVENTORY_DB}.commit_history`,
+      );
+      const dataRows = rows.filter((r) => !isNaN(Number(r)));
+      expect(dataRows.length).toBeGreaterThan(0);
+
+      const count = parseInt(dataRows[0], 10);
+      expect(count).toBeGreaterThan(0);
+    }, 120_000);
+
+    it("commit_history table has expected columns", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `DESCRIBE ${INVENTORY_DB}.commit_history`,
+      );
+      const columns = rows
+        .filter((r) => !r.startsWith("#") && !r.startsWith("col_name"))
+        .map((r) => r.split(/\s+/)[0]);
+
+      expect(columns).toContain("databaseName");
+      expect(columns).toContain("tableName");
+      expect(columns).toContain("tableFqn");
+      expect(columns).toContain("version");
+      expect(columns).toContain("commitTimestamp");
+      expect(columns).toContain("operation");
+      expect(columns).toContain("snapshot_date");
+    }, 120_000);
+
+    it("table_snapshots table exists and has rows", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `SELECT COUNT(*) AS cnt FROM ${INVENTORY_DB}.table_snapshots`,
+      );
+      const dataRows = rows.filter((r) => !isNaN(Number(r)));
+      expect(dataRows.length).toBeGreaterThan(0);
+
+      const count = parseInt(dataRows[0], 10);
+      expect(count).toBeGreaterThan(0);
+    }, 120_000);
+
+    it("kpi_results table exists and has rows", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `SELECT COUNT(*) AS cnt FROM ${INVENTORY_DB}.kpi_results`,
+      );
+      const dataRows = rows.filter((r) => !isNaN(Number(r)));
+      expect(dataRows.length).toBeGreaterThan(0);
+
+      const count = parseInt(dataRows[0], 10);
+      expect(count).toBeGreaterThan(0);
+    }, 120_000);
+
+    it("kpi_results table has expected KPI columns", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `DESCRIBE ${INVENTORY_DB}.kpi_results`,
+      );
+      const columns = rows
+        .filter((r) => !r.startsWith("#") && !r.startsWith("col_name"))
+        .map((r) => r.split(/\s+/)[0]);
+
+      expect(columns).toContain("table_fqn");
+      expect(columns).toContain("overall_status");
+      expect(columns).toContain("freshness_status");
+      expect(columns).toContain("completeness_status");
+    }, 120_000);
+
+    it("commit_history covers all tables in the estate", async () => {
+      const rows = await SparkSql.queryRowsAsync(
+        `SELECT COUNT(DISTINCT tableFqn) AS cnt FROM ${INVENTORY_DB}.commit_history`,
+      );
+      const dataRows = rows.filter((r) => !isNaN(Number(r)));
+      expect(dataRows.length).toBeGreaterThan(0);
+
+      const distinctTables = parseInt(dataRows[0], 10);
+      expect(distinctTables).toBeGreaterThan(0);
+    }, 120_000);
+  });
 });

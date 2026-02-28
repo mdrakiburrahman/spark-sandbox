@@ -37,6 +37,7 @@ DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
 DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver"
 OPENLINEAGE_SILVER_CLASS="me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver"
 DEMO_LINEAGE_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor"
+DEMO_DELTA_LOG_MONITOR_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoDeltaLogMonitor"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
@@ -45,6 +46,7 @@ declare -A JOB_ALIASES=(
     ["delta-mount"]="$DELTA_MOUNT_CLASS"
     ["openlineage-silver"]="$OPENLINEAGE_SILVER_CLASS"
     ["demo-lineage"]="$DEMO_LINEAGE_CLASS"
+    ["demo-delta-log-monitor"]="$DEMO_DELTA_LOG_MONITOR_CLASS"
 )
 
 print_available_jobs() {
