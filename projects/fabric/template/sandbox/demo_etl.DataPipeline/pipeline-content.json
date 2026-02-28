@@ -31,8 +31,67 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "SparkJobDefinition",
+        "name": "Run etl",
+        "description": "Runs regular Spark Job definition",
         "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "ec428990-55f6-4c0b-a668-f32fec2c4629",
+          "workspaceId": "00000000-0000-0000-0000-000000000000"
+        },
+        "policy": {
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run dbt",
+        "description": "Runs multiple dbt models",
+        "dependsOn": []
+      },
+      {
+        "name": "OpenLineage Stream Processing",
+        "description": "Turns OpenLineage JSONL files into a denormalized columnar Silver table",
+        "type": "FabricSparkJobDefinition",
+        "typeProperties": {
+          "sparkJobDefinitionId": "c6d24dcf-ff26-4f48-b89a-16c2919d4c48",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "mainClass": "me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver",
+          "commandLineArguments": "Files/onelake/configs/sparkDemo-fabric.yaml data_ops_inventory_db Files/onelake/raw/openlineage Files/onelake/raw/openlineage-archive",
+          "environment": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "f704ad90-bc71-447f-abb7-69a0716a00d2"
+          },
+          "defaultLakehouse": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "2ceb942f-5ba5-42b0-8875-9fd8aad59a1b"
+          },
+          "additionalLakehouses": [
+            {
+              "artifactId": "4d8783be-e822-46d0-82e4-9b77c7f33992",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            }
+          ]
+        },
+        "policy": {
+          "timeout": "0.00:30:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "dependsOn": [
+          {
+            "activity": "Run dbt",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run etl",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ]
       }
     ]
   }
