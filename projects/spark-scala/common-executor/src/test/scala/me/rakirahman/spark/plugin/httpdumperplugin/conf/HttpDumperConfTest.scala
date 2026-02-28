@@ -71,43 +71,39 @@ class HttpDumperConfTest extends AnyFunSpec with Matchers {
     it("should create with default values") {
       val conf = new SparkConf(false)
       val dumperConf = HttpDumperConf(conf)
-      dumperConf.databaseName shouldBe "defaultdb"
-      dumperConf.tableName shouldBe "defaulttable"
-      dumperConf.tableFormat shouldBe "delta"
-      dumperConf.executorPort shouldBe 9003
-      dumperConf.driverPort shouldBe 19000
+      dumperConf.location shouldBe "/tmp/openlineage"
+      dumperConf.driverPort shouldBe 9003
     }
 
     it("should create with custom values") {
       val conf = new SparkConf(false)
-        .set("spark.plugin.conf.database.name", "mydb")
-        .set("spark.plugin.conf.table.name", "mytable")
-        .set("spark.plugin.conf.table.format", "parquet")
-        .set("spark.plugin.conf.executor.port", "8080")
-        .set("spark.plugin.conf.driver.port", "9090")
+        .set("spark.plugin.conf.json.location", "/custom/path")
+        .set("spark.plugin.conf.driver.port", "8080")
       val dumperConf = HttpDumperConf(conf)
-      dumperConf.databaseName shouldBe "mydb"
-      dumperConf.tableName shouldBe "mytable"
-      dumperConf.tableFormat shouldBe "parquet"
-      dumperConf.executorPort shouldBe 8080
-      dumperConf.driverPort shouldBe 9090
+      dumperConf.location shouldBe "/custom/path"
+      dumperConf.driverPort shouldBe 8080
     }
 
     it("should enforce port bounds") {
       val conf = new SparkConf(false)
-        .set("spark.plugin.conf.executor.port", "100")
-        .set("spark.plugin.conf.driver.port", "70000")
+        .set("spark.plugin.conf.driver.port", "100")
       val dumperConf = HttpDumperConf(conf)
-      dumperConf.executorPort shouldBe 1024
-      dumperConf.driverPort shouldBe 65535
+      dumperConf.driverPort shouldBe 1024
+    }
+
+    it("should support legacy executor.port key") {
+      val conf = new SparkConf(false)
+        .set("spark.plugin.conf.executor.port", "7777")
+      val dumperConf = HttpDumperConf(conf)
+      dumperConf.driverPort shouldBe 7777
     }
   }
 
   describe("HttpDumperConf case class") {
 
     it("should support equality") {
-      val a = HttpDumperConf("db", "table", "delta", 9003, 19000)
-      val b = HttpDumperConf("db", "table", "delta", 9003, 19000)
+      val a = HttpDumperConf("/tmp/openlineage", 9003)
+      val b = HttpDumperConf("/tmp/openlineage", 9003)
       a shouldBe b
     }
   }

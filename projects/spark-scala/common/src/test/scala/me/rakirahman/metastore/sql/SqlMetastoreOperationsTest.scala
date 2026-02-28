@@ -1302,5 +1302,14 @@ class SqlMetastoreOperationsTest extends AnyFunSpec with Matchers with BeforeAnd
       ex.getMessage must include("partition")
       sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
     }
+
+    it("must list all databases and their tables") {
+      val tbl = "list_all_test"
+      spark.range(1).toDF("id").write.format("delta").mode("overwrite").saveAsTable(s"${testDatabaseName}.${tbl}")
+      val allTables = sqlMetastoreOperations.listAllDatabasesAndTables()
+      allTables.keys must contain(testDatabaseName)
+      allTables(testDatabaseName) must contain(tbl)
+      sqlMetastoreOperations.dropTable(testDatabaseName, tbl)
+    }
   }
 }

@@ -8,21 +8,23 @@ import me.rakirahman.sparkdemo.etl.loader.silver.openlineage._
 import org.apache.spark.internal.Logging
 import org.apache.spark.sql.streaming.Trigger
 
-/** Driver for streaming OpenLineage data from the HttpDumper bronze table into a denormalized columnar Silver table.
+/** Driver for streaming OpenLineage JSONL files into a denormalized columnar Silver table.
   */
 object OpenLineageSilverDriver extends App with Logging {
 
   val driverName = this.getClass.getSimpleName.stripSuffix("$")
   val Array(
     configFileName,
-    inputSourceDatabase,
-    inputDestinationDatabase
+    inputDestinationDatabase,
+    inputSourcePath,
+    inputArchivePath
   ) = args
 
   require(
     (configFileName != null && configFileName.nonEmpty) &&
-      (inputSourceDatabase != null && inputSourceDatabase.nonEmpty) &&
-      (inputDestinationDatabase != null && inputDestinationDatabase.nonEmpty),
+      (inputDestinationDatabase != null && inputDestinationDatabase.nonEmpty) &&
+      (inputSourcePath != null && inputSourcePath.nonEmpty) &&
+      (inputArchivePath != null && inputArchivePath.nonEmpty),
     "Input args must not be null or empty"
   )
 
@@ -33,16 +35,9 @@ object OpenLineageSilverDriver extends App with Logging {
   sqlMetastoreOperations.createDatabase(inputDestinationDatabase)
 
   val transformer = new OpenLineageSilverTransformer()
+  val loader = OpenLineageSilverLoader(spark, inputSourcePath, inputArchivePath)
 
-  val trigger = if (envConfig.LocalSpark) {
-    Trigger.AvailableNow
-  } else {
-    Trigger.ProcessingTime("0 seconds")
-  }
-
-  val loader = OpenLineageSilverLoader(spark, inputSourceDatabase)
-
-  logInfo(s"Starting OpenLineage Silver streaming from ${inputSourceDatabase} to ${inputDestinationDatabase}")
+  logInfo(s"Starting OpenLineage Silver streaming from ${inputSourcePath} to ${inputDestinationDatabase} (archive: ${inputArchivePath})")
 
   val query = loader
     .load()
@@ -53,7 +48,7 @@ object OpenLineageSilverDriver extends App with Logging {
       "checkpointLocation",
       s"${envConfig.CheckpointsRootPath}/${inputDestinationDatabase}/${OpenLineageSilverTableMetadata.TableSilverOpenLineage}"
     )
-    .trigger(trigger)
+    .trigger(Trigger.AvailableNow)
     .foreachBatch { (batchDF: org.apache.spark.sql.DataFrame, batchId: Long) =>
       val result = transformer.transformBatch(batchDF, batchId)
       if (!result.isEmpty) {
@@ -68,8 +63,6 @@ object OpenLineageSilverDriver extends App with Logging {
       }
     }
     .start()
-
-  logInfo(s"Stream started with trigger: ${trigger}")
   query.awaitTermination()
 
   spark.stop()

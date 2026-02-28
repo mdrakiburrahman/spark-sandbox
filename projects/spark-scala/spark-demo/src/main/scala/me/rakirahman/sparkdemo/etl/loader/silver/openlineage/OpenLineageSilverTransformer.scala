@@ -1,10 +1,8 @@
 package me.rakirahman.sparkdemo.etl.loader.silver.openlineage
 
-import me.rakirahman.config.EnvironmentConfiguration
 import me.rakirahman.etl.execution.stateless._
 import me.rakirahman.etl.execution.stateless.SequencerExtensions._
 import me.rakirahman.etl.loader.DataLoader
-import me.rakirahman.etl.loader.generic.GenericDataLoaderMetadata
 import me.rakirahman.etl.reader.DataReader
 import me.rakirahman.etl.schema.openlineage.v1._
 import me.rakirahman.etl.transformer.DataTransformer
@@ -33,20 +31,14 @@ case class OpenLineageSilverResourceConfig(
   */
 object OpenLineageSilverTableMetadata {
 
-  val TableBronzeSource: String        = "http_dumper_plugin"
   val TableSilverOpenLineage: String   = "openlineage"
 
   val ColRequestBody: String           = "request_body"
-  val ColRequestUri: String            = "request_uri"
-  val ColRequestMethod: String         = "request_method"
   val ColResultTimestamp: String       = "result_timestamp"
   val ColEventYearDate: String         = "event_year_date"
   val ColParsed: String                = "parsed"
   val ColEventType: String             = "eventType"
   val ColSilverIngestTime: String      = "silver_ingest_time"
-
-  val OpenLineageUri: String           = "/api/v1/lineage"
-  val OpenLineageMethod: String        = "POST"
 
   val OutputPartitions: Array[String]  = Array(ColEventYearDate)
 }
@@ -58,20 +50,29 @@ class OpenLineageSilverTransformer extends DataTransformer {
 
   /** @inheritdoc
     *
-    * Initial transform: selects relevant columns, filters to OpenLineage events, and parses the JSON body.
+    * Initial transform: renames the raw JSON column, parses it, and derives timestamp columns.
     */
   def transform(inDF: DataFrame): DataFrame = {
+    val schema = OpenLineageConstantGenerators.getSchema(inDF.sparkSession)
+
     inDF
-      .transform(withOpenLineageEventsFiltered())
-      .transform(withInitialColumnsSelected())
       .withColumn(
         OpenLineageSilverTableMetadata.ColParsed,
         from_json(
           col(OpenLineageSilverTableMetadata.ColRequestBody),
-          OpenLineageConstantGenerators.getSchema(inDF.sparkSession)
+          schema
         )
       )
+      .withColumn(
+        OpenLineageSilverTableMetadata.ColResultTimestamp,
+        col(s"${OpenLineageSilverTableMetadata.ColParsed}.eventTime").cast("timestamp")
+      )
+      .withColumn(
+        OpenLineageSilverTableMetadata.ColEventYearDate,
+        date_format(col(OpenLineageSilverTableMetadata.ColResultTimestamp), "yyyyMMdd")
+      )
       .select(
+        col(OpenLineageSilverTableMetadata.ColRequestBody),
         col(OpenLineageSilverTableMetadata.ColResultTimestamp),
         col(OpenLineageSilverTableMetadata.ColEventYearDate),
         col(s"${OpenLineageSilverTableMetadata.ColParsed}.*")
@@ -121,25 +122,6 @@ class OpenLineageSilverTransformer extends DataTransformer {
     )
   }
 
-  /** Filters the input DataFrame to only OpenLineage POST /api/v1/lineage events.
-    */
-  private def withOpenLineageEventsFiltered()(inDF: DataFrame): DataFrame =
-    inDF.filter(
-      col(OpenLineageSilverTableMetadata.ColRequestUri) ===
-        OpenLineageSilverTableMetadata.OpenLineageUri &&
-        col(OpenLineageSilverTableMetadata.ColRequestMethod) ===
-        OpenLineageSilverTableMetadata.OpenLineageMethod
-    )
-
-  /** Selects only the columns needed for processing.
-    */
-  private def withInitialColumnsSelected()(inDF: DataFrame): DataFrame =
-    inDF.select(
-      col(OpenLineageSilverTableMetadata.ColResultTimestamp),
-      col(OpenLineageSilverTableMetadata.ColEventYearDate),
-      col(OpenLineageSilverTableMetadata.ColRequestBody)
-    )
-
   /** Filters by OpenLineage event type.
     */
   private def withEventTypeFiltered(
@@ -186,26 +168,32 @@ class OpenLineageSilverTransformer extends DataTransformer {
       )
 }
 
-/** Reads OpenLineage source data as a stream.
+/** Reads OpenLineage JSONL files as a stream with archive-on-read.
   *
   * @param spark
   *   The SparkSession.
-  * @param sourceDatabase
-  *   The source database name.
+  * @param sourcePath
+  *   The directory containing JSONL files.
+  * @param archivePath
+  *   The directory to archive processed files.
   */
 class OpenLineageSilverReader(
     spark: SparkSession,
-    sourceDatabase: String
+    sourcePath: String,
+    archivePath: String
 ) extends DataReader {
 
   /** @inheritdoc
     */
-  def read(): DataFrame =
+  def read(): DataFrame = {
     spark.readStream
-      .format("delta")
-      .table(
-        s"${sourceDatabase}.${OpenLineageSilverTableMetadata.TableBronzeSource}"
-      )
+      .format("text")
+      .option("pathGlobFilter", "*.json")
+      .option("cleanSource", "archive")
+      .option("sourceArchiveDir", archivePath)
+      .load(sourcePath)
+      .withColumnRenamed("value", OpenLineageSilverTableMetadata.ColRequestBody)
+  }
 }
 
 /** Loader for OpenLineage data.
@@ -233,16 +221,19 @@ object OpenLineageSilverLoader {
     *
     * @param spark
     *   The [[SparkSession]].
-    * @param sourceDatabase
-    *   The source database name.
+    * @param sourcePath
+    *   The source JSONL directory path.
+    * @param archivePath
+    *   The archive directory path.
     * @return
     *   The [[OpenLineageSilverLoader]].
     */
   def apply(
       spark: SparkSession,
-      sourceDatabase: String
+      sourcePath: String,
+      archivePath: String
   ): OpenLineageSilverLoader = new OpenLineageSilverLoader(
-    new OpenLineageSilverReader(spark, sourceDatabase),
+    new OpenLineageSilverReader(spark, sourcePath, archivePath),
     new OpenLineageSilverTransformer
   )
 }

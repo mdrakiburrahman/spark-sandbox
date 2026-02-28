@@ -1,0 +1,11 @@
+{
+  "executableFile": "abfss://onelake@fabricdevmdrrahman.dfs.core.windows.net/jars/sparkDemo.jar",
+  "defaultLakehouseArtifactId": "2408be44-028d-85b0-4745-36f503fb1fdd",
+  "mainClass": "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl",
+  "additionalLakehouseIds": [],
+  "retryPolicy": null,
+  "commandLineArguments": "Files/onelake/configs/sparkDemo-fabric.yaml",
+  "additionalLibraryUris": [],
+  "language": "Scala/Java",
+  "environmentArtifactId": null
+}

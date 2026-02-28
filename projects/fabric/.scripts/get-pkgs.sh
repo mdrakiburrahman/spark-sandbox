@@ -29,12 +29,12 @@ fi
 
 BLOB_BASE="https://rakirahman.blob.core.windows.net/public/whls"
 FABRIC_CICD_WHL="fabric_cicd-0.1.34.3-py3-none-any.whl"
-FABRIC_DEPLOY_WHL="fabric_workspace_deployment-1770591470.264756071.0-py3-none-any.whl"
+FABRIC_DEPLOY_WHL="fabric_workspace_deployment-1772067574.63134324.0-py3-none-any.whl"
 
 fabric_cicd_version=$(pip show fabric-cicd 2>/dev/null | grep Version | awk '{print $2}' || echo "")
 fabric_deployment_version=$(pip show fabric-workspace-deployment 2>/dev/null | grep Version | awk '{print $2}' || echo "")
 
-if [ "$fabric_cicd_version" != "0.1.34.3" ] || [ "$fabric_deployment_version" != "1770591470.264756071.0" ]; then
+if [ "$fabric_cicd_version" != "0.1.34.3" ] || [ "$fabric_deployment_version" != "1772067574.63134324.0" ]; then
     pip uninstall fabric-workspace-deployment fabric-cicd -y 2>/dev/null || true
     pip cache purge
     retry pip install "${BLOB_BASE}/${FABRIC_CICD_WHL}"

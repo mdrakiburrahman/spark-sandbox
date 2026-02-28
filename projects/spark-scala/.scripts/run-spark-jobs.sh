@@ -36,6 +36,7 @@ DEMO_PLUGIN_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExplorati
 DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
 DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver"
 OPENLINEAGE_SILVER_CLASS="me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver"
+DEMO_LINEAGE_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
@@ -43,6 +44,7 @@ declare -A JOB_ALIASES=(
     ["demo-etl"]="$DEMO_ETL_CLASS"
     ["delta-mount"]="$DELTA_MOUNT_CLASS"
     ["openlineage-silver"]="$OPENLINEAGE_SILVER_CLASS"
+    ["demo-lineage"]="$DEMO_LINEAGE_CLASS"
 )
 
 print_available_jobs() {
@@ -249,35 +251,17 @@ run_demo_etl() {
     # >>> https://github.com/OpenLineage/OpenLineage/blob/main/website/docs/integrations/spark/configuration/spark_conf.md
     # >>> https://openlineage.io/docs/integrations/spark/configuration/transport/
     #
-    # To send to file directly:
-    #
-    # ```bash
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=file")
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.location=${SPARK_SCALA_DIR}/.temp/openlineage/lineage-from-spark-custom-plugin.json")
-    # ```
-    #
-    # To send to HTTP endpoint (e.g., OpenLineage backend):
-    #
-    # ```bash
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-    # openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
-    # ```
-    #
-    export DRIVER_PLUGIN_PORT=19000
-    export EXECUTOR_PLUGIN_PORT=19001
+    export DRIVER_PLUGIN_PORT=19001
 
     openlineage_configs=()
 
     openlineage_configs+=("--conf" "spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener")
     openlineage_configs+=("--conf" "spark.openlineage.transport.type=http")
-    openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${EXECUTOR_PLUGIN_PORT}")
+    openlineage_configs+=("--conf" "spark.openlineage.transport.url=http://localhost:${DRIVER_PLUGIN_PORT}")
 
     openlineage_configs+=("--conf" "spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin")
     openlineage_configs+=("--conf" "spark.plugin.conf.driver.port=${DRIVER_PLUGIN_PORT}")
-    openlineage_configs+=("--conf" "spark.plugin.conf.executor.port=${EXECUTOR_PLUGIN_PORT}")
-    openlineage_configs+=("--conf" "spark.plugin.conf.database.name=data_ops_inventory_db")
-    openlineage_configs+=("--conf" "spark.plugin.conf.table.name=http_dumper_plugin")
-    openlineage_configs+=("--conf" "spark.plugin.conf.table.format=delta")
+    openlineage_configs+=("--conf" "spark.plugin.conf.json.location=${SPARK_SCALA_DIR}/.temp/openlineage")
 
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} ${openlineage_configs[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
@@ -294,10 +278,19 @@ run_openlineage_silver() {
     echo "=== Running: openlineage-silver (OpenLineageSilverDriver) ==="
     
     local spark_class="$OPENLINEAGE_SILVER_CLASS"
-    local source_db="data_ops_inventory_db"
     local dest_db="data_ops_inventory_db"
+    local source_path="${SPARK_SCALA_DIR}/.temp/openlineage"
+    local archive_path="${SPARK_SCALA_DIR}/.temp/openlineage-archive"
 
-    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG} ${source_db} ${dest_db}
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG} ${dest_db} ${source_path} ${archive_path}
+}
+
+run_demo_lineage() {
+    echo "=== Running: demo-lineage (DemoLineageExtractor) ==="
+    
+    local spark_class="$DEMO_LINEAGE_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
 
 # ┌─────────────┐
@@ -310,6 +303,7 @@ case "$JOB_ALIAS" in
         run_demo_etl
         run_delta_mount
         run_openlineage_silver
+        run_demo_lineage
         ;;
     "demo-plugin")
         run_demo_plugin
@@ -322,6 +316,9 @@ case "$JOB_ALIAS" in
         ;;
     "openlineage-silver")
         run_openlineage_silver
+        ;;
+    "demo-lineage")
+        run_demo_lineage
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"
