@@ -2,6 +2,7 @@ package me.rakirahman.lineage.openlineage
 
 import me.rakirahman.lineage._
 import me.rakirahman.lineage.diagram.DiagramOrientation
+import me.rakirahman.metastore.sql.SqlMetastoreOperations
 
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
@@ -14,6 +15,11 @@ class OpenLineageExtractorTest extends AnyFunSpec with Matchers {
     .master("local")
     .appName(this.getClass.getSimpleName.stripSuffix("$"))
     .config("spark.sql.shuffle.partitions", "1")
+    .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+    .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+    .config("spark.sql.warehouse.dir", s"/tmp/OpenLineageExtractorTest-${System.currentTimeMillis}/warehouse")
+    .config("spark.driver.host", "localhost")
+    .config("spark.ui.enabled", "false")
     .getOrCreate()
 
   val schema: StructType = StructType(
@@ -421,6 +427,217 @@ class OpenLineageExtractorTest extends AnyFunSpec with Matchers {
         mermaid should include("%% Lineage for target_c")
         mermaid should include("test.db/target_c")
         mermaid should include("-->")
+      }
+
+      it("should include standalone dataset nodes not in lineage") {
+        val lineage = OpenLineageLineage(
+          tableEdges = Seq(
+            TableLineageEdge(
+              source = DatasetIdentifier("file", "/data/source_a"),
+              target = DatasetIdentifier("file", "/data/target_b"),
+              jobName = "job1",
+              jobNamespace = "default"
+            )
+          ),
+          columnEdges = Seq.empty,
+          datasets = Seq.empty
+        )
+        val mermaid = OpenLineageExtractor.toMermaid(
+          lineage,
+          standaloneDatasets = Seq("standalone_table")
+        )
+        mermaid should include("standalone_table")
+        mermaid should include("classDef standalone")
+        mermaid should include("class standalone_table standalone")
+      }
+
+      it("should deduplicate edges with same source and target") {
+        val edge = TableLineageEdge(
+          source = DatasetIdentifier("file", "/data/a"),
+          target = DatasetIdentifier("file", "/data/b"),
+          jobName = "job1",
+          jobNamespace = "default"
+        )
+        val lineage = OpenLineageLineage(
+          tableEdges = Seq(edge, edge.copy(jobName = "job2")),
+          columnEdges = Seq.empty,
+          datasets = Seq.empty
+        )
+        val mermaid = OpenLineageExtractor.toMermaid(lineage)
+        // Should have exactly 1 edge despite 2 edges with same source/target
+        mermaid.split(" --> ").length shouldBe 2
+      }
+
+      it("should not add standalone node when it matches a lineage node after normalization") {
+        val lineage = OpenLineageLineage(
+          tableEdges = Seq(
+            TableLineageEdge(
+              source = DatasetIdentifier("file", "demo_etl.db/products"),
+              target = DatasetIdentifier("file", "demo_etl.db/enriched"),
+              jobName = "job1",
+              jobNamespace = "default"
+            )
+          ),
+          columnEdges = Seq.empty,
+          datasets = Seq.empty
+        )
+        val mermaid = OpenLineageExtractor.toMermaid(
+          lineage,
+          standaloneDatasets = Seq("demo_etl.products")
+        )
+        // "demo_etl.products" normalizes to same as "demo_etl.db/products" so should not appear as standalone
+        mermaid should not include "class demo_etl_products standalone"
+      }
+    }
+
+    describe("shortDatasetName") {
+      it("should return name unchanged when it contains no slashes") {
+        OpenLineageExtractor.shortDatasetName("simple_table") shouldBe "simple_table"
+      }
+    }
+
+    describe("normalizeLocationPath") {
+      it("should strip file: prefix and trailing slashes") {
+        OpenLineageExtractor.normalizeLocationPath("file:/data/table/") shouldBe "/data/table"
+        OpenLineageExtractor.normalizeLocationPath("/data/table") shouldBe "/data/table"
+        OpenLineageExtractor.normalizeLocationPath("file:/warehouse/none/my_table///") shouldBe "/warehouse/none/my_table"
+      }
+    }
+
+    describe("normalizeDatasetName") {
+      it("should convert .db/ to dot and / to dot") {
+        OpenLineageExtractor.normalizeDatasetName("demo_etl.db/customers") shouldBe "demo_etl.customers"
+        OpenLineageExtractor.normalizeDatasetName("dbt_seed/customer") shouldBe "dbt_seed.customer"
+      }
+    }
+
+    describe("resolveDatasetNames") {
+      it("should resolve dataset names using a location map") {
+        val lineage = OpenLineageLineage(
+          tableEdges = Seq(
+            TableLineageEdge(
+              source = DatasetIdentifier("file", "file:/warehouse/none/source_table/"),
+              target = DatasetIdentifier("file", "file:/warehouse/none/target_table/"),
+              jobName = "job1",
+              jobNamespace = "default"
+            )
+          ),
+          columnEdges = Seq(
+            ColumnLineageEdge(
+              sourceDataset = DatasetIdentifier("file", "file:/warehouse/none/source_table/"),
+              sourceField = "id",
+              targetDataset = DatasetIdentifier("file", "file:/warehouse/none/target_table/"),
+              targetField = "id",
+              transformationType = "DIRECT",
+              transformationSubtype = "IDENTITY"
+            )
+          ),
+          datasets = Seq(
+            LineageDataset(
+              identifier = DatasetIdentifier("file", "file:/warehouse/none/source_table/"),
+              shortName = "none/source_table",
+              schema = Seq.empty,
+              role = DatasetRole.Source
+            ),
+            LineageDataset(
+              identifier = DatasetIdentifier("file", "file:/warehouse/none/target_table/"),
+              shortName = "none/target_table",
+              schema = Seq.empty,
+              role = DatasetRole.Target
+            )
+          )
+        )
+
+        val locationMap = Map(
+          "/warehouse/none/source_table" -> "my_db.source_table",
+          "/warehouse/none/target_table" -> "my_db.target_table"
+        )
+
+        val resolved = OpenLineageExtractor.resolveDatasetNames(lineage, locationMap)
+
+        resolved.tableEdges.head.source.name shouldBe "my_db.source_table"
+        resolved.tableEdges.head.target.name shouldBe "my_db.target_table"
+        resolved.columnEdges.head.sourceDataset.name shouldBe "my_db.source_table"
+        resolved.columnEdges.head.targetDataset.name shouldBe "my_db.target_table"
+        resolved.datasets.find(_.identifier.name == "my_db.source_table") shouldBe defined
+        resolved.datasets.find(_.identifier.name == "my_db.target_table") shouldBe defined
+      }
+
+      it("should leave unresolved datasets unchanged") {
+        val lineage = OpenLineageLineage(
+          tableEdges = Seq(
+            TableLineageEdge(
+              source = DatasetIdentifier("file", "/unknown/path"),
+              target = DatasetIdentifier("file", "/known/path"),
+              jobName = "job1",
+              jobNamespace = "default"
+            )
+          ),
+          columnEdges = Seq.empty,
+          datasets = Seq(
+            LineageDataset(
+              identifier = DatasetIdentifier("file", "/unknown/path"),
+              shortName = "unknown/path",
+              schema = Seq.empty,
+              role = DatasetRole.Source
+            )
+          )
+        )
+
+        val locationMap = Map("/known/path" -> "my_db.known_table")
+        val resolved = OpenLineageExtractor.resolveDatasetNames(lineage, locationMap)
+
+        resolved.tableEdges.head.source.name shouldBe "/unknown/path"
+        resolved.tableEdges.head.target.name shouldBe "my_db.known_table"
+      }
+    }
+
+    describe("OpenLineageLineage.empty") {
+      it("should have empty sequences") {
+        val emptyLineage = OpenLineageLineage.empty
+        emptyLineage.tableEdges should have length 0
+        emptyLineage.columnEdges should have length 0
+        emptyLineage.datasets should have length 0
+      }
+    }
+
+    describe("error handling") {
+      it("should return empty results when underlying SQL queries fail") {
+        val df = buildTestDf()
+        val extractor = OpenLineageExtractor(spark, df)
+        // Drop the temp view so all SQL queries will fail
+        spark.catalog.dropTempView("openlineage_lineage_source")
+
+        val lineage = extractor.getLineage()
+        lineage.tableEdges shouldBe empty
+        lineage.columnEdges shouldBe empty
+        lineage.datasets shouldBe empty
+      }
+    }
+
+    describe("buildLocationMap") {
+      it("should map table locations to database.table names") {
+        val testDb = "test_ol_extractor_db"
+        spark.sql(s"CREATE DATABASE IF NOT EXISTS $testDb")
+        spark.sql(s"CREATE TABLE IF NOT EXISTS $testDb.test_table (id INT, name STRING) USING delta")
+
+        val metastoreOps = SqlMetastoreOperations(spark)
+        val allTables = Map(testDb -> Array("test_table"))
+
+        val locationMap = OpenLineageExtractor.buildLocationMap(metastoreOps, allTables)
+
+        locationMap.values should contain(s"$testDb.test_table")
+
+        spark.sql(s"DROP TABLE IF EXISTS $testDb.test_table")
+        spark.sql(s"DROP DATABASE IF EXISTS $testDb")
+      }
+
+      it("should skip tables that fail to describe") {
+        val metastoreOps = SqlMetastoreOperations(spark)
+        val allTables = Map("nonexistent_db" -> Array("nonexistent_table"))
+
+        val locationMap = OpenLineageExtractor.buildLocationMap(metastoreOps, allTables)
+        locationMap shouldBe empty
       }
     }
   }
