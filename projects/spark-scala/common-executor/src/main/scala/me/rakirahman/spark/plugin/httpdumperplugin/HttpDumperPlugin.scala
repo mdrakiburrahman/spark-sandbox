@@ -1,12 +1,14 @@
 package me.rakirahman.spark.plugin.httpdumperplugin
 
-import java.io.{BufferedWriter, File, FileWriter, IOException}
+import java.io.{BufferedWriter, File, IOException, OutputStreamWriter}
 import java.util.UUID
 import java.util.concurrent.ConcurrentLinkedQueue
 
 import me.rakirahman.spark.plugin.httpdumperplugin.conf.HttpDumperConf
 
 import fi.iki.elonen.NanoHTTPD
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.plugin.{DriverPlugin, ExecutorPlugin, PluginContext, SparkPlugin}
 import org.apache.spark.internal.Logging
@@ -126,6 +128,8 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
   private val requestBuffer = new ConcurrentLinkedQueue[HttpRequestMetadata]()
   var server: HttpDumperServer = _
   var serverThread: Thread = _
+  private var hadoopConf: Configuration = _
+  private var isFabric: Boolean = false
 
   /** @inheritdoc
     */
@@ -134,7 +138,11 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       ctx: PluginContext
   ): java.util.Map[String, String] = {
     config = HttpDumperConf(ctx.conf)
-    logInfo(s"HttpDumperDriverPlugin initialized with config: location=${config.location}, port=${config.driverPort}")
+    isFabric = ctx.conf.get("spark.cluster.type", "") == "trident"
+    if (isFabric) {
+      hadoopConf = sc.hadoopConfiguration
+    }
+    logInfo(s"HttpDumperDriverPlugin initialized with config: location=${config.location}, port=${config.driverPort}, fabric=$isFabric")
 
     server = new HttpDumperServer(config.driverPort, requestBuffer)
     serverThread = new Thread(() => {
@@ -186,13 +194,20 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
       }
 
       if (requests.nonEmpty) {
-        val dir = new File(config.location)
-        dir.mkdirs()
+        val (outputStream, outputPath) = if (isFabric) {
+          val outputDir = new Path(s"${hadoopConf.get("fs.homeDir", "")}/${config.location}")
+          val fs = FileSystem.get(hadoopConf)
+          fs.mkdirs(outputDir)
+          val filePath = new Path(outputDir, s"${UUID.randomUUID()}.json")
+          (fs.create(filePath, true): java.io.OutputStream, filePath.toString)
+        } else {
+          val dir = new File(config.location)
+          dir.mkdirs()
+          val file = new File(dir, s"${UUID.randomUUID()}.json")
+          (new java.io.FileOutputStream(file): java.io.OutputStream, file.getAbsolutePath)
+        }
 
-        val fileName = s"${UUID.randomUUID()}.json"
-        val file = new File(dir, fileName)
-        val writer = new BufferedWriter(new FileWriter(file))
-
+        val writer = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"))
         try {
           requests.foreach { request =>
             writer.write(request.requestBody)
@@ -202,7 +217,7 @@ class HttpDumperDriverPlugin extends DriverPlugin with Logging {
           writer.close()
         }
 
-        logInfo(s"Flushed ${requests.size} entries to ${file.getAbsolutePath}")
+        logInfo(s"Flushed ${requests.size} entries to $outputPath")
       } else {
         logInfo("No buffered requests to flush")
       }
