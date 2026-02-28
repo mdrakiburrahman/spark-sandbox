@@ -13,7 +13,7 @@ spark:
   shufflePartitions: -1
 
   warehouseRootPath: ""
-  checkpointsRootPath: ""
+  checkpointsRootPath: "Files/onelake/checkpoints"
   seedRootPath: ""
 
   state:
