@@ -73,6 +73,10 @@ class SqlMetastoreOperations(spark: SparkSession) extends MetastoreOperations {
     listDatabases().filter(db => !db.startsWith("default"))
   }
 
+  /** Retrieves all databases and their tables.
+    */
+  def listAllDatabasesAndTables(): Map[String, Array[String]] = listDatabases().map(db => db -> listTables(db)).toMap
+
   /** Drops a database.
     */
   def dropDatabase(databaseName: String): Unit = {

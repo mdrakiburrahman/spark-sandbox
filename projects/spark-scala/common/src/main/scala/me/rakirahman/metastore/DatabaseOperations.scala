@@ -40,4 +40,11 @@ trait DatabaseOperations {
     *   The name of the database to drop.
     */
   def dropDatabase(databaseName: String): Unit
+
+  /** Retrieves all databases and their tables.
+    *
+    * @return
+    *   A map of database names to arrays of table names.
+    */
+  def listAllDatabasesAndTables(): Map[String, Array[String]]
 }

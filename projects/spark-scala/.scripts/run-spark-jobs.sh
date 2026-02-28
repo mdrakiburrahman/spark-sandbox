@@ -36,6 +36,7 @@ DEMO_PLUGIN_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExplorati
 DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
 DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver"
 OPENLINEAGE_SILVER_CLASS="me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver"
+DEMO_LINEAGE_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
@@ -43,6 +44,7 @@ declare -A JOB_ALIASES=(
     ["demo-etl"]="$DEMO_ETL_CLASS"
     ["delta-mount"]="$DELTA_MOUNT_CLASS"
     ["openlineage-silver"]="$OPENLINEAGE_SILVER_CLASS"
+    ["demo-lineage"]="$DEMO_LINEAGE_CLASS"
 )
 
 print_available_jobs() {
@@ -283,6 +285,14 @@ run_openlineage_silver() {
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG} ${dest_db} ${source_path} ${archive_path}
 }
 
+run_demo_lineage() {
+    echo "=== Running: demo-lineage (DemoLineageExtractor) ==="
+    
+    local spark_class="$DEMO_LINEAGE_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
 # ┌─────────────┐
 # │ Run the Job │
 # └─────────────┘
@@ -293,6 +303,7 @@ case "$JOB_ALIAS" in
         run_demo_etl
         run_delta_mount
         run_openlineage_silver
+        run_demo_lineage
         ;;
     "demo-plugin")
         run_demo_plugin
@@ -305,6 +316,9 @@ case "$JOB_ALIAS" in
         ;;
     "openlineage-silver")
         run_openlineage_silver
+        ;;
+    "demo-lineage")
+        run_demo_lineage
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"

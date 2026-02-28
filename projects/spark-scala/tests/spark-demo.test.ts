@@ -162,4 +162,14 @@ describe("spark-scala integration tests", () => {
       expect(columns).not.toContain("request_method");
     }, 120_000);
   });
+
+  describe("demo-lineage", () => {
+    it(
+      "runs DemoLineageExtractor successfully",
+      () => {
+        SparkJobRunner.runJob("demo-lineage", JOB_TIMEOUT);
+      },
+      JOB_TIMEOUT,
+    );
+  });
 });
