@@ -183,6 +183,7 @@ object OpenLineageExtractor {
   }
 
   private[openlineage] def shortDatasetName(name: String): String = {
+    if (!name.contains("/")) return name
     val parts = name.split("/")
     val dbPartIndex = parts.indexWhere(_.endsWith(".db"))
     if (dbPartIndex >= 0) {
@@ -299,6 +300,62 @@ object OpenLineageExtractor {
     OpenLineageLineage(matchingEdges, matchingColumnEdges, matchingDatasets)
   }
 
+  /** Builds a mapping from file-path locations to database.table names using the Hive metastore. This resolves Livy/dbt dataset paths (e.g. "/workspaces/.../warehouse/none/dim_customer") back to their proper metastore names (e.g. "dbt_adventureworks_dwh.dim_customer").
+    */
+  def buildLocationMap(
+      metastoreOps: SqlMetastoreOperations,
+      allTables: Map[String, Array[String]]
+  ): Map[String, String] = {
+    val locationMap = scala.collection.mutable.Map[String, String]()
+    allTables.foreach { case (db, tables) =>
+      tables.foreach { table =>
+        try {
+          val desc = metastoreOps.getDeltaTableDescription(db, table)
+          val location = normalizeLocationPath(desc.location)
+          locationMap(location) = s"$db.$table"
+        } catch {
+          case _: Exception => // skip tables that can't be described
+        }
+      }
+    }
+    locationMap.toMap
+  }
+
+  /** Resolves dataset names in lineage using a location-to-table mapping.
+    */
+  def resolveDatasetNames(
+      lineage: OpenLineageLineage,
+      locationMap: Map[String, String]
+  ): OpenLineageLineage = {
+    def resolveId(id: DatasetIdentifier): DatasetIdentifier = {
+      val normalized = normalizeLocationPath(id.name)
+      locationMap.get(normalized) match {
+        case Some(fqn) => DatasetIdentifier(namespace = id.namespace, name = fqn)
+        case None      => id
+      }
+    }
+
+    val resolvedTableEdges = lineage.tableEdges.map { edge =>
+      edge.copy(source = resolveId(edge.source), target = resolveId(edge.target))
+    }
+    val resolvedColumnEdges = lineage.columnEdges.map { edge =>
+      edge.copy(sourceDataset = resolveId(edge.sourceDataset), targetDataset = resolveId(edge.targetDataset))
+    }
+    val resolvedDatasets = lineage.datasets.map { ds =>
+      val resolved = resolveId(ds.identifier)
+      ds.copy(identifier = resolved, shortName = shortDatasetName(resolved.name))
+    }
+    OpenLineageLineage(resolvedTableEdges, resolvedColumnEdges, resolvedDatasets)
+  }
+
+  /** Normalizes a file path for location matching by stripping the file: scheme and trailing slashes.
+    */
+  private[openlineage] def normalizeLocationPath(path: String): String = {
+    path
+      .replaceAll("^file:", "")
+      .replaceAll("/+$", "")
+  }
+
   private[openlineage] def sanitizeNodeName(name: String): String = {
     name
       .replaceAll("[^a-zA-Z0-9_]", "_")
@@ -306,9 +363,7 @@ object OpenLineageExtractor {
       .replaceAll("_{2,}", "_")
   }
 
-  /** Normalizes a dataset name for comparison by stripping the .db suffix and
-    * converting separators to dots (e.g. "demo_etl.db/customers" → "demo_etl.customers",
-    * "dbt_adventureworks_seed/customer" → "dbt_adventureworks_seed.customer").
+  /** Normalizes a dataset name for comparison by stripping the .db suffix and converting separators to dots (e.g. "demo_etl.db/customers" → "demo_etl.customers", "dbt_adventureworks_seed/customer" → "dbt_adventureworks_seed.customer").
     */
   private[openlineage] def normalizeDatasetName(name: String): String = {
     name

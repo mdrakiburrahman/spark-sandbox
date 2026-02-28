@@ -17,14 +17,17 @@ object DemoLineageExtractor extends App with Logging {
   val allTables = metastoreOps.listAllDatabasesAndTables()
   logInfo(s"Found ${allTables.size} databases with ${allTables.values.map(_.length).sum} tables")
   val extractor = OpenLineageExtractor(spark)
-  val lineage = extractor.getLineage()
+  val rawLineage = extractor.getLineage()
+
+  val locationMap = OpenLineageExtractor.buildLocationMap(metastoreOps, allTables)
+  val lineage = OpenLineageExtractor.resolveDatasetNames(rawLineage, locationMap)
 
   val tablesWithNoLineage = scala.collection.mutable.ListBuffer.empty[String]
 
   allTables.toSeq.sortBy(_._1).foreach { case (db, tables) =>
     tables.sorted.foreach { table =>
       val fqn = s"$db.$table"
-      val filtered = OpenLineageExtractor.filterLineageForDataset(lineage, table)
+      val filtered = OpenLineageExtractor.filterLineageForDataset(lineage, fqn, table)
 
       if (filtered.tableEdges.isEmpty) {
         tablesWithNoLineage += fqn
@@ -56,7 +59,15 @@ object DemoLineageExtractor extends App with Logging {
     logInfo(noLineageSb.toString())
   }
 
-  val uberMermaid = OpenLineageExtractor.toMermaid(lineage, "UBER Lineage (All Tables)")
+  val allTableLabels = allTables.toSeq.flatMap { case (db, tables) =>
+    tables.map(t => s"$db.$t")
+  }
+
+  val uberMermaid = OpenLineageExtractor.toMermaid(
+    lineage,
+    "UBER Lineage (All Tables)",
+    standaloneDatasets = allTableLabels
+  )
 
   val sb = new StringBuilder
   sb.append(s"${LoggingConstants.mainDivider}")
