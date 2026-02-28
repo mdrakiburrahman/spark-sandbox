@@ -30,9 +30,10 @@ class DeltaLogCommitStore(
     }
 
     import spark.implicits._
-    val commitsDf = commits
-      .toDF()
-      .withColumn("ingested_at", current_timestamp())
+    val commitsDf = toSnakeColumns(
+      commits
+        .toDF()
+    ).withColumn("ingested_at", current_timestamp())
       .withColumn("snapshot_date", lit(snapshotDate))
 
     ensureDatabase()
@@ -93,8 +94,7 @@ class DeltaLogCommitStore(
     import spark.implicits._
     ensureDatabase()
 
-    snapshots.toSeq
-      .toDF()
+    toSnakeColumns(snapshots.toSeq.toDF())
       .withColumn("ingested_at", current_timestamp())
       .withColumn("snapshot_date", lit(snapshotDate))
       .write
@@ -108,4 +108,16 @@ class DeltaLogCommitStore(
 
   private def ensureDatabase(): Unit =
     metastoreOps.createDatabase(inventoryDatabase)
+
+  /** Converts DataFrame column names from camelCase to snake_case. */
+  private def toSnakeColumns(
+      df: org.apache.spark.sql.DataFrame
+  ): org.apache.spark.sql.DataFrame = {
+    df.columns.foldLeft(df) { (acc, colName) =>
+      val snakeName =
+        colName.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase
+      if (snakeName != colName) acc.withColumnRenamed(colName, snakeName)
+      else acc
+    }
+  }
 }
