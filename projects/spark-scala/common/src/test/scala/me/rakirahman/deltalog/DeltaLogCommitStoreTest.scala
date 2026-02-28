@@ -190,6 +190,21 @@ class DeltaLogCommitStoreTest extends AnyFunSpec with Matchers {
     }
 
     describe("captureTableSnapshots") {
+      it("should handle empty snapshot results gracefully") {
+        val emptyDb = s"test_empty_snapshot_db_${System.currentTimeMillis}"
+        val inventoryDb = s"test_empty_snap_inv_db_${System.currentTimeMillis}"
+
+        // Create a database with no Delta tables
+        spark.sql(s"CREATE DATABASE IF NOT EXISTS $emptyDb")
+
+        val store = new DeltaLogCommitStore(spark, metastoreOps, inventoryDb)
+        // Should not throw — captures nothing because no Delta tables exist
+        store.captureTableSnapshots()
+
+        // Cleanup
+        spark.sql(s"DROP DATABASE IF EXISTS $emptyDb CASCADE")
+      }
+
       it("should capture snapshots from Delta tables") {
         val testDb = s"test_snapshot_source_db_${System.currentTimeMillis}"
         val inventoryDb =

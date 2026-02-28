@@ -174,7 +174,7 @@ describe("spark-scala integration tests", () => {
   });
 
   describe("demo-delta-log-monitor", () => {
-    const INVENTORY_DB = "delta_log_inventory_db";
+    const INVENTORY_DB = "data_ops_inventory_db";
 
     it(
       "runs DemoDeltaLogMonitor successfully",

@@ -138,7 +138,7 @@ class DeltaLogExtractor private (
 }
 
 object DeltaLogExtractor {
-  val DefaultInventoryDatabase = "delta_log_inventory_db"
+  val DefaultInventoryDatabase = "data_ops_inventory_db"
 
   def apply(
       spark: SparkSession,

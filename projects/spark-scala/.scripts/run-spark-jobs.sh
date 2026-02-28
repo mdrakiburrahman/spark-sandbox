@@ -295,6 +295,14 @@ run_demo_lineage() {
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
 
+run_demo_delta_log_monitor() {
+    echo "=== Running: demo-delta-log-monitor (DemoDeltaLogMonitor) ==="
+    
+    local spark_class="$DEMO_DELTA_LOG_MONITOR_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
 # ┌─────────────┐
 # │ Run the Job │
 # └─────────────┘
@@ -306,6 +314,7 @@ case "$JOB_ALIAS" in
         run_delta_mount
         run_openlineage_silver
         run_demo_lineage
+        run_demo_delta_log_monitor
         ;;
     "demo-plugin")
         run_demo_plugin
@@ -321,6 +330,9 @@ case "$JOB_ALIAS" in
         ;;
     "demo-lineage")
         run_demo_lineage
+        ;;
+    "demo-delta-log-monitor")
+        run_demo_delta_log_monitor
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"

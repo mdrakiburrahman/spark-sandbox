@@ -92,6 +92,44 @@
             "dependencyConditions": ["Succeeded"]
           }
         ]
+      },
+      {
+        "name": "Delta Log Monitor",
+        "description": "Extracts Delta Transaction Log commits, computes freshness/completeness/operational KPIs, and generates health reports",
+        "type": "FabricSparkJobDefinition",
+        "typeProperties": {
+          "sparkJobDefinitionId": "c6d24dcf-ff26-4f48-b89a-16c2919d4c48",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "mainClass": "me.rakirahman.sparkdemo.etl.drivers.demos.DemoDeltaLogMonitor",
+          "commandLineArguments": "Files/onelake/configs/sparkDemo-fabric.yaml",
+          "environment": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "f704ad90-bc71-447f-abb7-69a0716a00d2"
+          },
+          "defaultLakehouse": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "2ceb942f-5ba5-42b0-8875-9fd8aad59a1b"
+          },
+          "additionalLakehouses": [
+            {
+              "artifactId": "4d8783be-e822-46d0-82e4-9b77c7f33992",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            }
+          ]
+        },
+        "policy": {
+          "timeout": "0.01:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "dependsOn": [
+          {
+            "activity": "OpenLineage Stream Processing",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ]
       }
     ]
   }

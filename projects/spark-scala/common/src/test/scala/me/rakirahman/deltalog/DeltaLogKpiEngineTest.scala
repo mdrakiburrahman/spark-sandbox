@@ -145,6 +145,58 @@ class DeltaLogKpiEngineTest extends AnyFunSpec with Matchers {
 
   describe("DeltaLogKpiEngine") {
 
+    describe("factory methods") {
+      it("should create from an inventory database table") {
+        import spark.implicits._
+        val inventoryDb = s"test_kpi_factory_db_${System.currentTimeMillis}"
+        val now = java.sql.Timestamp.valueOf(java.time.LocalDateTime.now().minusDays(1))
+        val snapshotDate = java.time.LocalDate
+          .now()
+          .minusDays(1)
+          .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"))
+
+        spark.sql(s"CREATE DATABASE IF NOT EXISTS $inventoryDb")
+        Seq(
+          ("db1", "t1", "db1.t1", null, 0L, now, "WRITE", null, null, null, null, true, null, null, null, 1000L, 1L, null, 50000L, null, now, snapshotDate)
+        ).toDF(
+          "database_name",
+          "table_name",
+          "table_fqn",
+          "table_id",
+          "version",
+          "commit_timestamp",
+          "operation",
+          "operation_parameters",
+          "operation_metrics",
+          "read_version",
+          "isolation_level",
+          "is_blind_append",
+          "user_id",
+          "user_name",
+          "user_metadata",
+          "num_output_rows",
+          "num_added_files",
+          "num_removed_files",
+          "num_output_bytes",
+          "execution_time_ms",
+          "ingested_at",
+          "snapshot_date"
+        ).write
+          .format("delta")
+          .mode("overwrite")
+          .saveAsTable(s"$inventoryDb.commit_history")
+
+        val engine = DeltaLogKpiEngine(spark, inventoryDb, lookbackDays = 30)
+        val result = engine.computeAll()
+
+        result.count() should be >= 1L
+
+        // Cleanup
+        spark.sql(s"DROP TABLE IF EXISTS $inventoryDb.commit_history")
+        spark.sql(s"DROP DATABASE IF EXISTS $inventoryDb CASCADE")
+      }
+    }
+
     describe("computeFreshness") {
       it("should compute freshness for a table with regular commits") {
         val rows = createHealthyCommitRows("db1.regular_table", numDays = 14)

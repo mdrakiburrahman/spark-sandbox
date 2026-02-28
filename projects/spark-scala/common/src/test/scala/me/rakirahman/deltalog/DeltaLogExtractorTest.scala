@@ -225,8 +225,90 @@ class DeltaLogExtractorTest extends AnyFunSpec with Matchers {
   }
 
   describe("DeltaLogExtractor.DefaultInventoryDatabase") {
-    it("should be delta_log_inventory_db") {
-      DeltaLogExtractor.DefaultInventoryDatabase shouldBe "delta_log_inventory_db"
+    it("should be data_ops_inventory_db") {
+      DeltaLogExtractor.DefaultInventoryDatabase shouldBe "data_ops_inventory_db"
+    }
+  }
+
+  describe("DeltaLogExtractor.extract (full flow)") {
+    it("should extract commits from all Delta tables across databases") {
+      import spark.implicits._
+      val testDbName = s"test_full_extract_db_${System.currentTimeMillis}"
+
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $testDbName")
+      Seq((1, "Alice"), (2, "Bob"))
+        .toDF("id", "name")
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .saveAsTable(s"$testDbName.full_test_table")
+
+      val extractor = DeltaLogExtractor(spark, s"nonexistent_inv_${System.currentTimeMillis}")
+      val commits = extractor.extract()
+
+      commits should not be empty
+      commits.exists(_.databaseName == testDbName) shouldBe true
+      commits.foreach { c =>
+        c.operation should not be empty
+        c.commitTimestamp should not be null
+      }
+
+      // Cleanup
+      spark.sql(s"DROP TABLE IF EXISTS $testDbName.full_test_table")
+      spark.sql(s"DROP DATABASE IF EXISTS $testDbName CASCADE")
+    }
+  }
+
+  describe("DeltaLogExtractor with high-water mark") {
+    it("should only extract commits above the high-water mark version") {
+      import spark.implicits._
+      val testDbName = s"test_hwm_db_${System.currentTimeMillis}"
+      val inventoryDb = s"test_hwm_inv_db_${System.currentTimeMillis}"
+
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $testDbName")
+      spark.sql(s"CREATE DATABASE IF NOT EXISTS $inventoryDb")
+
+      // Create a table with multiple versions
+      Seq((1, "A"))
+        .toDF("id", "name")
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .saveAsTable(s"$testDbName.hwm_table")
+      Seq((2, "B"))
+        .toDF("id", "name")
+        .write
+        .format("delta")
+        .mode("append")
+        .insertInto(s"$testDbName.hwm_table")
+      Seq((3, "C"))
+        .toDF("id", "name")
+        .write
+        .format("delta")
+        .mode("append")
+        .insertInto(s"$testDbName.hwm_table")
+
+      // Create commit_history with high-water mark at version 0
+      import org.apache.spark.sql.functions.{col, lit}
+      Seq(("db_placeholder", "tbl_placeholder", s"$testDbName.hwm_table", 0L))
+        .toDF("database_name", "table_name", "table_fqn", "version")
+        .write
+        .format("delta")
+        .mode("overwrite")
+        .saveAsTable(s"$inventoryDb.commit_history")
+
+      val extractor = DeltaLogExtractor(spark, inventoryDb)
+      val commits = extractor.extractForTable(testDbName, "hwm_table")
+
+      // Should only have versions > 0
+      commits.foreach(_.version should be > 0L)
+      commits should not be empty
+
+      // Cleanup
+      spark.sql(s"DROP TABLE IF EXISTS $testDbName.hwm_table")
+      spark.sql(s"DROP DATABASE IF EXISTS $testDbName CASCADE")
+      spark.sql(s"DROP TABLE IF EXISTS $inventoryDb.commit_history")
+      spark.sql(s"DROP DATABASE IF EXISTS $inventoryDb CASCADE")
     }
   }
 

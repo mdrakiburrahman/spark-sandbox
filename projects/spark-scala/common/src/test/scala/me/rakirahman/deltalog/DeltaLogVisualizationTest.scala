@@ -122,6 +122,17 @@ class DeltaLogVisualizationTest extends AnyFunSpec with Matchers {
         diagram should include("class db1_sick_tbl unhealthy")
       }
 
+      it("should show question mark for unknown status") {
+        val results = Seq(
+          mkResult("db1", "unknown_tbl", "SomethingElse")
+        )
+
+        val diagram =
+          DeltaLogVisualization.healthSummaryDiagram(results)
+
+        diagram should include("❓")
+      }
+
       it("should handle empty results") {
         val diagram =
           DeltaLogVisualization.healthSummaryDiagram(Seq.empty)
