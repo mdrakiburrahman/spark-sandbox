@@ -206,24 +206,42 @@ export default function FabricLivyPage() {
 
           {/* Option 2: Demo Dataset */}
           <div
-            style={{ ...cardBase, borderLeft: '3px solid #A19F9D', cursor: 'default', opacity: 0.7 }}
+            style={{ ...cardBase, borderLeft: '3px solid #107C10' }}
+            onClick={async () => {
+              try {
+                const [tablesRes, lineageRes] = await Promise.all([
+                  fetch('/livy-tables.json'),
+                  fetch('/livy-uber-lineage.json'),
+                ]);
+                const tables = await tablesRes.json();
+                const lineage = await lineageRes.json();
+                setDashboardData({
+                  tables,
+                  kpis: [],
+                  commits: new Map(),
+                  lineage,
+                });
+                setMode('dashboard');
+              } catch (err) {
+                setConnectionError(err instanceof Error ? err.message : String(err));
+              }
+            }}
+            onMouseEnter={(e) => cardHover(e, true)}
+            onMouseLeave={(e) => cardHover(e, false)}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: isDark ? 'rgba(161,159,157,0.15)' : 'rgba(161,159,157,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Database20Regular style={{ color: '#A19F9D' }} />
+              <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: isDark ? 'rgba(16,124,16,0.15)' : 'rgba(16,124,16,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Database20Regular style={{ color: '#107C10' }} />
               </div>
               <div>
                 <span style={{ fontSize: '15px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', display: 'block' }}>
-                  Demo Dataset from Livy
+                  Sample Dataset
                 </span>
                 <span style={{ fontSize: '12px', color: isDark ? '#A19F9D' : '#605E5C' }}>
-                  Contains Livy endpoint queried data for Delta Lake and OpenLineage Metadata
+                  Pre-captured Fabric Livy data — 44 tables, 71 lineage edges, 248 column edges
                 </span>
               </div>
             </div>
-            <span style={{ fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D', fontStyle: 'italic' }}>
-              Coming soon
-            </span>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,6 +12,8 @@ import {
   Handle,
   NodeProps,
   useReactFlow,
+  useNodesState,
+  useEdgesState,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import dagre from 'dagre';
@@ -238,19 +240,11 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
 
   const handlePaneClick = useCallback(() => setSelectedColumn(null), []);
 
-  const { nodes, edges } = useMemo(() => {
-    const traceSet = selectedColumn
-      ? new Set([
-        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'up'),
-        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'down'),
-      ])
-      : null;
-    const hasSelection = selectedColumn !== null;
-
+  // Layout: only recompute positions when the underlying data changes, NOT on selection
+  const layoutNodes = useMemo(() => {
     const nodes: Node[] = [];
     for (const [dsKey, cols] of dsColumnsMap) {
       const colArr = Array.from(cols);
-      const selectedCols = traceSet ? colArr.filter((c) => traceSet.has(`${dsKey}::${c}`)) : [];
       nodes.push({
         id: dsKey,
         type: 'columnDataset',
@@ -259,8 +253,8 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
           label: dsKey,
           columns: colArr,
           highlightedColumns: colArr,
-          selectedColumns: selectedCols,
-          hasSelection,
+          selectedColumns: [] as string[],
+          hasSelection: false,
           isDark,
           accentColor: ROLE_COLORS[dsRoles.get(dsKey) ?? 'intermediate'],
           onColumnClick: handleColumnClick,
@@ -269,7 +263,40 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
       });
     }
 
-    const rfEdges: Edge[] = colEdges.map((e, i) => {
+    // Layout with dagre
+    const g = new dagre.graphlib.Graph();
+    g.setDefaultEdgeLabel(() => ({}));
+    g.setGraph({ rankdir: 'LR', nodesep: 80, ranksep: 200 });
+    for (const n of nodes) {
+      const h = (n.data.columns as string[]).length * 24 + 50;
+      g.setNode(n.id, { width: 220, height: h });
+    }
+    for (const e of colEdges) {
+      if (dsColumnsMap.has(e.sourceDataset) && dsColumnsMap.has(e.targetDataset)) {
+        g.setEdge(e.sourceDataset, e.targetDataset);
+      }
+    }
+    dagre.layout(g);
+    for (const n of nodes) {
+      const pos = g.node(n.id);
+      const h = (n.data.columns as string[]).length * 24 + 50;
+      n.position = { x: pos.x - 110, y: pos.y - h / 2 };
+    }
+
+    return nodes;
+  }, [dsColumnsMap, dsRoles, colEdges, isDark, handleColumnClick]);
+
+  // Selection-dependent styling: update node data + edges without changing positions
+  const computedEdges = useMemo(() => {
+    const traceSet = selectedColumn
+      ? new Set([
+        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'up'),
+        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'down'),
+      ])
+      : null;
+    const hasSelection = selectedColumn !== null;
+
+    return colEdges.map((e, i) => {
       const srcLabel = e.sourceDataset;
       const tgtLabel = e.targetDataset;
       const isTraced = traceSet
@@ -294,28 +321,48 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
         label: isTraced && e.transformationSubtype !== 'UNKNOWN' ? e.transformationSubtype : undefined,
         labelStyle: { fontSize: 9, fill: '#0078D4', fontWeight: 600 },
         labelBgStyle: { fill: isDark ? '#201F1E' : '#FAF9F8', fillOpacity: 0.9 },
-      };
+      } as Edge;
     });
+  }, [colEdges, selectedColumn, isDark]);
 
-    // Layout with dagre
-    const g = new dagre.graphlib.Graph();
-    g.setDefaultEdgeLabel(() => ({}));
-    g.setGraph({ rankdir: 'LR', nodesep: 80, ranksep: 200 });
-    for (const n of nodes) {
-      const h = (n.data.columns as string[]).length * 24 + 50;
-      g.setNode(n.id, { width: 220, height: h });
-    }
-    for (const e of rfEdges) g.setEdge(e.source, e.target);
-    dagre.layout(g);
-    for (const n of nodes) {
-      const pos = g.node(n.id);
-      const h = (n.data.columns as string[]).length * 24 + 50;
-      n.position = { x: pos.x - 110, y: pos.y - h / 2 };
-    }
+  const [rfNodes, setRfNodes, onNodesChange] = useNodesState(layoutNodes);
+  const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(computedEdges);
 
-    return { nodes, edges: rfEdges };
-  }, [dsColumnsMap, dsRoles, colEdges, selectedColumn, isDark, handleColumnClick]);
+  // Sync node positions only when layout data changes (not selection)
+  useEffect(() => {
+    setRfNodes(layoutNodes);
+  }, [layoutNodes, setRfNodes]);
 
+  // Sync edges when selection/styling changes
+  useEffect(() => {
+    setRfEdges(computedEdges);
+  }, [computedEdges, setRfEdges]);
+
+  // Update node data (selection highlights) without resetting positions
+  useEffect(() => {
+    const traceSet = selectedColumn
+      ? new Set([
+        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'up'),
+        ...traceColumns(selectedColumn.dsKey, selectedColumn.field, colEdges, 'down'),
+      ])
+      : null;
+    const hasSelection = selectedColumn !== null;
+
+    setRfNodes((prev) =>
+      prev.map((n) => {
+        const cols = n.data.columns as string[];
+        const selectedCols = traceSet ? cols.filter((c: string) => traceSet.has(`${n.id}::${c}`)) : [];
+        return {
+          ...n,
+          data: {
+            ...n.data,
+            selectedColumns: selectedCols,
+            hasSelection,
+          },
+        };
+      })
+    );
+  }, [selectedColumn, colEdges, setRfNodes]);
   if (colEdges.length === 0) {
     return (
       <div style={{ padding: '48px 24px', textAlign: 'center', fontSize: '13px', color: isDark ? '#605E5C' : '#A19F9D' }}>
@@ -327,8 +374,10 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
   return (
     <div style={{ height: '600px', width: '100%' }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={rfNodes}
+        edges={rfEdges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
         nodeTypes={nodeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
