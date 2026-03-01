@@ -37,6 +37,7 @@ DEMO_ETL_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl"
 DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver"
 OPENLINEAGE_SILVER_CLASS="me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver"
 DEMO_LINEAGE_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor"
+DEMO_DELTA_LOG_MONITOR_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoDeltaLogMonitor"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
@@ -45,6 +46,7 @@ declare -A JOB_ALIASES=(
     ["delta-mount"]="$DELTA_MOUNT_CLASS"
     ["openlineage-silver"]="$OPENLINEAGE_SILVER_CLASS"
     ["demo-lineage"]="$DEMO_LINEAGE_CLASS"
+    ["demo-delta-log-monitor"]="$DEMO_DELTA_LOG_MONITOR_CLASS"
 )
 
 print_available_jobs() {
@@ -293,6 +295,14 @@ run_demo_lineage() {
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
 
+run_demo_delta_log_monitor() {
+    echo "=== Running: demo-delta-log-monitor (DemoDeltaLogMonitor) ==="
+    
+    local spark_class="$DEMO_DELTA_LOG_MONITOR_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
 # ┌─────────────┐
 # │ Run the Job │
 # └─────────────┘
@@ -304,6 +314,7 @@ case "$JOB_ALIAS" in
         run_delta_mount
         run_openlineage_silver
         run_demo_lineage
+        run_demo_delta_log_monitor
         ;;
     "demo-plugin")
         run_demo_plugin
@@ -319,6 +330,9 @@ case "$JOB_ALIAS" in
         ;;
     "demo-lineage")
         run_demo_lineage
+        ;;
+    "demo-delta-log-monitor")
+        run_demo_delta_log_monitor
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"
