@@ -8,10 +8,7 @@ LAKEHOUSE_ID = "4d8783be-e822-46d0-82e4-9b77c7f33992"
 def test_fabric_lakehouse_select_one():
     """Verify basic connectivity to Microsoft Fabric Lakehouse via ODBC."""
     conn = pyodbc.connect(
-        "DRIVER={Microsoft ODBC Driver for Microsoft Fabric Data Engineering};"
-        f"WorkspaceId={WORKSPACE_ID};"
-        f"LakehouseId={LAKEHOUSE_ID};"
-        "AuthFlow=AZURE_CLI;",
+        "DRIVER={Microsoft ODBC Driver for Microsoft Fabric Data Engineering};" f"WorkspaceId={WORKSPACE_ID};" f"LakehouseId={LAKEHOUSE_ID};" "AuthFlow=AZURE_CLI;",
         timeout=30,
     )
     try:
