@@ -77,5 +77,5 @@ jobs:
       - name: "⚙️ Post attach commands"
         run: /tmp/overlay/post-attach-commands.sh
 
-      - name: "🚀 Deploy Fabric"
-        run: npx nx run fabric:deploy --output-style=stream
+      - name: "🚀 Deploy"
+        run: npx nx run-many -t deploy --verbose --output-style=stream
