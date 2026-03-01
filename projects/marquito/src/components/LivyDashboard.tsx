@@ -6,6 +6,7 @@ import CommitFreshness from './CommitFreshness';
 import RowCompleteness from './RowCompleteness';
 import UberLineage from './UberLineage';
 import LivyColumnLineage from './LivyColumnLineage';
+import LivyDependencyHeatmap from './LivyDependencyHeatmap';
 import { KpiResult, DeltaCommitEntry, UberLineage as UberLineageType } from '@/lib/livy/types';
 import {
   CheckmarkCircle20Filled,
@@ -256,6 +257,26 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
         {showColumnLineage
           ? <LivyColumnLineage lineage={data.lineage} />
           : <UberLineage lineage={data.lineage} />}
+      </div>
+
+      {/* Visual 3: Dependency Heatmap */}
+      <div
+        style={{
+          border: `1px solid ${isDark ? '#323130' : '#EDEBE9'}`,
+          borderRadius: '8px',
+          overflow: 'hidden',
+          marginTop: '32px',
+        }}
+      >
+        <div style={{ padding: '12px 16px', backgroundColor: isDark ? '#252423' : '#FAF9F8', borderBottom: `1px solid ${isDark ? '#323130' : '#EDEBE9'}` }}>
+          <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Dependency Heatmap
+          </span>
+          <span style={{ fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D', marginLeft: '8px' }}>
+            Upstream row count volatility (CV) across dependency edges
+          </span>
+        </div>
+        <LivyDependencyHeatmap lineage={data.lineage} commits={data.commits} />
       </div>
     </div>
   );
