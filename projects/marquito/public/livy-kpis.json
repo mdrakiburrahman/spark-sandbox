@@ -7,7 +7,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:48Z",
       "medianCommitIntervalSeconds": 0,
       "p95CommitIntervalSeconds": 0,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.address",
@@ -25,7 +25,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:49Z",
       "medianCommitIntervalSeconds": 0,
       "p95CommitIntervalSeconds": 0,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.customer",
@@ -43,7 +43,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:48Z",
       "medianCommitIntervalSeconds": 0,
       "p95CommitIntervalSeconds": 2,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.person",
@@ -61,7 +61,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:49Z",
       "medianCommitIntervalSeconds": 0,
       "p95CommitIntervalSeconds": 0,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.creditcard",
@@ -115,7 +115,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:49Z",
       "medianCommitIntervalSeconds": 0,
       "p95CommitIntervalSeconds": 1,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.salesorderdetail",
@@ -187,7 +187,7 @@
       "lastCommitTimestamp": "2026-02-18T15:06:48Z",
       "medianCommitIntervalSeconds": 1,
       "p95CommitIntervalSeconds": 5,
-      "daysSinceLastCommit": 10.85
+      "daysSinceLastCommit": 10.89
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_seed.salesorderheadersalesreason",
@@ -331,7 +331,7 @@
       "lastCommitTimestamp": "2026-03-01T11:13:26Z",
       "medianCommitIntervalSeconds": 3305,
       "p95CommitIntervalSeconds": 94449,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.05
     },
     "completeness": {
       "tableFqn": "dbt_jaffle_shop_dwh.customers",
@@ -349,7 +349,7 @@
       "lastCommitTimestamp": "2026-03-01T11:13:44Z",
       "medianCommitIntervalSeconds": 3342,
       "p95CommitIntervalSeconds": 94444,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.05
     },
     "completeness": {
       "tableFqn": "dbt_jaffle_shop_dwh.orders",
@@ -421,7 +421,7 @@
       "lastCommitTimestamp": "2026-03-01T11:03:06Z",
       "medianCommitIntervalSeconds": 2953,
       "p95CommitIntervalSeconds": 121083,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_address",
@@ -439,7 +439,7 @@
       "lastCommitTimestamp": "2026-03-01T11:05:26Z",
       "medianCommitIntervalSeconds": 2980,
       "p95CommitIntervalSeconds": 121091,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_customer",
@@ -457,7 +457,7 @@
       "lastCommitTimestamp": "2026-03-01T11:03:46Z",
       "medianCommitIntervalSeconds": 2940,
       "p95CommitIntervalSeconds": 121089,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_credit_card",
@@ -475,7 +475,7 @@
       "lastCommitTimestamp": "2026-03-01T11:04:55Z",
       "medianCommitIntervalSeconds": 2941,
       "p95CommitIntervalSeconds": 121123,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_product",
@@ -493,7 +493,7 @@
       "lastCommitTimestamp": "2026-03-01T11:04:18Z",
       "medianCommitIntervalSeconds": 3268,
       "p95CommitIntervalSeconds": 150811,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_order_status",
@@ -511,7 +511,7 @@
       "lastCommitTimestamp": "2026-03-01T11:04:04Z",
       "medianCommitIntervalSeconds": 2894,
       "p95CommitIntervalSeconds": 121007,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.dim_date",
@@ -529,7 +529,7 @@
       "lastCommitTimestamp": "2026-03-01T11:04:36Z",
       "medianCommitIntervalSeconds": 3414,
       "p95CommitIntervalSeconds": 150774,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.fct_sales",
@@ -547,7 +547,7 @@
       "lastCommitTimestamp": "2026-03-01T11:06:47Z",
       "medianCommitIntervalSeconds": 3334,
       "p95CommitIntervalSeconds": 219390,
-      "daysSinceLastCommit": 0.01
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "dbt_adventureworks_dwh.obt_sales",
@@ -565,7 +565,7 @@
       "lastCommitTimestamp": "2026-03-01T10:43:06Z",
       "medianCommitIntervalSeconds": 2466,
       "p95CommitIntervalSeconds": 22118,
-      "daysSinceLastCommit": 0.03
+      "daysSinceLastCommit": 0.07
     },
     "completeness": {
       "tableFqn": "data_ops_inventory_db.openlineage",
@@ -580,15 +580,15 @@
     "freshness": {
       "tableFqn": "data_ops_inventory_db.commit_history",
       "status": "Healthy",
-      "lastCommitTimestamp": "2026-03-01T10:54:27Z",
-      "medianCommitIntervalSeconds": 3742,
-      "p95CommitIntervalSeconds": 8036,
-      "daysSinceLastCommit": 0.02
+      "lastCommitTimestamp": "2026-03-01T12:19:53Z",
+      "medianCommitIntervalSeconds": 3984,
+      "p95CommitIntervalSeconds": 7827,
+      "daysSinceLastCommit": 0.01
     },
     "completeness": {
       "tableFqn": "data_ops_inventory_db.commit_history",
       "status": "Training",
-      "dailyRowCountActual": 623,
+      "dailyRowCountActual": 645,
       "dailyRowCountMinExpected": null,
       "dailyRowCountMaxExpected": null
     }
@@ -598,15 +598,15 @@
     "freshness": {
       "tableFqn": "data_ops_inventory_db.table_snapshots",
       "status": "Healthy",
-      "lastCommitTimestamp": "2026-03-01T10:54:56Z",
-      "medianCommitIntervalSeconds": 3744,
-      "p95CommitIntervalSeconds": 8025,
-      "daysSinceLastCommit": 0.02
+      "lastCommitTimestamp": "2026-03-01T12:20:23Z",
+      "medianCommitIntervalSeconds": 3986,
+      "p95CommitIntervalSeconds": 7817,
+      "daysSinceLastCommit": 0.01
     },
     "completeness": {
       "tableFqn": "data_ops_inventory_db.table_snapshots",
       "status": "Training",
-      "dailyRowCountActual": 408,
+      "dailyRowCountActual": 449,
       "dailyRowCountMinExpected": null,
       "dailyRowCountMaxExpected": null
     }
@@ -616,15 +616,15 @@
     "freshness": {
       "tableFqn": "data_ops_inventory_db.kpi_results",
       "status": "Healthy",
-      "lastCommitTimestamp": "2026-03-01T10:55:25Z",
-      "medianCommitIntervalSeconds": 3743,
-      "p95CommitIntervalSeconds": 8023,
-      "daysSinceLastCommit": 0.02
+      "lastCommitTimestamp": "2026-03-01T12:20:59Z",
+      "medianCommitIntervalSeconds": 3987,
+      "p95CommitIntervalSeconds": 7815,
+      "daysSinceLastCommit": 0
     },
     "completeness": {
       "tableFqn": "data_ops_inventory_db.kpi_results",
       "status": "Training",
-      "dailyRowCountActual": 407,
+      "dailyRowCountActual": 448,
       "dailyRowCountMinExpected": null,
       "dailyRowCountMaxExpected": null
     }
@@ -637,7 +637,7 @@
       "lastCommitTimestamp": "2026-03-01T11:00:06Z",
       "medianCommitIntervalSeconds": 2756,
       "p95CommitIntervalSeconds": 30353,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.customers",
@@ -655,7 +655,7 @@
       "lastCommitTimestamp": "2026-03-01T11:00:26Z",
       "medianCommitIntervalSeconds": 2764,
       "p95CommitIntervalSeconds": 30353,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.orders",
@@ -673,7 +673,7 @@
       "lastCommitTimestamp": "2026-03-01T11:00:41Z",
       "medianCommitIntervalSeconds": 2767,
       "p95CommitIntervalSeconds": 30352,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.products",
@@ -691,7 +691,7 @@
       "lastCommitTimestamp": "2026-03-01T11:00:56Z",
       "medianCommitIntervalSeconds": 2772,
       "p95CommitIntervalSeconds": 30353,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.sales",
@@ -709,7 +709,7 @@
       "lastCommitTimestamp": "2026-03-01T11:01:18Z",
       "medianCommitIntervalSeconds": 2769,
       "p95CommitIntervalSeconds": 30352,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.customers_cleaned",
@@ -727,7 +727,7 @@
       "lastCommitTimestamp": "2026-03-01T11:01:30Z",
       "medianCommitIntervalSeconds": 2771,
       "p95CommitIntervalSeconds": 30353,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.products_enriched",
@@ -745,7 +745,7 @@
       "lastCommitTimestamp": "2026-03-01T11:02:07Z",
       "medianCommitIntervalSeconds": 2778,
       "p95CommitIntervalSeconds": 30355,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.sales_enriched",
@@ -763,7 +763,7 @@
       "lastCommitTimestamp": "2026-03-01T11:02:28Z",
       "medianCommitIntervalSeconds": 2780,
       "p95CommitIntervalSeconds": 30355,
-      "daysSinceLastCommit": 0.02
+      "daysSinceLastCommit": 0.06
     },
     "completeness": {
       "tableFqn": "demo_etl.customer_lifetime_value",
@@ -778,15 +778,15 @@
     "freshness": {
       "tableFqn": "demo_etl.product_sales_performance",
       "status": "Healthy",
-      "lastCommitTimestamp": "2026-03-01T10:37:49Z",
-      "medianCommitIntervalSeconds": 3172,
-      "p95CommitIntervalSeconds": 30742,
-      "daysSinceLastCommit": 0.03
+      "lastCommitTimestamp": "2026-03-01T12:01:18Z",
+      "medianCommitIntervalSeconds": 3354,
+      "p95CommitIntervalSeconds": 30570,
+      "daysSinceLastCommit": 0.02
     },
     "completeness": {
       "tableFqn": "demo_etl.product_sales_performance",
       "status": "Training",
-      "dailyRowCountActual": 200,
+      "dailyRowCountActual": 220,
       "dailyRowCountMinExpected": null,
       "dailyRowCountMaxExpected": null
     }

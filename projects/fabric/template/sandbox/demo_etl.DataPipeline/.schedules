@@ -9,7 +9,7 @@
         "startDateTime": "2026-02-28T22:09:00",
         "endDateTime": "2027-02-28T22:09:00",
         "localTimeZoneId": "Eastern Standard Time",
-        "interval": 60
+        "interval": 180
       }
     }
   ]

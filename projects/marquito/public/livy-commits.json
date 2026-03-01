@@ -3770,6 +3770,17 @@
   "data_ops_inventory_db.commit_history": [
     {
       "tableFqn": "data_ops_inventory_db.commit_history",
+      "version": 10,
+      "commitTimestamp": "2026-03-01T12:19:53Z",
+      "operation": "WRITE",
+      "numOutputRows": 22,
+      "numAddedFiles": 0,
+      "numRemovedFiles": 0,
+      "numOutputBytes": 31510,
+      "executionTimeMs": 0
+    },
+    {
+      "tableFqn": "data_ops_inventory_db.commit_history",
       "version": 9,
       "commitTimestamp": "2026-03-01T10:54:27Z",
       "operation": "WRITE",
@@ -3882,6 +3893,17 @@
   "data_ops_inventory_db.table_snapshots": [
     {
       "tableFqn": "data_ops_inventory_db.table_snapshots",
+      "version": 10,
+      "commitTimestamp": "2026-03-01T12:20:23Z",
+      "operation": "WRITE",
+      "numOutputRows": 41,
+      "numAddedFiles": 0,
+      "numRemovedFiles": 0,
+      "numOutputBytes": 30814,
+      "executionTimeMs": 0
+    },
+    {
+      "tableFqn": "data_ops_inventory_db.table_snapshots",
       "version": 9,
       "commitTimestamp": "2026-03-01T10:54:56Z",
       "operation": "WRITE",
@@ -3992,6 +4014,17 @@
     }
   ],
   "data_ops_inventory_db.kpi_results": [
+    {
+      "tableFqn": "data_ops_inventory_db.kpi_results",
+      "version": 10,
+      "commitTimestamp": "2026-03-01T12:20:59Z",
+      "operation": "WRITE",
+      "numOutputRows": 41,
+      "numAddedFiles": 0,
+      "numRemovedFiles": 0,
+      "numOutputBytes": 8899,
+      "executionTimeMs": 0
+    },
     {
       "tableFqn": "data_ops_inventory_db.kpi_results",
       "version": 9,
@@ -6848,6 +6881,17 @@
     }
   ],
   "demo_etl.product_sales_performance": [
+    {
+      "tableFqn": "demo_etl.product_sales_performance",
+      "version": 29,
+      "commitTimestamp": "2026-03-01T12:01:18Z",
+      "operation": "WRITE",
+      "numOutputRows": 20,
+      "numAddedFiles": 0,
+      "numRemovedFiles": 0,
+      "numOutputBytes": 1391,
+      "executionTimeMs": 0
+    },
     {
       "tableFqn": "demo_etl.product_sales_performance",
       "version": 28,
