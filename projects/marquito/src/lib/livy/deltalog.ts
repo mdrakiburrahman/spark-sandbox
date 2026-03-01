@@ -120,7 +120,7 @@ function parseCommitEntry(tableFqn: string, row: Record<string, unknown>): Delta
 
 // KPI calculations (ported from DeltaLogKpiQueries.scala)
 
-const DATA_OPERATIONS = new Set(['WRITE', 'MERGE', 'STREAMING UPDATE', 'CREATE TABLE AS SELECT', 'REPLACE TABLE AS SELECT']);
+const DATA_OPERATIONS = new Set(['WRITE', 'MERGE', 'STREAMING UPDATE', 'CREATE TABLE AS SELECT', 'REPLACE TABLE AS SELECT', 'CREATE OR REPLACE TABLE AS SELECT', 'CREATE OR REPLACE TABLE']);
 const MAINTENANCE_OPERATIONS = new Set(['OPTIMIZE', 'VACUUM', 'RESTORE', 'SET TBLPROPERTIES']);
 
 export function computeFreshness(
