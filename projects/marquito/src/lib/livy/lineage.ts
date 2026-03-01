@@ -1,6 +1,7 @@
 import { LivyConfig, LineageEdge, LineageDataset, UberLineage } from './types';
 import { executeQuery } from './client';
-import { getAllTables } from './deltalog';
+import { getAllTables, getTableSnapshot } from './deltalog';
+import { tableLineageQuery, tableLineageFromJsonQuery } from './queries';
 
 // Lineage extraction via OpenLineage telemetry table
 
@@ -18,38 +19,63 @@ export async function hasOpenLineageTable(
   }
 }
 
+/** Extracts raw table-level lineage edges from OpenLineage telemetry.
+ *  Tries flattened columns first; falls back to request_body JSON parsing.
+ */
 export async function extractTableLineage(
   config: LivyConfig,
-  sessionId: string
+  sessionId: string,
+  locationMap?: Map<string, string>
 ): Promise<LineageEdge[]> {
-  const sql = `
-    SELECT DISTINCT
-      input_dataset AS source,
-      output_dataset AS target,
-      job_name AS jobName
-    FROM (
-      SELECT
-        explode(transform(from_json(request_body, 'STRUCT<inputs:ARRAY<STRUCT<namespace:STRING,name:STRING>>,outputs:ARRAY<STRUCT<namespace:STRING,name:STRING>>,job:STRUCT<name:STRING>,eventType:STRING>').inputs, x -> x.name)) AS input_dataset,
-        explode(transform(from_json(request_body, 'STRUCT<inputs:ARRAY<STRUCT<namespace:STRING,name:STRING>>,outputs:ARRAY<STRUCT<namespace:STRING,name:STRING>>,job:STRUCT<name:STRING>,eventType:STRING>').outputs, x -> x.name)) AS output_dataset,
-        from_json(request_body, 'STRUCT<job:STRUCT<name:STRING>,eventType:STRING>').job.name AS job_name,
-        from_json(request_body, 'STRUCT<job:STRUCT<name:STRING>,eventType:STRING>').eventType AS event_type
-      FROM ${OPENLINEAGE_TABLE}
-    )
-    WHERE event_type = 'COMPLETE'
-      AND input_dataset IS NOT NULL
-      AND output_dataset IS NOT NULL
-  `;
+  // Try flattened columns first (faster, avoids JSON parsing)
+  const queries = [tableLineageQuery(), tableLineageFromJsonQuery()];
 
-  try {
-    const result = await executeQuery(config, sessionId, sql);
-    return result.rows.map((row) => ({
-      source: resolveDatasetName(String(row['source'] ?? '')),
-      target: resolveDatasetName(String(row['target'] ?? '')),
-      jobName: String(row['jobName'] ?? ''),
-    }));
-  } catch {
-    return [];
+  for (const query of queries) {
+    try {
+      const result = await executeQuery(config, sessionId, query.sql);
+      return result.rows.map((row) => ({
+        source: resolveDatasetName(String(row['input_name'] ?? ''), locationMap),
+        target: resolveDatasetName(String(row['output_name'] ?? ''), locationMap),
+        jobName: String(row['job_name'] ?? ''),
+      }));
+    } catch {
+      // Try next query variant
+    }
   }
+
+  return [];
+}
+
+/** Builds a location→FQN map by running DESCRIBE DETAIL on each table.
+ *  This is the key step that maps file paths in OpenLineage events to database.table names.
+ *  Ported from OpenLineageExtractor.buildLocationMap in Scala.
+ */
+export async function buildLocationMap(
+  config: LivyConfig,
+  sessionId: string,
+  tables: { database: string; table: string; fqn: string }[],
+  onProgress?: (msg: string) => void
+): Promise<Map<string, string>> {
+  const locationMap = new Map<string, string>();
+  const BATCH_SIZE = 5;
+
+  for (let i = 0; i < tables.length; i += BATCH_SIZE) {
+    const batch = tables.slice(i, i + BATCH_SIZE);
+    onProgress?.(`Building location map (${Math.min(i + BATCH_SIZE, tables.length)}/${tables.length})...`);
+
+    const results = await Promise.allSettled(
+      batch.map((t) => getTableSnapshot(config, sessionId, t.fqn))
+    );
+
+    results.forEach((result, j) => {
+      if (result.status === 'fulfilled' && result.value?.location) {
+        const normalized = normalizeLocationPath(result.value.location);
+        locationMap.set(normalized, batch[j].fqn);
+      }
+    });
+  }
+
+  return locationMap;
 }
 
 // Build uber lineage combining all tables + lineage edges
@@ -64,7 +90,19 @@ export async function buildUberLineage(
 
   onProgress?.('Extracting lineage from OpenLineage telemetry...');
   const hasOL = await hasOpenLineageTable(config, sessionId);
-  const edges = hasOL ? await extractTableLineage(config, sessionId) : [];
+  if (!hasOL) {
+    const datasets: LineageDataset[] = tables.map((t) => ({
+      fqn: t.fqn, database: t.database, table: t.table, role: 'standalone' as const,
+    }));
+    return { datasets, edges: [], mermaid: toMermaid(datasets, []) };
+  }
+
+  // Build location map for resolving file paths → database.table names
+  onProgress?.('Building location map (DESCRIBE DETAIL on each table)...');
+  const locationMap = await buildLocationMap(config, sessionId, tables, onProgress);
+
+  onProgress?.('Extracting table lineage edges...');
+  const edges = await extractTableLineage(config, sessionId, locationMap);
 
   // Build dataset role map
   const sourceSet = new Set(edges.map((e) => e.source));
@@ -172,8 +210,36 @@ export function filterLineageForDataset(
 
 // Helpers
 
-function resolveDatasetName(rawName: string): string {
-  // Strip common path prefixes (like dbt-fabricspark adapter does)
+/** Normalizes a file path for location matching by stripping scheme and trailing slashes.
+ *  Ported from OpenLineageExtractor.normalizeLocationPath in Scala.
+ */
+export function normalizeLocationPath(path: string): string {
+  return path
+    .replace(/^file:/, '')
+    .replace(/^abfss?:\/\/[^/]+/, '')
+    .replace(/\/+$/, '');
+}
+
+/** Resolves a raw dataset name from OpenLineage to a database.table FQN.
+ *  Uses the location map (from DESCRIBE DETAIL) when available.
+ *  Falls back to heuristic path parsing.
+ */
+export function resolveDatasetName(rawName: string, locationMap?: Map<string, string>): string {
+  // Try location map first (the reliable approach from Scala)
+  if (locationMap) {
+    const normalized = normalizeLocationPath(rawName);
+    const mapped = locationMap.get(normalized);
+    if (mapped) return mapped;
+
+    // Also try matching the raw name with common prefixes stripped
+    for (const [location, fqn] of locationMap) {
+      if (normalized.endsWith(location) || location.endsWith(normalized)) {
+        return fqn;
+      }
+    }
+  }
+
+  // Fallback: heuristic path resolution
   let name = rawName;
 
   // Handle OneLake paths: /tmp/.mnt/onelake/... or abfss://...
