@@ -234,6 +234,19 @@ export async function fetchAllKpis(
   onProgress?.('Discovering databases...', 'SHOW DATABASES');
   const tables = await getAllTables(config, sessionId, onProgress);
 
+  // Cache all tables upfront so subsequent DESCRIBE HISTORY queries are faster
+  const CACHE_BATCH_SIZE = 5;
+  for (let i = 0; i < tables.length; i += CACHE_BATCH_SIZE) {
+    const batch = tables.slice(i, i + CACHE_BATCH_SIZE);
+    const cacheMsg = batch.map((t) => t.fqn).join(', ');
+    onProgress?.(`Caching tables (${Math.min(i + CACHE_BATCH_SIZE, tables.length)}/${tables.length}): ${cacheMsg}`, `CACHE TABLE ${batch[0]?.fqn ?? '...'}`);
+    await Promise.allSettled(
+      batch.map((t) =>
+        executeQuery(config, sessionId, `CACHE TABLE ${t.fqn}`).catch(() => {})
+      )
+    );
+  }
+
   const allCommits = new Map<string, DeltaCommitEntry[]>();
   const kpis: KpiResult[] = [];
   const BATCH_SIZE = 5;
