@@ -5,6 +5,7 @@
 Github copilot needs no introduction.
 
 ```bash
+gh auth login
 curl -fsSL https://gh.io/copilot-install | bash;
 ${HOME}/.local/bin/copilot --yolo
 ```
