@@ -105,12 +105,7 @@ function ColumnDatasetNode({ data }: NodeProps) {
 
 const nodeTypes = { columnDataset: ColumnDatasetNode };
 
-const ROLE_COLORS: Record<string, string> = {
-  source: '#0078D4',
-  intermediate: '#F2C811',
-  target: '#107C10',
-  standalone: '#A19F9D',
-};
+const ACCENT_COLOR = '#0078D4';
 
 // Trace upstream/downstream through column edges
 function traceColumns(
@@ -219,19 +214,6 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
     return map;
   }, [colEdges]);
 
-  // Resolve role for each dataset in column lineage
-  const dsRoles = useMemo(() => {
-    const roles = new Map<string, string>();
-    for (const ds of lineage.datasets) {
-      if (dsColumnsMap.has(ds.fqn)) roles.set(ds.fqn, ds.role);
-    }
-    // Also check column edge datasets that might not be in lineage.datasets
-    for (const key of dsColumnsMap.keys()) {
-      if (!roles.has(key)) roles.set(key, 'intermediate');
-    }
-    return roles;
-  }, [lineage.datasets, dsColumnsMap]);
-
   const handleColumnClick = useCallback((dsKey: string, col: string) => {
     setSelectedColumn((prev) =>
       prev && prev.dsKey === dsKey && prev.field === col ? null : { dsKey, field: col }
@@ -256,7 +238,7 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
           selectedColumns: [] as string[],
           hasSelection: false,
           isDark,
-          accentColor: ROLE_COLORS[dsRoles.get(dsKey) ?? 'intermediate'],
+          accentColor: ACCENT_COLOR,
           onColumnClick: handleColumnClick,
           datasetKey: dsKey,
         },
@@ -284,7 +266,7 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
     }
 
     return nodes;
-  }, [dsColumnsMap, dsRoles, colEdges, isDark, handleColumnClick]);
+  }, [dsColumnsMap, colEdges, isDark, handleColumnClick]);
 
   // Selection-dependent styling: update node data + edges without changing positions
   const computedEdges = useMemo(() => {
@@ -391,9 +373,6 @@ const LivyColumnLineage = ({ lineage }: LivyColumnLineageProps) => {
           style={{ backgroundColor: isDark ? '#252423' : '#FFFFFF', border: `1px solid ${isDark ? '#484644' : '#EDEBE9'}`, borderRadius: '4px' }} />
         <ColSpreadFitButton />
       </ReactFlow>
-      <div style={{ padding: '6px 16px', fontSize: '11px', color: isDark ? '#A19F9D' : '#605E5C' }}>
-        Click a column to trace its lineage upstream and downstream. Click the background to deselect.
-      </div>
     </div>
   );
 };

@@ -33,12 +33,7 @@ interface UberLineageProps {
 // Role-based colors
 // ---------------------------------------------------------------------------
 
-const ROLE_COLORS: Record<string, { bg: string; border: string }> = {
-  source: { bg: '#107C10', border: '#0B5A0B' },
-  intermediate: { bg: '#F2C811', border: '#C4A000' },
-  target: { bg: '#D83B01', border: '#A52B00' },
-  standalone: { bg: '#A19F9D', border: '#797775' },
-};
+const NODE_COLOR = { bg: '#0078D4', border: '#005A9E' };
 
 // ---------------------------------------------------------------------------
 // Simple table node — role-colored card
@@ -126,7 +121,7 @@ function buildGraph(
 
   for (const ds of connected) {
     const n = g.node(ds.fqn);
-    const colors = ROLE_COLORS[ds.role] ?? ROLE_COLORS.standalone;
+    const colors = NODE_COLOR;
     nodes.push({
       id: ds.fqn,
       type: 'tableNode',
@@ -140,7 +135,7 @@ function buildGraph(
   standalone.forEach((ds, i) => {
     const col = i % STANDALONE_COLS;
     const row = Math.floor(i / STANDALONE_COLS);
-    const colors = ROLE_COLORS.standalone;
+    const colors = NODE_COLOR;
     nodes.push({
       id: ds.fqn,
       type: 'tableNode',
@@ -293,21 +288,6 @@ const UberLineage = ({ lineage }: UberLineageProps) => {
         />
         <SpreadFitButton />
       </ReactFlow>
-
-      {/* Legend */}
-      <div style={{ display: 'flex', gap: '16px', padding: '8px 16px', fontSize: '11px', fontFamily: "'Segoe UI', sans-serif" }}>
-        {Object.entries(ROLE_COLORS).map(([role, colors]) => (
-          <div key={role} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: colors.bg }} />
-            <span style={{ color: isDark ? '#A19F9D' : '#605E5C', textTransform: 'capitalize' }}>{role}</span>
-          </div>
-        ))}
-        {lineage.edges.length > 0 && (
-          <span style={{ color: isDark ? '#605E5C' : '#A19F9D', marginLeft: 'auto' }}>
-            {lineage.edges.length} edges
-          </span>
-        )}
-      </div>
     </div>
   );
 };
