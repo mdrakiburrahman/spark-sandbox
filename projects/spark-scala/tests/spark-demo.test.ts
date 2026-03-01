@@ -259,4 +259,14 @@ describe("spark-scala integration tests", () => {
       expect(distinctTables).toBeGreaterThan(0);
     }, 120_000);
   });
+
+  describe("maintenance-vacuum", () => {
+    it(
+      "runs MaintenanceDeltaVacuumDriver successfully",
+      () => {
+        SparkJobRunner.runJob("maintenance-vacuum", JOB_TIMEOUT);
+      },
+      JOB_TIMEOUT,
+    );
+  });
 });
