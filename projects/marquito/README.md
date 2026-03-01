@@ -1,25 +1,25 @@
-# Marquito - "Little Marquez"
+<!-- PROJECT LOGO -->
+<p align="center">
+  <img src="https://artwork.lfaidata.foundation/projects/openlineage/horizontal/color/openlineage-horizontal-color.png" alt="Logo" width="30%">
+  <h3 align="center">Marquito</h3>
+  <p align="center">
+    A static OpenLineage visualization website.
+    <br />
+    <br />
+    ·
+    <a href="https://openlineage.io/">OpenLineage Overview</a>
+    ·
+    <a href="https://marquito.z9.web.core.windows.net/">Marquito - demo website for OpenLineage I threw together</a>
+    ·
+    <a href="https://www.youtube.com/watch?v=Vmz7Ri1jfw8&t=116s">Delta Lake Webinar</a>
+    ·
+    <a href="https://oleander.dev/blog/simplify-data-observability-with-openlineage">Good tutorial</a>
+    ·
+  </p>
+</p>
 
-To run:
+### Marquito
 
-```bash
-export PATH="${HOME}/.local/node/bin:$PATH" && cd $(git rev-parse --show-toplevel)/marquito && npm run dev
-```
+Little [Marquez](https://marquezproject.ai/).
 
-To build:
-
-```bash
-export GIT_ROOT=$(git rev-parse --show-toplevel)
-rm -rf "${GIT_ROOT}/marquito/out"
-cd "${GIT_ROOT}/marquito"
-npm run build
-```
-
-To deploy:
-
-```bash
-export CONN_STRING="DefaultEndpointsProtocol=https;AccountName=...;AccountKey=...;EndpointSuffix=core.windows.net"
-
-az storage blob delete-batch -s '$web' --connection-string "$CONN_STRING"
-az storage blob upload-batch -d '$web' -s "${GIT_ROOT}/marquito/out" --connection-string "$CONN_STRING"
-```
+![Marquito](.imgs/marquito.gif)
