@@ -234,12 +234,13 @@ export async function fetchAllKpis(
   onProgress?.('Discovering databases...', 'SHOW DATABASES');
   const tables = await getAllTables(config, sessionId, onProgress);
 
-  // Cache all tables upfront so subsequent DESCRIBE HISTORY queries are faster
+  // Cache data_ops_inventory_db tables upfront so subsequent queries are faster
+  const cacheTables = tables.filter((t) => t.database === 'data_ops_inventory_db');
   const CACHE_BATCH_SIZE = 5;
-  for (let i = 0; i < tables.length; i += CACHE_BATCH_SIZE) {
-    const batch = tables.slice(i, i + CACHE_BATCH_SIZE);
+  for (let i = 0; i < cacheTables.length; i += CACHE_BATCH_SIZE) {
+    const batch = cacheTables.slice(i, i + CACHE_BATCH_SIZE);
     const cacheMsg = batch.map((t) => t.fqn).join(', ');
-    onProgress?.(`Caching tables (${Math.min(i + CACHE_BATCH_SIZE, tables.length)}/${tables.length}): ${cacheMsg}`, `CACHE TABLE ${batch[0]?.fqn ?? '...'}`);
+    onProgress?.(`Caching tables (${Math.min(i + CACHE_BATCH_SIZE, cacheTables.length)}/${cacheTables.length}): ${cacheMsg}`, `CACHE TABLE ${batch[0]?.fqn ?? '...'}`);
     await Promise.allSettled(
       batch.map((t) =>
         executeQuery(config, sessionId, `CACHE TABLE ${t.fqn}`).catch(() => {})
