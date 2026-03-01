@@ -25,10 +25,12 @@ export default function FabricLivyPage() {
   const [jwt, setJwt] = useState('');
   const [workspaceId, setWorkspaceId] = useState('');
   const [lakehouseId, setLakehouseId] = useState('');
+  const [userSessionId, setUserSessionId] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [connectionPhase, setConnectionPhase] = useState<ConnectionPhase>('idle');
   const [connectionMessage, setConnectionMessage] = useState('');
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [sessionWarning, setSessionWarning] = useState<string | null>(null);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -63,8 +65,8 @@ export default function FabricLivyPage() {
       const { fetchAllKpis } = await import('@/lib/livy/deltalog');
       const { buildUberLineage } = await import('@/lib/livy/lineage');
 
-      const cachedSession = sessionId;
-      const sid = await connectWithRetry(
+      const cachedSession = userSessionId || sessionId;
+      const result = await connectWithRetry(
         config,
         cachedSession,
         (msg) => {
@@ -73,6 +75,10 @@ export default function FabricLivyPage() {
           if (msg.includes('reused')) setConnectionPhase('session_ready');
         }
       );
+
+      const sid = typeof result === 'string' ? result : result.sessionId;
+      const warning = typeof result === 'object' ? result.warning : undefined;
+      if (warning) setSessionWarning(warning);
 
       setSessionId(sid);
       sessionStorage.setItem('marquito-livy-session', JSON.stringify({
@@ -302,6 +308,23 @@ export default function FabricLivyPage() {
             />
           </div>
 
+          {/* Session ID (optional) */}
+          <div>
+            <label style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#D2D0CE' : '#323130', marginBottom: '6px', display: 'block' }}>
+              Session ID <span style={{ fontWeight: 400, fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D' }}>(optional)</span>
+            </label>
+            <p style={{ fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D', marginBottom: '6px' }}>
+              Reuse an existing Livy session. If invalid, a new session will be created.
+            </p>
+            <input
+              type="text"
+              placeholder="9257840e-21df-4e70-a740-089df6264492"
+              value={userSessionId}
+              onChange={(e) => setUserSessionId(e.target.value)}
+              style={inputStyle}
+            />
+          </div>
+
           <button
             onClick={handleConnect}
             disabled={!jwt || !workspaceId || !lakehouseId}
@@ -354,15 +377,18 @@ export default function FabricLivyPage() {
         phase={connectionPhase}
         message={connectionMessage}
         error={connectionError}
+        sessionWarning={sessionWarning}
         onRetry={() => {
           setConnectionPhase('idle');
           setConnectionError(null);
+          setSessionWarning(null);
         }}
         onBack={() => {
           abortRef.current?.abort();
           setMode('choose');
           setConnectionPhase('idle');
           setConnectionError(null);
+          setSessionWarning(null);
         }}
       />
     );

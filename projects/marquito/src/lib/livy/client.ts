@@ -219,28 +219,32 @@ export async function executeQuery(
 export async function connectWithRetry(
   config: LivyConfig,
   existingSessionId?: string | null,
-  onProgress?: (status: string) => void,
+  onProgress?: (status: string, sql?: string) => void,
   retries: number = 1,
   retryDelayMs: number = 10_000
-): Promise<string> {
+): Promise<{ sessionId: string; warning?: string }> {
+  let warning: string | undefined;
+
   // Try reusing existing session
   if (existingSessionId) {
-    onProgress?.('Checking existing session...');
+    onProgress?.('Checking existing session...', `GET /sessions/${existingSessionId}`);
     const reused = await tryReuseSession(config, existingSessionId);
     if (reused) {
       onProgress?.('Session reused');
-      return existingSessionId;
+      return { sessionId: existingSessionId };
     }
+    warning = `Session ${existingSessionId} not found or terminated. Creating a new session.`;
+    onProgress?.(warning);
   }
 
   // Create new session with retries
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
-      onProgress?.('Creating new Spark session...');
+      onProgress?.('Creating new Spark session...', 'POST /sessions');
       const sessionId = await createSession(config);
-      onProgress?.('Waiting for session to become idle...');
+      onProgress?.('Waiting for session to become idle...', `GET /sessions/${sessionId}`);
       await pollSessionUntilIdle(config, sessionId, onProgress);
-      return sessionId;
+      return { sessionId, warning };
     } catch (err) {
       if (attempt < retries && isRetryableError(err)) {
         onProgress?.(`Retrying in ${retryDelayMs / 1000}s (attempt ${attempt + 1} of ${retries})...`);

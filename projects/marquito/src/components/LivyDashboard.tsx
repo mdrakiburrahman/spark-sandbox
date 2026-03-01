@@ -176,7 +176,6 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
             <CommitFreshness
               key={kpi.tableFqn}
               tableFqn={kpi.tableFqn}
-              freshness={kpi.freshness}
               commits={filteredCommits.get(kpi.tableFqn) ?? []}
             />
           ))}
@@ -191,7 +190,6 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
             <RowCompleteness
               key={kpi.tableFqn}
               tableFqn={kpi.tableFqn}
-              completeness={kpi.completeness}
               commits={filteredCommits.get(kpi.tableFqn) ?? []}
             />
           ))}

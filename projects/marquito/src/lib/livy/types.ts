@@ -99,6 +99,19 @@ export interface ConnectionStatus {
   error?: string;
 }
 
+// Query progress tracking
+export interface QueryProgress {
+  total: number;
+  completed: number;
+  currentQueries: QueryInfo[];
+}
+
+export interface QueryInfo {
+  tableFqn: string;
+  sql: string;
+  status: 'running' | 'done' | 'error';
+}
+
 // Delta Log models (ported from DeltaLogModels.scala)
 
 export interface DeltaCommitEntry {

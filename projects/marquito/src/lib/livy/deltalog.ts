@@ -6,6 +6,8 @@ import {
   FreshnessAssessment,
   CompletenessAssessment,
   KpiResult,
+  QueryProgress,
+  QueryInfo,
 } from './types';
 import { executeQuery } from './client';
 
@@ -30,13 +32,15 @@ export async function getTables(
 
 export async function getAllTables(
   config: LivyConfig,
-  sessionId: string
+  sessionId: string,
+  onProgress?: (msg: string, sql?: string) => void
 ): Promise<{ database: string; table: string; fqn: string }[]> {
   const databases = await getDatabases(config, sessionId);
   const allTables: { database: string; table: string; fqn: string }[] = [];
 
   for (const db of databases) {
     try {
+      onProgress?.(`Discovering tables in ${db}...`, `SHOW TABLES IN ${db}`);
       const tables = await getTables(config, sessionId, db);
       for (const t of tables) {
         allTables.push({ database: db, table: t, fqn: `${db}.${t}` });
@@ -224,20 +228,63 @@ export function computeKpis(tableFqn: string, commits: DeltaCommitEntry[]): KpiR
 export async function fetchAllKpis(
   config: LivyConfig,
   sessionId: string,
-  onProgress?: (msg: string) => void
+  onProgress?: (msg: string, sql?: string) => void,
+  onQueryProgress?: (progress: QueryProgress) => void
 ): Promise<{ tables: { database: string; table: string; fqn: string }[]; kpis: KpiResult[]; commits: Map<string, DeltaCommitEntry[]> }> {
-  onProgress?.('Discovering databases and tables...');
-  const tables = await getAllTables(config, sessionId);
+  onProgress?.('Discovering databases...', 'SHOW DATABASES');
+  const tables = await getAllTables(config, sessionId, onProgress);
 
-  const kpis: KpiResult[] = [];
   const allCommits = new Map<string, DeltaCommitEntry[]>();
+  const kpis: KpiResult[] = [];
+  const BATCH_SIZE = 5;
 
-  for (let i = 0; i < tables.length; i++) {
-    const t = tables[i];
-    onProgress?.(`Fetching history for ${t.fqn} (${i + 1}/${tables.length})...`);
-    const commits = await getCommitHistory(config, sessionId, t.fqn);
-    allCommits.set(t.fqn, commits);
-    kpis.push(computeKpis(t.fqn, commits));
+  const queryInfos: QueryInfo[] = tables.map((t) => ({
+    tableFqn: t.fqn,
+    sql: `DESCRIBE HISTORY ${t.fqn} LIMIT 500`,
+    status: 'running' as const,
+  }));
+
+  const emitProgress = () => {
+    const completed = queryInfos.filter((q) => q.status === 'done' || q.status === 'error').length;
+    onQueryProgress?.({
+      total: tables.length,
+      completed,
+      currentQueries: [...queryInfos],
+    });
+  };
+
+  // Process in parallel batches
+  for (let i = 0; i < tables.length; i += BATCH_SIZE) {
+    const batch = tables.slice(i, i + BATCH_SIZE);
+    const batchIdxStart = i;
+
+    // Mark batch as running
+    for (let j = 0; j < batch.length; j++) {
+      queryInfos[batchIdxStart + j].status = 'running';
+    }
+    emitProgress();
+
+    const batchMsg = batch.map((t) => t.fqn).join(', ');
+    onProgress?.(`Fetching history (${Math.min(i + BATCH_SIZE, tables.length)}/${tables.length}): ${batchMsg}`, `DESCRIBE HISTORY <table> LIMIT 500`);
+
+    const results = await Promise.allSettled(
+      batch.map((t) => getCommitHistory(config, sessionId, t.fqn))
+    );
+
+    results.forEach((result, j) => {
+      const t = batch[j];
+      const idx = batchIdxStart + j;
+      if (result.status === 'fulfilled') {
+        allCommits.set(t.fqn, result.value);
+        kpis.push(computeKpis(t.fqn, result.value));
+        queryInfos[idx].status = 'done';
+      } else {
+        allCommits.set(t.fqn, []);
+        kpis.push(computeKpis(t.fqn, []));
+        queryInfos[idx].status = 'error';
+      }
+    });
+    emitProgress();
   }
 
   return { tables, kpis, commits: allCommits };

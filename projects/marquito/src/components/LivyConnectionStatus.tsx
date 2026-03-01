@@ -12,6 +12,7 @@ interface LivyConnectionStatusProps {
   phase: ConnectionPhase;
   message: string;
   error?: string | null;
+  sessionWarning?: string | null;
   onRetry: () => void;
   onBack: () => void;
 }
@@ -29,7 +30,7 @@ function phaseIndex(phase: ConnectionPhase): number {
   return idx >= 0 ? idx : -1;
 }
 
-const LivyConnectionStatus = ({ phase, message, error, onRetry, onBack }: LivyConnectionStatusProps) => {
+const LivyConnectionStatus = ({ phase, message, error, sessionWarning, onRetry, onBack }: LivyConnectionStatusProps) => {
   const { isDark } = useThemeContext();
   const currentIdx = phaseIndex(phase);
 
@@ -48,6 +49,27 @@ const LivyConnectionStatus = ({ phase, message, error, onRetry, onBack }: LivyCo
       <h2 style={{ fontSize: '20px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', marginBottom: '24px' }}>
         Connecting to Fabric Livy
       </h2>
+
+      {sessionWarning && (
+        <div
+          style={{
+            maxWidth: '440px',
+            width: '100%',
+            backgroundColor: isDark ? 'rgba(242,200,17,0.1)' : 'rgba(242,200,17,0.06)',
+            border: `1px solid ${isDark ? '#6B5C00' : '#FFF4CE'}`,
+            borderRadius: '6px',
+            padding: '10px 12px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '12px',
+            color: isDark ? '#F2C811' : '#6B5C00',
+          }}
+        >
+          ⚠️ {sessionWarning}
+        </div>
+      )}
 
       <div style={{ maxWidth: '440px', width: '100%', display: 'flex', flexDirection: 'column', gap: '0' }}>
         {PHASE_STEPS.map((step, idx) => {
