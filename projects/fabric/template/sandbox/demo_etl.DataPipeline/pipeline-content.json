@@ -114,6 +114,22 @@
             {
               "artifactId": "4d8783be-e822-46d0-82e4-9b77c7f33992",
               "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "artifactId": "35800137-d4ac-4f28-8d63-84040cc83f21",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "artifactId": "74bd1b67-85dc-4b52-8472-c9acf6277f11",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "artifactId": "a1340f32-34c8-494a-9628-8c5d5f03f284",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+              "artifactId": "1dcd407d-bc28-4e1f-880f-9df1f2464a69",
+              "workspaceId": "00000000-0000-0000-0000-000000000000"
             }
           ]
         },
@@ -126,7 +142,11 @@
         },
         "dependsOn": [
           {
-            "activity": "OpenLineage Stream Processing",
+            "activity": "Run dbt",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run etl",
             "dependencyConditions": ["Succeeded"]
           }
         ]

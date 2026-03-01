@@ -35,7 +35,6 @@ object DemoDeltaLogMonitor extends App with Logging {
   logInfo("Step 3: Computing KPIs...")
   val kpiEngine = DeltaLogKpiEngine(spark, inventoryDb, lookbackDays = 30)
   val kpiResults = kpiEngine.computeAll()
-  kpiResults.show(100, truncate = false)
 
   // Step 4: Persist KPI results
   import org.apache.spark.sql.functions._

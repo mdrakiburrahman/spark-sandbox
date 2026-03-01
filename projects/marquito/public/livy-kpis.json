@@ -1,0 +1,794 @@
+[
+  {
+    "tableFqn": "dbt_adventureworks_seed.address",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.address",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": 0,
+      "p95CommitIntervalSeconds": 0,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.address",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.customer",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.customer",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:49Z",
+      "medianCommitIntervalSeconds": 0,
+      "p95CommitIntervalSeconds": 0,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.customer",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.person",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.person",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": 0,
+      "p95CommitIntervalSeconds": 2,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.person",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.creditcard",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.creditcard",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:49Z",
+      "medianCommitIntervalSeconds": 0,
+      "p95CommitIntervalSeconds": 0,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.creditcard",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.countryregion",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.countryregion",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:47Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.countryregion",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.date",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.date",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.date",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.salesorderdetail",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderdetail",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:49Z",
+      "medianCommitIntervalSeconds": 0,
+      "p95CommitIntervalSeconds": 1,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderdetail",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.salesorderheader",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderheader",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:47Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderheader",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.productsubcategory",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.productsubcategory",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:46Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.productsubcategory",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.product",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.product",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.product",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.salesorderheadersalesreason",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderheadersalesreason",
+      "status": "Unhealthy",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": 1,
+      "p95CommitIntervalSeconds": 5,
+      "daysSinceLastCommit": 10.89
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.salesorderheadersalesreason",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.productcategory",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.productcategory",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.productcategory",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.store",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.store",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.store",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.salesreason",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.salesreason",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.salesreason",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_seed.stateprovince",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_seed.stateprovince",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:06:48Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_seed.stateprovince",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_seed.raw_customers",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_customers",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:07:24Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_customers",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_seed.raw_payments",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_payments",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:07:25Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_payments",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_seed.raw_orders",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_orders",
+      "status": "Training",
+      "lastCommitTimestamp": "2026-02-18T15:07:26Z",
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_seed.raw_orders",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_dwh.customers",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.customers",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:13:26Z",
+      "medianCommitIntervalSeconds": 3305,
+      "p95CommitIntervalSeconds": 94449,
+      "daysSinceLastCommit": 0.05
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.customers",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_dwh.orders",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.orders",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:13:44Z",
+      "medianCommitIntervalSeconds": 3342,
+      "p95CommitIntervalSeconds": 94444,
+      "daysSinceLastCommit": 0.05
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.orders",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_dwh.stg_customers",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_customers",
+      "status": "Training",
+      "lastCommitTimestamp": null,
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_customers",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_dwh.stg_payments",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_payments",
+      "status": "Training",
+      "lastCommitTimestamp": null,
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_payments",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_jaffle_shop_dwh.stg_orders",
+    "freshness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_orders",
+      "status": "Training",
+      "lastCommitTimestamp": null,
+      "medianCommitIntervalSeconds": null,
+      "p95CommitIntervalSeconds": null,
+      "daysSinceLastCommit": null
+    },
+    "completeness": {
+      "tableFqn": "dbt_jaffle_shop_dwh.stg_orders",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_address",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_address",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:03:06Z",
+      "medianCommitIntervalSeconds": 2953,
+      "p95CommitIntervalSeconds": 121083,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_address",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_customer",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_customer",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:05:26Z",
+      "medianCommitIntervalSeconds": 2980,
+      "p95CommitIntervalSeconds": 121091,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_customer",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_credit_card",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_credit_card",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:03:46Z",
+      "medianCommitIntervalSeconds": 2940,
+      "p95CommitIntervalSeconds": 121089,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_credit_card",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_product",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_product",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:04:55Z",
+      "medianCommitIntervalSeconds": 2941,
+      "p95CommitIntervalSeconds": 121123,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_product",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_order_status",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_order_status",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:04:18Z",
+      "medianCommitIntervalSeconds": 3268,
+      "p95CommitIntervalSeconds": 150811,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_order_status",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.dim_date",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_date",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:04:04Z",
+      "medianCommitIntervalSeconds": 2894,
+      "p95CommitIntervalSeconds": 121007,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.dim_date",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.fct_sales",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.fct_sales",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:04:36Z",
+      "medianCommitIntervalSeconds": 3414,
+      "p95CommitIntervalSeconds": 150774,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.fct_sales",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "dbt_adventureworks_dwh.obt_sales",
+    "freshness": {
+      "tableFqn": "dbt_adventureworks_dwh.obt_sales",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:06:47Z",
+      "medianCommitIntervalSeconds": 3334,
+      "p95CommitIntervalSeconds": 219390,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "dbt_adventureworks_dwh.obt_sales",
+      "status": "Training",
+      "dailyRowCountActual": null,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "data_ops_inventory_db.openlineage",
+    "freshness": {
+      "tableFqn": "data_ops_inventory_db.openlineage",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T10:43:06Z",
+      "medianCommitIntervalSeconds": 2466,
+      "p95CommitIntervalSeconds": 22118,
+      "daysSinceLastCommit": 0.07
+    },
+    "completeness": {
+      "tableFqn": "data_ops_inventory_db.openlineage",
+      "status": "Training",
+      "dailyRowCountActual": 15315,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "data_ops_inventory_db.commit_history",
+    "freshness": {
+      "tableFqn": "data_ops_inventory_db.commit_history",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T12:19:53Z",
+      "medianCommitIntervalSeconds": 3984,
+      "p95CommitIntervalSeconds": 7827,
+      "daysSinceLastCommit": 0.01
+    },
+    "completeness": {
+      "tableFqn": "data_ops_inventory_db.commit_history",
+      "status": "Training",
+      "dailyRowCountActual": 645,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "data_ops_inventory_db.table_snapshots",
+    "freshness": {
+      "tableFqn": "data_ops_inventory_db.table_snapshots",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T12:20:23Z",
+      "medianCommitIntervalSeconds": 3986,
+      "p95CommitIntervalSeconds": 7817,
+      "daysSinceLastCommit": 0.01
+    },
+    "completeness": {
+      "tableFqn": "data_ops_inventory_db.table_snapshots",
+      "status": "Training",
+      "dailyRowCountActual": 449,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "data_ops_inventory_db.kpi_results",
+    "freshness": {
+      "tableFqn": "data_ops_inventory_db.kpi_results",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T12:20:59Z",
+      "medianCommitIntervalSeconds": 3987,
+      "p95CommitIntervalSeconds": 7815,
+      "daysSinceLastCommit": 0
+    },
+    "completeness": {
+      "tableFqn": "data_ops_inventory_db.kpi_results",
+      "status": "Training",
+      "dailyRowCountActual": 448,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.customers",
+    "freshness": {
+      "tableFqn": "demo_etl.customers",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:00:06Z",
+      "medianCommitIntervalSeconds": 2756,
+      "p95CommitIntervalSeconds": 30353,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.customers",
+      "status": "Training",
+      "dailyRowCountActual": 1200,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.orders",
+    "freshness": {
+      "tableFqn": "demo_etl.orders",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:00:26Z",
+      "medianCommitIntervalSeconds": 2764,
+      "p95CommitIntervalSeconds": 30353,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.orders",
+      "status": "Training",
+      "dailyRowCountActual": 12000,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.products",
+    "freshness": {
+      "tableFqn": "demo_etl.products",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:00:41Z",
+      "medianCommitIntervalSeconds": 2767,
+      "p95CommitIntervalSeconds": 30352,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.products",
+      "status": "Training",
+      "dailyRowCountActual": 240,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.sales",
+    "freshness": {
+      "tableFqn": "demo_etl.sales",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:00:56Z",
+      "medianCommitIntervalSeconds": 2772,
+      "p95CommitIntervalSeconds": 30353,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.sales",
+      "status": "Training",
+      "dailyRowCountActual": 12000,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.customers_cleaned",
+    "freshness": {
+      "tableFqn": "demo_etl.customers_cleaned",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:01:18Z",
+      "medianCommitIntervalSeconds": 2769,
+      "p95CommitIntervalSeconds": 30352,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.customers_cleaned",
+      "status": "Training",
+      "dailyRowCountActual": 7063994,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.products_enriched",
+    "freshness": {
+      "tableFqn": "demo_etl.products_enriched",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:01:30Z",
+      "medianCommitIntervalSeconds": 2771,
+      "p95CommitIntervalSeconds": 30353,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.products_enriched",
+      "status": "Training",
+      "dailyRowCountActual": 6120,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.sales_enriched",
+    "freshness": {
+      "tableFqn": "demo_etl.sales_enriched",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:02:07Z",
+      "medianCommitIntervalSeconds": 2778,
+      "p95CommitIntervalSeconds": 30355,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.sales_enriched",
+      "status": "Training",
+      "dailyRowCountActual": 148620528,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.customer_lifetime_value",
+    "freshness": {
+      "tableFqn": "demo_etl.customer_lifetime_value",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T11:02:28Z",
+      "medianCommitIntervalSeconds": 2780,
+      "p95CommitIntervalSeconds": 30355,
+      "daysSinceLastCommit": 0.06
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.customer_lifetime_value",
+      "status": "Training",
+      "dailyRowCountActual": 1212,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  },
+  {
+    "tableFqn": "demo_etl.product_sales_performance",
+    "freshness": {
+      "tableFqn": "demo_etl.product_sales_performance",
+      "status": "Healthy",
+      "lastCommitTimestamp": "2026-03-01T12:01:18Z",
+      "medianCommitIntervalSeconds": 3354,
+      "p95CommitIntervalSeconds": 30570,
+      "daysSinceLastCommit": 0.02
+    },
+    "completeness": {
+      "tableFqn": "demo_etl.product_sales_performance",
+      "status": "Training",
+      "dailyRowCountActual": 220,
+      "dailyRowCountMinExpected": null,
+      "dailyRowCountMaxExpected": null
+    }
+  }
+]

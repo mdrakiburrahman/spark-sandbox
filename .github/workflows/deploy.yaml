@@ -40,6 +40,8 @@ jobs:
           IMDS_RELAY_URL: ${{ secrets.IMDS_RELAY_URL }}
           IMDS_RELAY_SENDER_KEY: ${{ secrets.IMDS_RELAY_SENDER_KEY }}
           IMDS_SUBSCRIPTION_ID: ${{ env.UAMI_SUBSCRIPTION }}
+          MARQUITO_WEBSITE_STORAGE_CONN_STRING: ${{ secrets.MARQUITO_WEBSITE_STORAGE_CONN_STRING }}
+
         run: |
           set -euo pipefail
           nohup python3 .github/scripts/imds_relay_router.py > /tmp/imds-router.log 2>&1 &

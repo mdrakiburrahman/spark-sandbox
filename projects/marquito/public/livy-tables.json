@@ -1,0 +1,222 @@
+[
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "address",
+    "fqn": "dbt_adventureworks_seed.address"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "customer",
+    "fqn": "dbt_adventureworks_seed.customer"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "person",
+    "fqn": "dbt_adventureworks_seed.person"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "creditcard",
+    "fqn": "dbt_adventureworks_seed.creditcard"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "countryregion",
+    "fqn": "dbt_adventureworks_seed.countryregion"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "date",
+    "fqn": "dbt_adventureworks_seed.date"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "salesorderdetail",
+    "fqn": "dbt_adventureworks_seed.salesorderdetail"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "salesorderheader",
+    "fqn": "dbt_adventureworks_seed.salesorderheader"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "productsubcategory",
+    "fqn": "dbt_adventureworks_seed.productsubcategory"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "product",
+    "fqn": "dbt_adventureworks_seed.product"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "salesorderheadersalesreason",
+    "fqn": "dbt_adventureworks_seed.salesorderheadersalesreason"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "productcategory",
+    "fqn": "dbt_adventureworks_seed.productcategory"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "store",
+    "fqn": "dbt_adventureworks_seed.store"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "salesreason",
+    "fqn": "dbt_adventureworks_seed.salesreason"
+  },
+  {
+    "database": "dbt_adventureworks_seed",
+    "table": "stateprovince",
+    "fqn": "dbt_adventureworks_seed.stateprovince"
+  },
+  {
+    "database": "dbt_jaffle_shop_seed",
+    "table": "raw_customers",
+    "fqn": "dbt_jaffle_shop_seed.raw_customers"
+  },
+  {
+    "database": "dbt_jaffle_shop_seed",
+    "table": "raw_payments",
+    "fqn": "dbt_jaffle_shop_seed.raw_payments"
+  },
+  {
+    "database": "dbt_jaffle_shop_seed",
+    "table": "raw_orders",
+    "fqn": "dbt_jaffle_shop_seed.raw_orders"
+  },
+  {
+    "database": "dbt_jaffle_shop_dwh",
+    "table": "customers",
+    "fqn": "dbt_jaffle_shop_dwh.customers"
+  },
+  {
+    "database": "dbt_jaffle_shop_dwh",
+    "table": "orders",
+    "fqn": "dbt_jaffle_shop_dwh.orders"
+  },
+  {
+    "database": "dbt_jaffle_shop_dwh",
+    "table": "stg_customers",
+    "fqn": "dbt_jaffle_shop_dwh.stg_customers"
+  },
+  {
+    "database": "dbt_jaffle_shop_dwh",
+    "table": "stg_payments",
+    "fqn": "dbt_jaffle_shop_dwh.stg_payments"
+  },
+  {
+    "database": "dbt_jaffle_shop_dwh",
+    "table": "stg_orders",
+    "fqn": "dbt_jaffle_shop_dwh.stg_orders"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_address",
+    "fqn": "dbt_adventureworks_dwh.dim_address"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_customer",
+    "fqn": "dbt_adventureworks_dwh.dim_customer"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_credit_card",
+    "fqn": "dbt_adventureworks_dwh.dim_credit_card"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_product",
+    "fqn": "dbt_adventureworks_dwh.dim_product"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_order_status",
+    "fqn": "dbt_adventureworks_dwh.dim_order_status"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "dim_date",
+    "fqn": "dbt_adventureworks_dwh.dim_date"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "fct_sales",
+    "fqn": "dbt_adventureworks_dwh.fct_sales"
+  },
+  {
+    "database": "dbt_adventureworks_dwh",
+    "table": "obt_sales",
+    "fqn": "dbt_adventureworks_dwh.obt_sales"
+  },
+  {
+    "database": "data_ops_inventory_db",
+    "table": "openlineage",
+    "fqn": "data_ops_inventory_db.openlineage"
+  },
+  {
+    "database": "data_ops_inventory_db",
+    "table": "commit_history",
+    "fqn": "data_ops_inventory_db.commit_history"
+  },
+  {
+    "database": "data_ops_inventory_db",
+    "table": "table_snapshots",
+    "fqn": "data_ops_inventory_db.table_snapshots"
+  },
+  {
+    "database": "data_ops_inventory_db",
+    "table": "kpi_results",
+    "fqn": "data_ops_inventory_db.kpi_results"
+  },
+  {
+    "database": "demo_etl",
+    "table": "customers",
+    "fqn": "demo_etl.customers"
+  },
+  {
+    "database": "demo_etl",
+    "table": "orders",
+    "fqn": "demo_etl.orders"
+  },
+  {
+    "database": "demo_etl",
+    "table": "products",
+    "fqn": "demo_etl.products"
+  },
+  {
+    "database": "demo_etl",
+    "table": "sales",
+    "fqn": "demo_etl.sales"
+  },
+  {
+    "database": "demo_etl",
+    "table": "customers_cleaned",
+    "fqn": "demo_etl.customers_cleaned"
+  },
+  {
+    "database": "demo_etl",
+    "table": "products_enriched",
+    "fqn": "demo_etl.products_enriched"
+  },
+  {
+    "database": "demo_etl",
+    "table": "sales_enriched",
+    "fqn": "demo_etl.sales_enriched"
+  },
+  {
+    "database": "demo_etl",
+    "table": "customer_lifetime_value",
+    "fqn": "demo_etl.customer_lifetime_value"
+  },
+  {
+    "database": "demo_etl",
+    "table": "product_sales_performance",
+    "fqn": "demo_etl.product_sales_performance"
+  }
+]

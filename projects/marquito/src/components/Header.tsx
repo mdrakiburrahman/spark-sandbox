@@ -3,9 +3,12 @@
 import { useThemeContext } from './ThemeProvider';
 import ThemeToggle from './ThemeToggle';
 import { Open16Regular } from '@fluentui/react-icons';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 const Header = () => {
   const { isDark } = useThemeContext();
+  const pathname = usePathname();
 
   return (
     <header
@@ -68,6 +71,55 @@ const Header = () => {
           >
             OpenLineage Visualizer
           </span>
+
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '16px' }}>
+            <Link
+              href="/"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontFamily: "'Segoe UI', sans-serif",
+                padding: '4px 10px',
+                borderRadius: '4px',
+                color: pathname === '/'
+                  ? '#0078D4'
+                  : isDark ? '#D2D0CE' : '#605E5C',
+                backgroundColor: pathname === '/'
+                  ? isDark ? 'rgba(0,120,212,0.15)' : 'rgba(0,120,212,0.08)'
+                  : 'transparent',
+                fontWeight: pathname === '/' ? 600 : 400,
+              }}
+            >
+              OpenLineage
+            </Link>
+            <Link
+              href="/fabric-livy"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                textDecoration: 'none',
+                fontSize: '13px',
+                fontFamily: "'Segoe UI', sans-serif",
+                padding: '4px 10px',
+                borderRadius: '4px',
+                color: pathname === '/fabric-livy'
+                  ? '#117a3e'
+                  : isDark ? '#D2D0CE' : '#605E5C',
+                backgroundColor: pathname === '/fabric-livy'
+                  ? isDark ? 'rgba(17,122,62,0.18)' : 'rgba(17,122,62,0.08)'
+                  : 'transparent',
+                fontWeight: pathname === '/fabric-livy' ? 600 : 400,
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/fabric.svg" alt="Fabric" width={16} height={16} style={{ objectFit: 'contain' }} />
+              Fabric Livy
+            </Link>
+          </nav>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>

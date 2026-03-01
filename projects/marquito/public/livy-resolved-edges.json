@@ -1,0 +1,357 @@
+[
+  {
+    "source": "demo_etl.products",
+    "target": "demo_etl.sales_enriched",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_address",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderdetail",
+    "target": "dbt_adventureworks_dwh.fct_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_fct_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.store",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_orders",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers"
+  },
+  {
+    "source": "dbt_adventureworks_seed.store",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer"
+  },
+  {
+    "source": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+    "target": "data_ops_inventory_db.openlineage",
+    "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_openlineage"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_customer",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_payments",
+    "target": "dbt_jaffle_shop_dwh.orders",
+    "jobName": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_orders"
+  },
+  {
+    "source": "datasets/sales.csv",
+    "target": "demo_etl.sales",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_sales"
+  },
+  {
+    "source": "demo_etl.sales",
+    "target": "demo_etl.sales_enriched",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_product",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.address",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.fct_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_fct_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.productcategory",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product"
+  },
+  {
+    "source": "demo_etl.customers",
+    "target": "demo_etl.customers_cleaned",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_customers_cleaned"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.fct_sales",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderdetail",
+    "target": "dbt_adventureworks_dwh.fct_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_fct_sales"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_address",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "demo_etl.products",
+    "target": "demo_etl.products_enriched",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_products_enriched"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_order_status",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.date",
+    "target": "dbt_adventureworks_dwh.dim_date",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_date"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.dim_credit_card",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_credit_card"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_customers",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers"
+  },
+  {
+    "source": "dbt_adventureworks_seed.customer",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer"
+  },
+  {
+    "source": "dbt_adventureworks_seed.stateprovince",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address"
+  },
+  {
+    "source": "datasets/products.csv",
+    "target": "demo_etl.products",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_products"
+  },
+  {
+    "source": "demo_etl.orders",
+    "target": "demo_etl.sales_enriched",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched"
+  },
+  {
+    "source": "dbt_adventureworks_seed.date",
+    "target": "dbt_adventureworks_dwh.dim_date",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_date"
+  },
+  {
+    "source": "dbt_adventureworks_seed.countryregion",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_payments",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers"
+  },
+  {
+    "source": "dbt_adventureworks_seed.customer",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer"
+  },
+  {
+    "source": "dbt_adventureworks_seed.productcategory",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product"
+  },
+  {
+    "source": "datasets/orders.csv",
+    "target": "demo_etl.orders",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_orders"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_date",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_payments",
+    "target": "dbt_jaffle_shop_dwh.orders",
+    "jobName": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_orders"
+  },
+  {
+    "source": "dbt_adventureworks_seed.productsubcategory",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.dim_order_status",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_order_status"
+  },
+  {
+    "source": "dbt_adventureworks_seed.creditcard",
+    "target": "dbt_adventureworks_dwh.dim_credit_card",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_credit_card"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_orders",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.fct_sales",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.productsubcategory",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product"
+  },
+  {
+    "source": "datasets/customers.csv",
+    "target": "demo_etl.customers",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_customers"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_orders",
+    "target": "dbt_jaffle_shop_dwh.orders",
+    "jobName": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_orders"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.dim_order_status",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_order_status"
+  },
+  {
+    "source": "dbt_adventureworks_seed.person",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer"
+  },
+  {
+    "source": "data_ops_inventory_db.commit_history",
+    "target": "data_ops_inventory_db.kpi_results",
+    "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_credit_card",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.creditcard",
+    "target": "dbt_adventureworks_dwh.dim_credit_card",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_credit_card"
+  },
+  {
+    "source": "demo_etl.sales_enriched",
+    "target": "demo_etl.product_sales_performance",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_product_sales_performance"
+  },
+  {
+    "source": "demo_etl.orders",
+    "target": "demo_etl.customers_cleaned",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_customers_cleaned"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_customer",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "demo_etl.products_enriched",
+    "target": "demo_etl.product_sales_performance",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_product_sales_performance"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.fct_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_fct_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.countryregion",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address"
+  },
+  {
+    "source": "dbt_adventureworks_seed.person",
+    "target": "dbt_adventureworks_dwh.dim_customer",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_order_status",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_orders",
+    "target": "dbt_jaffle_shop_dwh.orders",
+    "jobName": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_orders"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_date",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_product",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
+  },
+  {
+    "source": "demo_etl.sales_enriched",
+    "target": "demo_etl.customer_lifetime_value",
+    "jobName": "default.append_data_exec_v1.spark_catalog_demo_etl_customer_lifetime_value"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_customers",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers"
+  },
+  {
+    "source": "dbt_adventureworks_seed.salesorderheader",
+    "target": "dbt_adventureworks_dwh.dim_credit_card",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_credit_card"
+  },
+  {
+    "source": "dbt_adventureworks_dwh.dim_credit_card",
+    "target": "dbt_adventureworks_dwh.obt_sales",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales"
+  },
+  {
+    "source": "dbt_adventureworks_seed.address",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address"
+  },
+  {
+    "source": "dbt_adventureworks_seed.product",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product"
+  },
+  {
+    "source": "dbt_adventureworks_seed.product",
+    "target": "dbt_adventureworks_dwh.dim_product",
+    "jobName": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product"
+  },
+  {
+    "source": "dbt_adventureworks_seed.stateprovince",
+    "target": "dbt_adventureworks_dwh.dim_address",
+    "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address"
+  },
+  {
+    "source": "dbt_jaffle_shop_seed.raw_payments",
+    "target": "dbt_jaffle_shop_dwh.customers",
+    "jobName": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers"
+  },
+  {
+    "source": "data_ops_inventory_db.commit_history",
+    "target": "data_ops_inventory_db.kpi_results",
+    "jobName": "default.atomic_create_table_as_select.data_ops_inventory_db_kpi_results"
+  },
+  {
+    "source": "data_ops_inventory_db.commit_history",
+    "target": "data_ops_inventory_db.kpi_results",
+    "jobName": "default.append_data_exec_v1.spark_catalog_kpi_results"
+  }
+]

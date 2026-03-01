@@ -49,5 +49,31 @@ object DeltaLakeConfiguration {
   /** The Delta table version.
     */
   val DELTA_VERSION = "version"
+
+  /** Fabric-specific Spark configurations that significantly speed up
+    * VACUUM and OPTIMIZE operations. These should ONLY be set when
+    * running in Microsoft Fabric (isRunningInFabric).
+    *
+    * @see
+    *   Delta Lake conf source: https://github.com/delta-io/delta/blob/branch-3.2/spark/src/main/scala/org/apache/spark/sql/delta/sources/DeltaSQLConf.scala
+    */
+  // @formatter:off
+  val FABRIC_OPTIMIZE_CONFIGS: Map[String, String] = Map(
+    "spark.databricks.delta.optimize.maxThreads"                              -> "256",
+    "spark.databricks.delta.optimize.repartition.enabled"                     -> "true",
+    "spark.databricks.delta.optimize.zorder.fastInterleaveBits.enabled"       -> "true",
+    "spark.databricks.delta.optimize.zorder.checkStatsCollection.enabled"     -> "false",
+    "spark.databricks.io.skipping.mdc.addNoise"                              -> "false",
+    "spark.microsoft.delta.parquet.vorder.fast.optimize.enabled"              -> "true",
+    "spark.microsoft.delta.parallelSnapshotLoading.enabled"                   -> "true",
+    "spark.microsoft.delta.parallelSnapshotLoading.threadPoolSize"            -> "64",
+    "spark.databricks.delta.collectStats.useMultiThreadedStatsCollection"     -> "true",
+    "spark.databricks.delta.collectStats.numFilesPerPartition"                -> "50",
+    "spark.databricks.delta.vacuum.parallelDelete.enabled"                    -> "true",
+    "spark.databricks.delta.vacuum.parallelDelete.parallelism"                -> "128",
+    "spark.databricks.delta.retentionDurationCheck.enabled"                   -> "false",
+    "spark.databricks.delta.snapshotPartitions"                               -> "128"
+  )
+  // @formatter:on
 }
 // @formatter:on

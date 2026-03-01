@@ -1,0 +1,593 @@
+{
+  "query": "tableLineage",
+  "description": "Distinct table-level lineage edges (source → target) from flattened columns",
+  "sql": "SELECT DISTINCT\n  inputs_name AS input_name,\n  inputs_namespace AS input_namespace,\n  outputs_name AS output_name,\n  outputs_namespace AS output_namespace,\n  job_name,\n  job_namespace\nFROM data_ops_inventory_db.openlineage\nWHERE event_year_date >= date_format(date_sub(current_date(), 14), 'yyyyMMdd')\n  AND eventType = 'COMPLETE'\n  AND inputs_name IS NOT NULL\n  AND outputs_name IS NOT NULL",
+  "result": {
+    "columns": [
+      "input_name",
+      "input_namespace",
+      "output_name",
+      "output_namespace",
+      "job_name",
+      "job_namespace"
+    ],
+    "columnTypes": [
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "string"
+    ],
+    "rows": [
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_fct_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/store",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/store",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_openlineage",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_orders",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "datasets/sales.csv",
+        "input_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/address",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_fct_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productcategory",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_customers_cleaned",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_fct_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_products_enriched",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_date",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_credit_card",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/customer",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/stateprovince",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "datasets/products.csv",
+        "input_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_products",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_sales_enriched",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_date",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/countryregion",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/customer",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productcategory",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "datasets/orders.csv",
+        "input_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_orders",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_orders",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productsubcategory",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_order_status",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/creditcard",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_credit_card",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productsubcategory",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "datasets/customers.csv",
+        "input_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_orders",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_order_status",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/creditcard",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_credit_card",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/product_sales_performance",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_product_sales_performance",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_customers_cleaned",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/product_sales_performance",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_product_sales_performance",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_fct_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/countryregion",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_customer",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_orders",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customer_lifetime_value",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_demo_etl_customer_lifetime_value",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.append_data_exec_v1.spark_catalog_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_credit_card",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_obt_sales",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/address",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.append_data_exec_v1.spark_catalog_dim_product",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/stateprovince",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_address",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "dbt_jaffle_shop.atomic_replace_table_as_select.dbt_jaffle_shop_dwh_customers",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.atomic_create_table_as_select.data_ops_inventory_db_kpi_results",
+        "job_namespace": "default"
+      },
+      {
+        "input_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "input_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "output_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "output_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "job_name": "default.append_data_exec_v1.spark_catalog_kpi_results",
+        "job_namespace": "default"
+      }
+    ]
+  }
+}

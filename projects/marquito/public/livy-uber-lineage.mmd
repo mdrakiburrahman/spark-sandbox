@@ -1,0 +1,91 @@
+graph LR
+  dbt_adventureworks_seed_address["dbt_adventureworks_seed.address"]
+  dbt_adventureworks_seed_customer["dbt_adventureworks_seed.customer"]
+  dbt_adventureworks_seed_person["dbt_adventureworks_seed.person"]
+  dbt_adventureworks_seed_creditcard["dbt_adventureworks_seed.creditcard"]
+  dbt_adventureworks_seed_countryregion["dbt_adventureworks_seed.countryregion"]
+  dbt_adventureworks_seed_date["dbt_adventureworks_seed.date"]
+  dbt_adventureworks_seed_salesorderdetail["dbt_adventureworks_seed.salesorderdetail"]
+  dbt_adventureworks_seed_salesorderheader["dbt_adventureworks_seed.salesorderheader"]
+  dbt_adventureworks_seed_productsubcategory["dbt_adventureworks_seed.productsubcategory"]
+  dbt_adventureworks_seed_product["dbt_adventureworks_seed.product"]
+  dbt_adventureworks_seed_salesorderheadersalesreason["dbt_adventureworks_seed.salesorderheadersalesreason"]
+  dbt_adventureworks_seed_productcategory["dbt_adventureworks_seed.productcategory"]
+  dbt_adventureworks_seed_store["dbt_adventureworks_seed.store"]
+  dbt_adventureworks_seed_salesreason["dbt_adventureworks_seed.salesreason"]
+  dbt_adventureworks_seed_stateprovince["dbt_adventureworks_seed.stateprovince"]
+  dbt_jaffle_shop_seed_raw_customers["dbt_jaffle_shop_seed.raw_customers"]
+  dbt_jaffle_shop_seed_raw_payments["dbt_jaffle_shop_seed.raw_payments"]
+  dbt_jaffle_shop_seed_raw_orders["dbt_jaffle_shop_seed.raw_orders"]
+  dbt_jaffle_shop_dwh_customers["dbt_jaffle_shop_dwh.customers"]
+  dbt_jaffle_shop_dwh_orders["dbt_jaffle_shop_dwh.orders"]
+  dbt_jaffle_shop_dwh_stg_customers["dbt_jaffle_shop_dwh.stg_customers"]
+  dbt_jaffle_shop_dwh_stg_payments["dbt_jaffle_shop_dwh.stg_payments"]
+  dbt_jaffle_shop_dwh_stg_orders["dbt_jaffle_shop_dwh.stg_orders"]
+  dbt_adventureworks_dwh_dim_address["dbt_adventureworks_dwh.dim_address"]
+  dbt_adventureworks_dwh_dim_customer["dbt_adventureworks_dwh.dim_customer"]
+  dbt_adventureworks_dwh_dim_credit_card["dbt_adventureworks_dwh.dim_credit_card"]
+  dbt_adventureworks_dwh_dim_product["dbt_adventureworks_dwh.dim_product"]
+  dbt_adventureworks_dwh_dim_order_status["dbt_adventureworks_dwh.dim_order_status"]
+  dbt_adventureworks_dwh_dim_date["dbt_adventureworks_dwh.dim_date"]
+  dbt_adventureworks_dwh_fct_sales["dbt_adventureworks_dwh.fct_sales"]
+  dbt_adventureworks_dwh_obt_sales["dbt_adventureworks_dwh.obt_sales"]
+  data_ops_inventory_db_openlineage["data_ops_inventory_db.openlineage"]
+  data_ops_inventory_db_commit_history["data_ops_inventory_db.commit_history"]
+  data_ops_inventory_db_table_snapshots["data_ops_inventory_db.table_snapshots"]
+  data_ops_inventory_db_kpi_results["data_ops_inventory_db.kpi_results"]
+  demo_etl_customers["demo_etl.customers"]
+  demo_etl_orders["demo_etl.orders"]
+  demo_etl_products["demo_etl.products"]
+  demo_etl_sales["demo_etl.sales"]
+  demo_etl_customers_cleaned["demo_etl.customers_cleaned"]
+  demo_etl_products_enriched["demo_etl.products_enriched"]
+  demo_etl_sales_enriched["demo_etl.sales_enriched"]
+  demo_etl_customer_lifetime_value["demo_etl.customer_lifetime_value"]
+  demo_etl_product_sales_performance["demo_etl.product_sales_performance"]
+  demo_etl_products --> demo_etl_sales_enriched
+  dbt_adventureworks_dwh_dim_address --> dbt_adventureworks_dwh_obt_sales
+  dbt_adventureworks_seed_salesorderdetail --> dbt_adventureworks_dwh_fct_sales
+  dbt_adventureworks_seed_store --> dbt_adventureworks_dwh_dim_customer
+  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_customers
+  _2ceb942f_5ba5_42b0_8875_9fd8aad59a1b_Files_onelake_raw_openlineage --> data_ops_inventory_db_openlineage
+  dbt_adventureworks_dwh_dim_customer --> dbt_adventureworks_dwh_obt_sales
+  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_orders
+  datasets_sales_csv --> demo_etl_sales
+  demo_etl_sales --> demo_etl_sales_enriched
+  dbt_adventureworks_dwh_dim_product --> dbt_adventureworks_dwh_obt_sales
+  dbt_adventureworks_seed_address --> dbt_adventureworks_dwh_dim_address
+  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_fct_sales
+  dbt_adventureworks_seed_productcategory --> dbt_adventureworks_dwh_dim_product
+  demo_etl_customers --> demo_etl_customers_cleaned
+  dbt_adventureworks_dwh_fct_sales --> dbt_adventureworks_dwh_obt_sales
+  demo_etl_products --> demo_etl_products_enriched
+  dbt_adventureworks_dwh_dim_order_status --> dbt_adventureworks_dwh_obt_sales
+  dbt_adventureworks_seed_date --> dbt_adventureworks_dwh_dim_date
+  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_credit_card
+  dbt_jaffle_shop_seed_raw_customers --> dbt_jaffle_shop_dwh_customers
+  dbt_adventureworks_seed_customer --> dbt_adventureworks_dwh_dim_customer
+  dbt_adventureworks_seed_stateprovince --> dbt_adventureworks_dwh_dim_address
+  datasets_products_csv --> demo_etl_products
+  demo_etl_orders --> demo_etl_sales_enriched
+  dbt_adventureworks_seed_countryregion --> dbt_adventureworks_dwh_dim_address
+  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_customers
+  datasets_orders_csv --> demo_etl_orders
+  dbt_adventureworks_dwh_dim_date --> dbt_adventureworks_dwh_obt_sales
+  dbt_adventureworks_seed_productsubcategory --> dbt_adventureworks_dwh_dim_product
+  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_order_status
+  dbt_adventureworks_seed_creditcard --> dbt_adventureworks_dwh_dim_credit_card
+  datasets_customers_csv --> demo_etl_customers
+  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_orders
+  dbt_adventureworks_seed_person --> dbt_adventureworks_dwh_dim_customer
+  data_ops_inventory_db_commit_history --> data_ops_inventory_db_kpi_results
+  dbt_adventureworks_dwh_dim_credit_card --> dbt_adventureworks_dwh_obt_sales
+  demo_etl_sales_enriched --> demo_etl_product_sales_performance
+  demo_etl_orders --> demo_etl_customers_cleaned
+  demo_etl_products_enriched --> demo_etl_product_sales_performance
+  demo_etl_sales_enriched --> demo_etl_customer_lifetime_value
+  dbt_adventureworks_seed_product --> dbt_adventureworks_dwh_dim_product
+  style dbt_adventureworks_seed_address,dbt_adventureworks_seed_customer,dbt_adventureworks_seed_person,dbt_adventureworks_seed_creditcard,dbt_adventureworks_seed_countryregion,dbt_adventureworks_seed_date,dbt_adventureworks_seed_salesorderdetail,dbt_adventureworks_seed_salesorderheader,dbt_adventureworks_seed_productsubcategory,dbt_adventureworks_seed_product,dbt_adventureworks_seed_productcategory,dbt_adventureworks_seed_store,dbt_adventureworks_seed_stateprovince,dbt_jaffle_shop_seed_raw_customers,dbt_jaffle_shop_seed_raw_payments,dbt_jaffle_shop_seed_raw_orders,data_ops_inventory_db_commit_history fill:#107C10,color:#fff,stroke:#107C10
+  style dbt_adventureworks_seed_salesorderheadersalesreason,dbt_adventureworks_seed_salesreason,dbt_jaffle_shop_dwh_stg_customers,dbt_jaffle_shop_dwh_stg_payments,dbt_jaffle_shop_dwh_stg_orders,data_ops_inventory_db_table_snapshots fill:#A19F9D,color:#fff,stroke:#A19F9D
+  style dbt_jaffle_shop_dwh_customers,dbt_jaffle_shop_dwh_orders,dbt_adventureworks_dwh_obt_sales,data_ops_inventory_db_openlineage,data_ops_inventory_db_kpi_results,demo_etl_customers_cleaned,demo_etl_customer_lifetime_value,demo_etl_product_sales_performance fill:#D83B01,color:#fff,stroke:#D83B01
+  style dbt_adventureworks_dwh_dim_address,dbt_adventureworks_dwh_dim_customer,dbt_adventureworks_dwh_dim_credit_card,dbt_adventureworks_dwh_dim_product,dbt_adventureworks_dwh_dim_order_status,dbt_adventureworks_dwh_dim_date,dbt_adventureworks_dwh_fct_sales,demo_etl_customers,demo_etl_orders,demo_etl_products,demo_etl_sales,demo_etl_products_enriched,demo_etl_sales_enriched fill:#F2C811,color:#fff,stroke:#F2C811

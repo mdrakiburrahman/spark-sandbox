@@ -1,0 +1,2509 @@
+{
+  "query": "columnLineage",
+  "description": "Column-level lineage edges with transformation metadata",
+  "sql": "WITH complete_events AS (\n  SELECT DISTINCT request_body\n  FROM data_ops_inventory_db.openlineage\n  WHERE event_year_date >= date_format(date_sub(current_date(), 14), 'yyyyMMdd')\n    AND eventType = 'COMPLETE'\n    AND request_body IS NOT NULL\n),\nparsed AS (\n  SELECT\n    from_json(get_json_object(request_body, '$.outputs'), 'ARRAY<STRUCT<namespace: STRING, name: STRING, facets: STRUCT<columnLineage: STRUCT<fields: MAP<STRING, STRUCT<inputFields: ARRAY<STRUCT<namespace: STRING, name: STRING, field: STRING, transformations: ARRAY<STRUCT<type: STRING, subtype: STRING>>>>>>>, schema: STRUCT<fields: ARRAY<STRUCT<name: STRING, type: STRING, description: STRING>>>>>>') AS outputs\n  FROM complete_events\n),\nexploded_outputs AS (\n  SELECT explode(outputs) AS output_entry\n  FROM parsed\n  WHERE outputs IS NOT NULL\n),\ncolumn_lineage_maps AS (\n  SELECT\n    output_entry.namespace AS target_namespace,\n    output_entry.name AS target_name,\n    explode(output_entry.facets.columnLineage.fields) AS (target_field, field_lineage)\n  FROM exploded_outputs\n  WHERE output_entry.facets IS NOT NULL\n    AND output_entry.facets.columnLineage IS NOT NULL\n    AND output_entry.facets.columnLineage.fields IS NOT NULL\n),\ncolumn_edges AS (\n  SELECT\n    target_namespace,\n    target_name,\n    target_field,\n    explode(field_lineage.inputFields) AS input_field\n  FROM column_lineage_maps\n  WHERE field_lineage.inputFields IS NOT NULL\n)\nSELECT DISTINCT\n  input_field.namespace AS source_namespace,\n  input_field.name AS source_name,\n  input_field.field AS source_field,\n  target_namespace,\n  target_name,\n  target_field,\n  CASE\n    WHEN input_field.transformations IS NOT NULL AND size(input_field.transformations) > 0\n    THEN input_field.transformations[0].type\n    ELSE 'UNKNOWN'\n  END AS transformation_type,\n  CASE\n    WHEN input_field.transformations IS NOT NULL AND size(input_field.transformations) > 0\n    THEN input_field.transformations[0].subtype\n    ELSE 'UNKNOWN'\n  END AS transformation_subtype\nFROM column_edges",
+  "result": {
+    "columns": [
+      "source_namespace",
+      "source_name",
+      "source_field",
+      "target_namespace",
+      "target_name",
+      "target_field",
+      "transformation_type",
+      "transformation_subtype"
+    ],
+    "columnTypes": [
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "string",
+      "string"
+    ],
+    "rows": [
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "product_category_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "product_category_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "source_field": "order_status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "order_status",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_deployMode",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "overall_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "unitprice",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "unitprice",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "prior_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "prior_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "product_subcategory_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "product_subcategory_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "day_of_week",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "day_of_week",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/creditcard",
+        "source_field": "cardtype",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "target_field": "cardtype",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "vacuum_count_7d",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_parent_job_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_columnLineage__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/countryregion",
+        "source_field": "name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "target_field": "country_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "day_of_month",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "day_of_month",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_dataSource_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_symlinks_identifiers_Json",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "overall_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "Price",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "target_field": "is_in_stock",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "predicted_next_commit",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "operation",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "optimize_count_7d",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers",
+        "source_field": "first_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "first_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_schema__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "source_field": "order_status_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "order_status_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_properties_properties_spark_master",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "salesorderdetailid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "salesorderdetailid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "overall_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "order_date",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "most_recent_order",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "producer",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_environment-properties__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "schemaURL",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "productID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/product_sales_performance",
+        "target_field": "productID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "predicted_next_commit",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "day_of_year",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "day_of_year",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_driverHost",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "order_date",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "order_date",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "user_id",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "customer_id",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/customers.csv",
+        "source_field": "CustomerName",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "target_field": "CustomerName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "prior_year_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "prior_year_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "status",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "credit_card_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "total_amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customer_lifetime_value",
+        "target_field": "total_spent",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_parent_job_namespace",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/orders.csv",
+        "source_field": "CustomerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "target_field": "CustomerID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "bank_transfer_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "target_field": "order_status_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "product_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productcategory",
+        "source_field": "name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "product_category_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "payment_method",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "credit_card_amount",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_storage_storageLayer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "total_amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/product_sales_performance",
+        "target_field": "total_revenue",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_environment-properties__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_properties__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_jobType_processingType",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "eventType",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "eventType",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "source_field": "Quantity",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "quantity",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "productid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "product_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "order_status_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "date_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "target_field": "order_status",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/products.csv",
+        "source_field": "Price",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "target_field": "Price",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "prior_year_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "prior_year_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "source_field": "lastname",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "fullname",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "median_commit_interval_seconds",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "next_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "next_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "next_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "next_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_version__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_processing_engine__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "source_field": "fullname",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "fullname",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "source_field": "customerid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "customerid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "prior_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "prior_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "source_field": "state_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "state_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "days_since_last_commit",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_version__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_symlinks_identifiers_Json",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "ProductName",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "productName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "salesorderdetailid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "sales_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "unitprice",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "unitprice",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "table_fqn",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "orderID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customer_lifetime_value",
+        "target_field": "total_orders",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "source_field": "businessentityid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "businessentityid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_parent_run_runId",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "customerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customer_lifetime_value",
+        "target_field": "customerID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "color",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "color",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "source_field": "businessentityid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "businessentityid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "day_of_week_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "day_of_week_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_schema__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "prior_year_over_year_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "prior_year_over_year_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "source_field": "CustomerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "target_field": "has_orders",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/customers.csv",
+        "source_field": "CustomerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "target_field": "CustomerID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "predicted_next_commit",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/sales.csv",
+        "source_field": "OrderID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "target_field": "OrderID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "salesorderdetailid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "salesorderdetailid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "id",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "number_of_orders",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "creditcardid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "target_field": "creditcard_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "source_field": "Quantity",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "total_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "source_field": "CustomerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "target_field": "customerID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "source_field": "CustomerName",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "target_field": "customerName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "optimize_count_7d",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_properties__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "source_field": "middlename",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "fullname",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_schema__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_master",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "result_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "result_timestamp",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "revenue",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "revenue",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_parent__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_namespace",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "latest_version",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_applicationId",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "commits_in_last_24h",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "median_commit_interval_seconds",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/store",
+        "source_field": "storename",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "storename",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "source_field": "creditcardid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "creditcardid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "num_output_rows",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "overall_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "sales_key",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "sales_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_processing_engine__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/person",
+        "source_field": "firstname",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "fullname",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "productid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "product_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "coupon_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "median_commit_interval_seconds",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_sql__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "color",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "color",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "num_output_rows",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "daily_row_count_actual",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers",
+        "source_field": "last_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "last_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_dataSource__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_properties_properties_spark_app_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "source_field": "storename",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "storename",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "prior_year_over_year_date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "prior_year_over_year_date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_namespace",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/products.csv",
+        "source_field": "ProductName",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "target_field": "ProductName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "freshness_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_schema__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "Price",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "total_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "p95_commit_interval_seconds",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "Price",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "target_field": "price",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_userName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "order_date",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "first_order",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/address",
+        "source_field": "city",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "target_field": "city_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "last_commit_timestamp",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/address",
+        "source_field": "addressid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "target_field": "address_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "request_body",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "request_body",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/address",
+        "source_field": "addressid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "target_field": "addressid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "payment_method",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "gift_card_amount",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "payment_method",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "coupon_amount",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_columnLineage_fields_event_year_date_inputFields_Json",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_dataSource_uri",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "date_day",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "date_day",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "orderqty",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "orderqty",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_jobType_integration",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_symlinks__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/sales.csv",
+        "source_field": "ProductID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "target_field": "ProductID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "ProductName",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "target_field": "productName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/sales.csv",
+        "source_field": "Quantity",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "target_field": "Quantity",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_symlinks__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "source_field": "quantity",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/product_sales_performance",
+        "target_field": "total_units_sold",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_processing_engine_version",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_storage__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/products.csv",
+        "source_field": "ProductID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "target_field": "ProductID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "orderqty",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "revenue",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "source_field": "city_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "city_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "source_field": "CustomerID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "customerID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers",
+        "source_field": "id",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "customer_id",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_schema_fields_Json",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "productnumber",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "productnumber",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/customers.csv",
+        "source_field": "Contact",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "target_field": "Contact",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/customer",
+        "source_field": "customerid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "customerid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "payment_method",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "bank_transfer_amount",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "class",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "class",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_sql__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "source_field": "storebusinessentityid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "storebusinessentityid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "day_of_month",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "day_of_month",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "salesorderid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "salesorderid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "commits_in_last_7d",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "source_field": "country_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "country_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_jobType__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_orders",
+        "source_field": "id",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "order_id",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "source_field": "addressid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "addressid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "day_of_week_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "day_of_week_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/orders.csv",
+        "source_field": "OrderID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "target_field": "OrderID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "creditcardid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "creditcard_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "source_field": "OrderID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "target_field": "has_orders",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "source_field": "OrderID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "orderID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_runId",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "num_output_rows",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "daily_row_count_max_expected",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_dataSource_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_dataSource__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_processing_engine_openlineageAdapterVersion",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "orderdate",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "order_date_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_dataSource__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/product",
+        "source_field": "productid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "productid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_jobType_jobType",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/customer",
+        "source_field": "customerid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "customer_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "product_name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "product_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "salesorderid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "sales_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "commit_timestamp",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "freshness_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "operation",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "vacuum_count_7d",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales",
+        "source_field": "ProductID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/sales_enriched",
+        "target_field": "productID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "operation",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "most_common_operation",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "orderqty",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "orderqty",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_columnLineage__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products",
+        "source_field": "ProductID",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/products_enriched",
+        "target_field": "productID",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/customers",
+        "target_field": "customer_lifetime_value",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_dataSource__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "wasbs://public@rakirahman.blob.core.windows.net",
+        "source_name": "datasets/orders.csv",
+        "source_field": "OrderDate",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/orders",
+        "target_field": "OrderDate",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "productnumber",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "productnumber",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "version",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "p95_commit_interval_seconds",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "eventTime",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "eventTime",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "p95_commit_interval_seconds",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "WINDOW"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/productsubcategory",
+        "source_field": "name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "target_field": "product_subcategory_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/store",
+        "source_field": "businessentityid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_customer",
+        "target_field": "storebusinessentityid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/stateprovince",
+        "source_field": "name",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_address",
+        "target_field": "state_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_dataSource_uri",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "customerid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "customer_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/date",
+        "source_field": "day_of_year",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "target_field": "day_of_year",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_schema_fields_Json",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_symlinks__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "creditcardid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "target_field": "creditcardid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_version_datasetVersion",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "source_field": "salesorderid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "salesorderid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_credit_card",
+        "source_field": "cardtype",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "cardtype",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "num_output_rows",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "daily_row_count_min_expected",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_date",
+        "source_field": "day_of_week",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "day_of_week",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_facets_symlinks__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "num_output_rows",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "completeness_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderdetail",
+        "source_field": "unitprice",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "revenue",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_sql_query",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_storage_fileFormat",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_parent__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "outputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "outputs_facets_storage__schemaURL",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/commit_history",
+        "source_field": "table_fqn",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/kpi_results",
+        "target_field": "freshness_status",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "event_year_date",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "event_year_date",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "job",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "job_facets_jobType__producer",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers",
+        "source_field": "Contact",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Tables/customers_cleaned",
+        "target_field": "contact",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "shiptoaddressid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/fct_sales",
+        "target_field": "ship_address_key",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "productid",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "productid",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_product",
+        "source_field": "class",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/obt_sales",
+        "target_field": "class",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "IDENTITY"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_appName",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_processing_engine_name",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_payments",
+        "source_field": "amount",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/a1340f32-34c8-494a-9628-8c5d5f03f284/Tables/orders",
+        "target_field": "gift_card_amount",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "AGGREGATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/74bd1b67-85dc-4b52-8472-c9acf6277f11/Tables/salesorderheader",
+        "source_field": "status",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/35800137-d4ac-4f28-8d63-84040cc83f21/Tables/dim_order_status",
+        "target_field": "order_status_name",
+        "transformation_type": "INDIRECT",
+        "transformation_subtype": "CONDITIONAL"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "inputs",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "inputs_namespace",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      },
+      {
+        "source_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "source_name": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+        "source_field": "run",
+        "target_namespace": "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com",
+        "target_name": "/4d8783be-e822-46d0-82e4-9b77c7f33992/Tables/openlineage",
+        "target_field": "run_facets_spark_applicationDetails_uiWebUrl",
+        "transformation_type": "DIRECT",
+        "transformation_subtype": "TRANSFORMATION"
+      }
+    ]
+  }
+}

@@ -38,6 +38,7 @@ DELTA_MOUNT_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaM
 OPENLINEAGE_SILVER_CLASS="me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver"
 DEMO_LINEAGE_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor"
 DEMO_DELTA_LOG_MONITOR_CLASS="me.rakirahman.sparkdemo.etl.drivers.demos.DemoDeltaLogMonitor"
+MAINTENANCE_VACUUM_CLASS="me.rakirahman.sparkdemo.etl.drivers.general.maintenance.MaintenanceDeltaVacuumDriver"
 ALL_JOBS="all"
 
 declare -A JOB_ALIASES=(
@@ -47,6 +48,7 @@ declare -A JOB_ALIASES=(
     ["openlineage-silver"]="$OPENLINEAGE_SILVER_CLASS"
     ["demo-lineage"]="$DEMO_LINEAGE_CLASS"
     ["demo-delta-log-monitor"]="$DEMO_DELTA_LOG_MONITOR_CLASS"
+    ["maintenance-vacuum"]="$MAINTENANCE_VACUUM_CLASS"
 )
 
 print_available_jobs() {
@@ -303,6 +305,14 @@ run_demo_delta_log_monitor() {
     /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
 }
 
+run_maintenance_vacuum() {
+    echo "=== Running: maintenance-vacuum (MaintenanceDeltaVacuumDriver) ==="
+    
+    local spark_class="$MAINTENANCE_VACUUM_CLASS"
+
+    /opt/spark/bin/spark-submit ${demo_spark_resource_config[@]} --conf $(get_additional_runtime_jars) --class "${spark_class}" ${spark_demo_jar} ${DEMO_DEVCONTAINER_CONFIG}
+}
+
 # ┌─────────────┐
 # │ Run the Job │
 # └─────────────┘
@@ -315,6 +325,7 @@ case "$JOB_ALIAS" in
         run_openlineage_silver
         run_demo_lineage
         run_demo_delta_log_monitor
+        run_maintenance_vacuum
         ;;
     "demo-plugin")
         run_demo_plugin
@@ -333,6 +344,9 @@ case "$JOB_ALIAS" in
         ;;
     "demo-delta-log-monitor")
         run_demo_delta_log_monitor
+        ;;
+    "maintenance-vacuum")
+        run_maintenance_vacuum
         ;;
     *)
         echo "ERROR: No handler defined for job alias '$JOB_ALIAS'"

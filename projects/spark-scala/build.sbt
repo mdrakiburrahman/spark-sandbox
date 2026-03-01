@@ -87,7 +87,9 @@ lazy val common = project
       // Sequencer execution framework is tested via sparkDemo integration tests
       "me\\.rakirahman\\.etl\\.execution\\.stateless\\..*",
       // DataTransformer abstract trait is tested via sparkDemo implementations
-      "me\\.rakirahman\\.etl\\.transformer\\.DataTransformer"
+      "me\\.rakirahman\\.etl\\.transformer\\.DataTransformer",
+      // DeltaTableMaintenanceManager requires SparkSession and is tested via Jest integration tests
+      "me\\.rakirahman\\.quality\\.maintenance\\.manager\\.DeltaTableMaintenanceManager"
     ).mkString(";"),
     version := version.value,
     libraryDependencies ++= azureNetworkingDependencies
