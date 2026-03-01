@@ -209,18 +209,21 @@ export default function FabricLivyPage() {
             style={{ ...cardBase, borderLeft: '3px solid #107C10' }}
             onClick={async () => {
               try {
-                const [tablesRes, lineageRes] = await Promise.all([
+                const [tablesRes, lineageRes, kpisRes, commitsRes] = await Promise.all([
                   fetch('/livy-tables.json'),
                   fetch('/livy-uber-lineage.json'),
+                  fetch('/livy-kpis.json'),
+                  fetch('/livy-commits.json'),
                 ]);
                 const tables = await tablesRes.json();
                 const lineage = await lineageRes.json();
-                setDashboardData({
-                  tables,
-                  kpis: [],
-                  commits: new Map(),
-                  lineage,
-                });
+                const kpis = await kpisRes.json();
+                const commitsObj = await commitsRes.json();
+                const commits = new Map<string, DeltaCommitEntry[]>();
+                for (const [fqn, entries] of Object.entries(commitsObj)) {
+                  commits.set(fqn, entries as DeltaCommitEntry[]);
+                }
+                setDashboardData({ tables, kpis, commits, lineage });
                 setMode('dashboard');
               } catch (err) {
                 setConnectionError(err instanceof Error ? err.message : String(err));

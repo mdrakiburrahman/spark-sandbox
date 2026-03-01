@@ -113,6 +113,20 @@
         ],
         "parallel": false
       }
+    },
+    "hydrate-static": {
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx tsx scripts/query-lineage.ts",
+            "forwardAllArgs": true
+          }
+        ],
+        "parallel": false
+      }
     }
   }
 }

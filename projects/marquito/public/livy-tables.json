@@ -106,13 +106,13 @@
   },
   {
     "database": "dbt_jaffle_shop_dwh",
-    "table": "stg_orders",
-    "fqn": "dbt_jaffle_shop_dwh.stg_orders"
+    "table": "stg_payments",
+    "fqn": "dbt_jaffle_shop_dwh.stg_payments"
   },
   {
     "database": "dbt_jaffle_shop_dwh",
-    "table": "stg_payments",
-    "fqn": "dbt_jaffle_shop_dwh.stg_payments"
+    "table": "stg_orders",
+    "fqn": "dbt_jaffle_shop_dwh.stg_orders"
   },
   {
     "database": "dbt_adventureworks_dwh",

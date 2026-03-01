@@ -230,6 +230,11 @@
     "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer"
   },
   {
+    "source": "data_ops_inventory_db.commit_history",
+    "target": "data_ops_inventory_db.kpi_results",
+    "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results"
+  },
+  {
     "source": "dbt_adventureworks_dwh.dim_credit_card",
     "target": "dbt_adventureworks_dwh.obt_sales",
     "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
@@ -348,10 +353,5 @@
     "source": "data_ops_inventory_db.commit_history",
     "target": "data_ops_inventory_db.kpi_results",
     "jobName": "default.append_data_exec_v1.spark_catalog_kpi_results"
-  },
-  {
-    "source": "data_ops_inventory_db.commit_history",
-    "target": "data_ops_inventory_db.kpi_results",
-    "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results"
   }
 ]

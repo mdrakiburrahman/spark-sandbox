@@ -71,13 +71,14 @@ const CommitFreshness = ({ tableFqn, commits }: CommitFreshnessProps) => {
       }}
     >
       {/* Table name */}
-      <div style={{ marginBottom: '6px' }}>
+      <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <span style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#D2D0CE' : '#323130', fontFamily: "'Cascadia Code', monospace" }}>
           {tableFqn}
         </span>
+        <span style={{ fontSize: '10px', color: isDark ? '#605E5C' : '#A19F9D', fontFamily: "'Segoe UI', sans-serif" }}>
+          {commits.length} commits
+        </span>
       </div>
-
-      {/* Commit bar */}
       <div
         style={{
           position: 'relative',

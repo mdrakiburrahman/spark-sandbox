@@ -127,15 +127,15 @@
       "role": "standalone"
     },
     {
-      "fqn": "dbt_jaffle_shop_dwh.stg_orders",
-      "database": "dbt_jaffle_shop_dwh",
-      "table": "stg_orders",
-      "role": "standalone"
-    },
-    {
       "fqn": "dbt_jaffle_shop_dwh.stg_payments",
       "database": "dbt_jaffle_shop_dwh",
       "table": "stg_payments",
+      "role": "standalone"
+    },
+    {
+      "fqn": "dbt_jaffle_shop_dwh.stg_orders",
+      "database": "dbt_jaffle_shop_dwh",
+      "table": "stg_orders",
       "role": "standalone"
     },
     {
@@ -497,6 +497,11 @@
       "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_dim_customer"
     },
     {
+      "source": "data_ops_inventory_db.commit_history",
+      "target": "data_ops_inventory_db.kpi_results",
+      "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results"
+    },
+    {
       "source": "dbt_adventureworks_dwh.dim_credit_card",
       "target": "dbt_adventureworks_dwh.obt_sales",
       "jobName": "dbt_adventureworks.atomic_replace_table_as_select.dbt_adventureworks_dwh_obt_sales"
@@ -615,11 +620,6 @@
       "source": "data_ops_inventory_db.commit_history",
       "target": "data_ops_inventory_db.kpi_results",
       "jobName": "default.append_data_exec_v1.spark_catalog_kpi_results"
-    },
-    {
-      "source": "data_ops_inventory_db.commit_history",
-      "target": "data_ops_inventory_db.kpi_results",
-      "jobName": "default.append_data_exec_v1.spark_catalog_data_ops_inventory_db_kpi_results"
     }
   ],
   "columnEdges": [
@@ -632,14 +632,6 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_spark_applicationDetails_deployMode",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_dwh.dim_order_status",
       "sourceField": "order_status",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
@@ -648,12 +640,12 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
-      "sourceField": "unitprice",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "unitprice",
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_spark_applicationDetails_deployMode",
       "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "data_ops_inventory_db.commit_history",
@@ -664,26 +656,18 @@
       "transformationSubtype": "CONDITIONAL"
     },
     {
-      "sourceDataset": "dbt_adventureworks_seed.date",
-      "sourceField": "prior_date_day",
-      "targetDataset": "dbt_adventureworks_dwh.dim_date",
-      "targetField": "prior_date_day",
+      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
+      "sourceField": "unitprice",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "unitprice",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.creditcard",
-      "sourceField": "cardtype",
-      "targetDataset": "dbt_adventureworks_dwh.dim_credit_card",
-      "targetField": "cardtype",
+      "sourceDataset": "dbt_adventureworks_seed.date",
+      "sourceField": "prior_date_day",
+      "targetDataset": "dbt_adventureworks_dwh.dim_date",
+      "targetField": "prior_date_day",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -705,11 +689,19 @@
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
+      "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_parent_job_name",
+      "targetField": "outputs_name",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_seed.creditcard",
+      "sourceField": "cardtype",
+      "targetDataset": "dbt_adventureworks_dwh.dim_credit_card",
+      "targetField": "cardtype",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "data_ops_inventory_db.commit_history",
@@ -721,11 +713,35 @@
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_parent_job_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
       "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
       "targetField": "outputs_facets_columnLineage__schemaURL",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_seed.countryregion",
+      "sourceField": "name",
+      "targetDataset": "dbt_adventureworks_dwh.dim_address",
+      "targetField": "country_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
+      "sourceField": "day_of_month",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "day_of_month",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -744,22 +760,6 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
-      "sourceField": "day_of_month",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "day_of_month",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.countryregion",
-      "sourceField": "name",
-      "targetDataset": "dbt_adventureworks_dwh.dim_address",
-      "targetField": "country_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "version",
       "targetDataset": "data_ops_inventory_db.kpi_results",
@@ -768,28 +768,12 @@
       "transformationSubtype": "CONDITIONAL"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "inputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "inputs_facets_schema__schemaURL",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "demo_etl.products",
       "sourceField": "Price",
       "targetDataset": "demo_etl.products_enriched",
       "targetField": "is_in_stock",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
-      "sourceField": "first_name",
-      "targetDataset": "dbt_jaffle_shop_dwh.customers",
-      "targetField": "first_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "data_ops_inventory_db.commit_history",
@@ -806,6 +790,22 @@
       "targetField": "optimize_count_7d",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
+      "sourceField": "first_name",
+      "targetDataset": "dbt_jaffle_shop_dwh.customers",
+      "targetField": "first_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "inputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "inputs_facets_schema__schemaURL",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "dbt_adventureworks_dwh.dim_order_status",
@@ -832,20 +832,20 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_orders",
-      "sourceField": "order_date",
-      "targetDataset": "dbt_jaffle_shop_dwh.customers",
-      "targetField": "most_recent_order",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "AGGREGATION"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "table_fqn",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "overall_status",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_orders",
+      "sourceField": "order_date",
+      "targetDataset": "dbt_jaffle_shop_dwh.customers",
+      "targetField": "most_recent_order",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "AGGREGATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -880,12 +880,12 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_spark_applicationDetails_driverHost",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
+      "sourceDataset": "data_ops_inventory_db.commit_history",
+      "sourceField": "table_fqn",
+      "targetDataset": "data_ops_inventory_db.kpi_results",
+      "targetField": "predicted_next_commit",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "WINDOW"
     },
     {
       "sourceDataset": "dbt_adventureworks_dwh.dim_date",
@@ -896,12 +896,12 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "data_ops_inventory_db.commit_history",
-      "sourceField": "table_fqn",
-      "targetDataset": "data_ops_inventory_db.kpi_results",
-      "targetField": "predicted_next_commit",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "WINDOW"
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_spark_applicationDetails_driverHost",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "dbt_jaffle_shop_seed.raw_orders",
@@ -952,20 +952,20 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_parent_job_namespace",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "demo_etl.sales_enriched",
       "sourceField": "total_amount",
       "targetDataset": "demo_etl.customer_lifetime_value",
       "targetField": "total_spent",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_parent_job_namespace",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "datasets/orders.csv",
@@ -1128,12 +1128,12 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_facets_version__producer",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
+      "sourceDataset": "data_ops_inventory_db.commit_history",
+      "sourceField": "version",
+      "targetDataset": "data_ops_inventory_db.kpi_results",
+      "targetField": "median_commit_interval_seconds",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "WINDOW"
     },
     {
       "sourceDataset": "dbt_adventureworks_dwh.dim_date",
@@ -1152,12 +1152,12 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "data_ops_inventory_db.commit_history",
-      "sourceField": "version",
-      "targetDataset": "data_ops_inventory_db.kpi_results",
-      "targetField": "median_commit_interval_seconds",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "WINDOW"
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "outputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "outputs_facets_version__producer",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -1208,20 +1208,20 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_facets_version__schemaURL",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "commit_timestamp",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "days_since_last_commit",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "outputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "outputs_facets_version__schemaURL",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -1264,20 +1264,20 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
-      "sourceField": "date_day",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "date_day",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "demo_etl.sales_enriched",
       "sourceField": "orderID",
       "targetDataset": "demo_etl.customer_lifetime_value",
       "targetField": "total_orders",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
+      "sourceField": "date_day",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "date_day",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.person",
@@ -1296,6 +1296,14 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
+      "sourceDataset": "demo_etl.sales_enriched",
+      "sourceField": "customerID",
+      "targetDataset": "demo_etl.customer_lifetime_value",
+      "targetField": "customerID",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "dbt_adventureworks_dwh.dim_product",
       "sourceField": "color",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
@@ -1308,14 +1316,6 @@
       "sourceField": "businessentityid",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
       "targetField": "businessentityid",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "demo_etl.sales_enriched",
-      "sourceField": "customerID",
-      "targetDataset": "demo_etl.customer_lifetime_value",
-      "targetField": "customerID",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1368,26 +1368,18 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
-      "sourceField": "creditcardid",
-      "targetDataset": "dbt_adventureworks_dwh.dim_credit_card",
-      "targetField": "creditcard_key",
+      "sourceDataset": "datasets/sales.csv",
+      "sourceField": "OrderID",
+      "targetDataset": "demo_etl.sales",
+      "targetField": "OrderID",
       "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
       "sourceField": "salesorderdetailid",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
       "targetField": "salesorderdetailid",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "datasets/sales.csv",
-      "sourceField": "OrderID",
-      "targetDataset": "demo_etl.sales",
-      "targetField": "OrderID",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1400,18 +1392,18 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "demo_etl.sales",
-      "sourceField": "Quantity",
-      "targetDataset": "demo_etl.sales_enriched",
-      "targetField": "total_amount",
+      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
+      "sourceField": "creditcardid",
+      "targetDataset": "dbt_adventureworks_dwh.dim_credit_card",
+      "targetField": "creditcard_key",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_spark_properties__producer",
+      "sourceDataset": "demo_etl.sales",
+      "sourceField": "Quantity",
+      "targetDataset": "demo_etl.sales_enriched",
+      "targetField": "total_amount",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -1438,6 +1430,14 @@
       "targetField": "optimize_count_7d",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_spark_properties__producer",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.person",
@@ -1472,20 +1472,20 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_parent__producer",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
       "sourceField": "revenue",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
       "targetField": "revenue",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "run",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "run_facets_parent__producer",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -1520,14 +1520,6 @@
       "transformationSubtype": "CONDITIONAL"
     },
     {
-      "sourceDataset": "dbt_adventureworks_seed.store",
-      "sourceField": "storename",
-      "targetDataset": "dbt_adventureworks_dwh.dim_customer",
-      "targetField": "storename",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "table_fqn",
       "targetDataset": "data_ops_inventory_db.kpi_results",
@@ -1536,10 +1528,34 @@
       "transformationSubtype": "WINDOW"
     },
     {
+      "sourceDataset": "dbt_adventureworks_seed.store",
+      "sourceField": "storename",
+      "targetDataset": "dbt_adventureworks_dwh.dim_customer",
+      "targetField": "storename",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "dbt_adventureworks_dwh.dim_credit_card",
       "sourceField": "creditcardid",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
       "targetField": "creditcardid",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "data_ops_inventory_db.commit_history",
+      "sourceField": "num_output_rows",
+      "targetDataset": "data_ops_inventory_db.kpi_results",
+      "targetField": "overall_status",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
+      "sourceField": "sales_key",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "sales_key",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1552,14 +1568,6 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
-      "sourceField": "sales_key",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "sales_key",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.person",
       "sourceField": "firstname",
       "targetDataset": "dbt_adventureworks_dwh.dim_customer",
@@ -1568,36 +1576,12 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "data_ops_inventory_db.commit_history",
-      "sourceField": "num_output_rows",
-      "targetDataset": "data_ops_inventory_db.kpi_results",
-      "targetField": "overall_status",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "CONDITIONAL"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.product",
       "sourceField": "productid",
       "targetDataset": "dbt_adventureworks_dwh.dim_product",
       "targetField": "product_key",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "job",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "job_facets_sql__schemaURL",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.product",
-      "sourceField": "color",
-      "targetDataset": "dbt_adventureworks_dwh.dim_product",
-      "targetField": "color",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
@@ -1616,10 +1600,18 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
-      "sourceField": "last_name",
-      "targetDataset": "dbt_jaffle_shop_dwh.customers",
-      "targetField": "last_name",
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "job",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "job_facets_sql__schemaURL",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_seed.product",
+      "sourceField": "color",
+      "targetDataset": "dbt_adventureworks_dwh.dim_product",
+      "targetField": "color",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1632,18 +1624,18 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
+      "sourceField": "last_name",
+      "targetDataset": "dbt_jaffle_shop_dwh.customers",
+      "targetField": "last_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
       "sourceField": "inputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
       "targetField": "inputs_facets_dataSource__producer",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "run",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "run_facets_spark_properties_properties_spark_app_name",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -1657,9 +1649,9 @@
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
+      "sourceField": "run",
       "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_namespace",
+      "targetField": "run_facets_spark_properties_properties_spark_app_name",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -1681,9 +1673,9 @@
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "inputs",
+      "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "inputs_name",
+      "targetField": "outputs_namespace",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -1694,6 +1686,14 @@
       "targetField": "ProductName",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "inputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "inputs_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "data_ops_inventory_db.commit_history",
@@ -1768,20 +1768,20 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "request_body",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "request_body",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.address",
       "sourceField": "addressid",
       "targetDataset": "dbt_adventureworks_dwh.dim_address",
       "targetField": "address_key",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "request_body",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "request_body",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.address",
@@ -1808,6 +1808,14 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
+      "sourceField": "payment_method",
+      "targetDataset": "dbt_jaffle_shop_dwh.orders",
+      "targetField": "coupon_amount",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "CONDITIONAL"
+    },
+    {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
       "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
@@ -1824,18 +1832,18 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
-      "sourceField": "payment_method",
-      "targetDataset": "dbt_jaffle_shop_dwh.orders",
-      "targetField": "coupon_amount",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "CONDITIONAL"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.date",
       "sourceField": "date_day",
       "targetDataset": "dbt_adventureworks_dwh.dim_date",
       "targetField": "date_day",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
+      "sourceField": "orderqty",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "orderqty",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1846,14 +1854,6 @@
       "targetField": "job_facets_jobType_integration",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_dwh.fct_sales",
-      "sourceField": "orderqty",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "orderqty",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -1880,20 +1880,20 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "inputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "inputs_facets_symlinks__producer",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "datasets/sales.csv",
       "sourceField": "Quantity",
       "targetDataset": "demo_etl.sales",
       "targetField": "Quantity",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "inputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "inputs_facets_symlinks__producer",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "demo_etl.sales_enriched",
@@ -1928,14 +1928,6 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.dim_address",
-      "sourceField": "city_name",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "city_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.salesorderdetail",
       "sourceField": "orderqty",
       "targetDataset": "dbt_adventureworks_dwh.fct_sales",
@@ -1944,10 +1936,26 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
+      "sourceDataset": "dbt_adventureworks_dwh.dim_address",
+      "sourceField": "city_name",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "city_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "demo_etl.orders",
       "sourceField": "CustomerID",
       "targetDataset": "demo_etl.sales_enriched",
       "targetField": "customerID",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
+      "sourceField": "id",
+      "targetDataset": "dbt_jaffle_shop_dwh.customers",
+      "targetField": "customer_id",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1968,10 +1976,10 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_customers",
-      "sourceField": "id",
-      "targetDataset": "dbt_jaffle_shop_dwh.customers",
-      "targetField": "customer_id",
+      "sourceDataset": "datasets/customers.csv",
+      "sourceField": "Contact",
+      "targetDataset": "demo_etl.customers",
+      "targetField": "Contact",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -1984,12 +1992,12 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "datasets/customers.csv",
-      "sourceField": "Contact",
-      "targetDataset": "demo_etl.customers",
-      "targetField": "Contact",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
+      "sourceField": "payment_method",
+      "targetDataset": "dbt_jaffle_shop_dwh.orders",
+      "targetField": "bank_transfer_amount",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "CONDITIONAL"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.product",
@@ -1998,14 +2006,6 @@
       "targetField": "class",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
-      "sourceField": "payment_method",
-      "targetDataset": "dbt_jaffle_shop_dwh.orders",
-      "targetField": "bank_transfer_amount",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "CONDITIONAL"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2032,22 +2032,6 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "job",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "job_facets_jobType__schemaURL",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_dwh.dim_address",
-      "sourceField": "country_name",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "country_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.salesorderdetail",
       "sourceField": "salesorderid",
       "targetDataset": "dbt_adventureworks_dwh.fct_sales",
@@ -2062,6 +2046,30 @@
       "targetField": "commits_in_last_7d",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.dim_address",
+      "sourceField": "country_name",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "country_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "job",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "job_facets_jobType__schemaURL",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "dbt_jaffle_shop_seed.raw_orders",
+      "sourceField": "id",
+      "targetDataset": "dbt_jaffle_shop_dwh.orders",
+      "targetField": "order_id",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_adventureworks_dwh.dim_address",
@@ -2084,14 +2092,6 @@
       "sourceField": "OrderID",
       "targetDataset": "demo_etl.orders",
       "targetField": "OrderID",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "dbt_jaffle_shop_seed.raw_orders",
-      "sourceField": "id",
-      "targetDataset": "dbt_jaffle_shop_dwh.orders",
-      "targetField": "order_id",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -2136,20 +2136,20 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_facets_dataSource_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "num_output_rows",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "daily_row_count_max_expected",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "outputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "outputs_facets_dataSource_name",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2168,6 +2168,14 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
+      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
+      "sourceField": "orderdate",
+      "targetDataset": "dbt_adventureworks_dwh.fct_sales",
+      "targetField": "order_date_key",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
       "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
@@ -2182,14 +2190,6 @@
       "targetField": "productid",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
-      "sourceField": "orderdate",
-      "targetDataset": "dbt_adventureworks_dwh.fct_sales",
-      "targetField": "order_date_key",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2224,14 +2224,6 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "demo_etl.sales",
-      "sourceField": "ProductID",
-      "targetDataset": "demo_etl.sales_enriched",
-      "targetField": "productID",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "commit_timestamp",
       "targetDataset": "data_ops_inventory_db.kpi_results",
@@ -2248,20 +2240,20 @@
       "transformationSubtype": "CONDITIONAL"
     },
     {
+      "sourceDataset": "demo_etl.sales",
+      "sourceField": "ProductID",
+      "targetDataset": "demo_etl.sales_enriched",
+      "targetField": "productID",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "operation",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "most_common_operation",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
-    },
-    {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "outputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_facets_columnLineage__producer",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.salesorderdetail",
@@ -2275,7 +2267,7 @@
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
       "sourceField": "outputs",
       "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "outputs_facets_dataSource__schemaURL",
+      "targetField": "outputs_facets_columnLineage__producer",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -2288,14 +2280,6 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "datasets/orders.csv",
-      "sourceField": "OrderDate",
-      "targetDataset": "demo_etl.orders",
-      "targetField": "OrderDate",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "dbt_jaffle_shop_seed.raw_payments",
       "sourceField": "amount",
       "targetDataset": "dbt_jaffle_shop_dwh.customers",
@@ -2304,12 +2288,36 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "outputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "outputs_facets_dataSource__schemaURL",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "datasets/orders.csv",
+      "sourceField": "OrderDate",
+      "targetDataset": "demo_etl.orders",
+      "targetField": "OrderDate",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
       "sourceDataset": "dbt_adventureworks_dwh.dim_product",
       "sourceField": "productnumber",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
       "targetField": "productnumber",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "data_ops_inventory_db.commit_history",
+      "sourceField": "version",
+      "targetDataset": "data_ops_inventory_db.kpi_results",
+      "targetField": "p95_commit_interval_seconds",
+      "transformationType": "INDIRECT",
+      "transformationSubtype": "WINDOW"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2321,7 +2329,7 @@
     },
     {
       "sourceDataset": "data_ops_inventory_db.commit_history",
-      "sourceField": "version",
+      "sourceField": "table_fqn",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "p95_commit_interval_seconds",
       "transformationType": "INDIRECT",
@@ -2336,18 +2344,18 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "data_ops_inventory_db.commit_history",
-      "sourceField": "table_fqn",
-      "targetDataset": "data_ops_inventory_db.kpi_results",
-      "targetField": "p95_commit_interval_seconds",
-      "transformationType": "INDIRECT",
-      "transformationSubtype": "WINDOW"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.store",
       "sourceField": "businessentityid",
       "targetDataset": "dbt_adventureworks_dwh.dim_customer",
       "targetField": "storebusinessentityid",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_seed.stateprovince",
+      "sourceField": "name",
+      "targetDataset": "dbt_adventureworks_dwh.dim_address",
+      "targetField": "state_name",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
     },
@@ -2358,14 +2366,6 @@
       "targetField": "inputs_facets_dataSource_uri",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.stateprovince",
-      "sourceField": "name",
-      "targetDataset": "dbt_adventureworks_dwh.dim_address",
-      "targetField": "state_name",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
@@ -2432,20 +2432,20 @@
       "transformationSubtype": "IDENTITY"
     },
     {
-      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
-      "sourceField": "day_of_week",
-      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
-      "targetField": "day_of_week",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "num_output_rows",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "daily_row_count_min_expected",
       "transformationType": "DIRECT",
       "transformationSubtype": "AGGREGATION"
+    },
+    {
+      "sourceDataset": "dbt_adventureworks_dwh.dim_date",
+      "sourceField": "day_of_week",
+      "targetDataset": "dbt_adventureworks_dwh.obt_sales",
+      "targetField": "day_of_week",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2464,18 +2464,18 @@
       "transformationSubtype": "CONDITIONAL"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "job",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "job_facets_sql_query",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.salesorderdetail",
       "sourceField": "unitprice",
       "targetDataset": "dbt_adventureworks_dwh.fct_sales",
       "targetField": "revenue",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "job",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "job_facets_sql_query",
       "transformationType": "DIRECT",
       "transformationSubtype": "TRANSFORMATION"
     },
@@ -2504,20 +2504,20 @@
       "transformationSubtype": "TRANSFORMATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "event_year_date",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "event_year_date",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "IDENTITY"
-    },
-    {
       "sourceDataset": "data_ops_inventory_db.commit_history",
       "sourceField": "table_fqn",
       "targetDataset": "data_ops_inventory_db.kpi_results",
       "targetField": "freshness_status",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "event_year_date",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "event_year_date",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "IDENTITY"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2536,6 +2536,14 @@
       "transformationSubtype": "IDENTITY"
     },
     {
+      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
+      "sourceField": "shiptoaddressid",
+      "targetDataset": "dbt_adventureworks_dwh.fct_sales",
+      "targetField": "ship_address_key",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
+    },
+    {
       "sourceDataset": "dbt_adventureworks_dwh.dim_product",
       "sourceField": "productid",
       "targetDataset": "dbt_adventureworks_dwh.obt_sales",
@@ -2550,14 +2558,6 @@
       "targetField": "class",
       "transformationType": "DIRECT",
       "transformationSubtype": "IDENTITY"
-    },
-    {
-      "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
-      "sourceField": "shiptoaddressid",
-      "targetDataset": "dbt_adventureworks_dwh.fct_sales",
-      "targetField": "ship_address_key",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2584,20 +2584,20 @@
       "transformationSubtype": "AGGREGATION"
     },
     {
-      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
-      "sourceField": "inputs",
-      "targetDataset": "data_ops_inventory_db.openlineage",
-      "targetField": "inputs_namespace",
-      "transformationType": "DIRECT",
-      "transformationSubtype": "TRANSFORMATION"
-    },
-    {
       "sourceDataset": "dbt_adventureworks_seed.salesorderheader",
       "sourceField": "status",
       "targetDataset": "dbt_adventureworks_dwh.dim_order_status",
       "targetField": "order_status_name",
       "transformationType": "INDIRECT",
       "transformationSubtype": "CONDITIONAL"
+    },
+    {
+      "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
+      "sourceField": "inputs",
+      "targetDataset": "data_ops_inventory_db.openlineage",
+      "targetField": "inputs_namespace",
+      "transformationType": "DIRECT",
+      "transformationSubtype": "TRANSFORMATION"
     },
     {
       "sourceDataset": "/2ceb942f-5ba5-42b0-8875-9fd8aad59a1b/Files/onelake/raw/openlineage",
@@ -2608,5 +2608,5 @@
       "transformationSubtype": "TRANSFORMATION"
     }
   ],
-  "mermaid": "graph LR\n  dbt_adventureworks_seed_address[\"dbt_adventureworks_seed.address\"]\n  dbt_adventureworks_seed_customer[\"dbt_adventureworks_seed.customer\"]\n  dbt_adventureworks_seed_person[\"dbt_adventureworks_seed.person\"]\n  dbt_adventureworks_seed_creditcard[\"dbt_adventureworks_seed.creditcard\"]\n  dbt_adventureworks_seed_countryregion[\"dbt_adventureworks_seed.countryregion\"]\n  dbt_adventureworks_seed_date[\"dbt_adventureworks_seed.date\"]\n  dbt_adventureworks_seed_salesorderdetail[\"dbt_adventureworks_seed.salesorderdetail\"]\n  dbt_adventureworks_seed_salesorderheader[\"dbt_adventureworks_seed.salesorderheader\"]\n  dbt_adventureworks_seed_productsubcategory[\"dbt_adventureworks_seed.productsubcategory\"]\n  dbt_adventureworks_seed_product[\"dbt_adventureworks_seed.product\"]\n  dbt_adventureworks_seed_salesorderheadersalesreason[\"dbt_adventureworks_seed.salesorderheadersalesreason\"]\n  dbt_adventureworks_seed_productcategory[\"dbt_adventureworks_seed.productcategory\"]\n  dbt_adventureworks_seed_store[\"dbt_adventureworks_seed.store\"]\n  dbt_adventureworks_seed_salesreason[\"dbt_adventureworks_seed.salesreason\"]\n  dbt_adventureworks_seed_stateprovince[\"dbt_adventureworks_seed.stateprovince\"]\n  dbt_jaffle_shop_seed_raw_customers[\"dbt_jaffle_shop_seed.raw_customers\"]\n  dbt_jaffle_shop_seed_raw_payments[\"dbt_jaffle_shop_seed.raw_payments\"]\n  dbt_jaffle_shop_seed_raw_orders[\"dbt_jaffle_shop_seed.raw_orders\"]\n  dbt_jaffle_shop_dwh_customers[\"dbt_jaffle_shop_dwh.customers\"]\n  dbt_jaffle_shop_dwh_orders[\"dbt_jaffle_shop_dwh.orders\"]\n  dbt_jaffle_shop_dwh_stg_customers[\"dbt_jaffle_shop_dwh.stg_customers\"]\n  dbt_jaffle_shop_dwh_stg_orders[\"dbt_jaffle_shop_dwh.stg_orders\"]\n  dbt_jaffle_shop_dwh_stg_payments[\"dbt_jaffle_shop_dwh.stg_payments\"]\n  dbt_adventureworks_dwh_dim_address[\"dbt_adventureworks_dwh.dim_address\"]\n  dbt_adventureworks_dwh_dim_customer[\"dbt_adventureworks_dwh.dim_customer\"]\n  dbt_adventureworks_dwh_dim_credit_card[\"dbt_adventureworks_dwh.dim_credit_card\"]\n  dbt_adventureworks_dwh_dim_product[\"dbt_adventureworks_dwh.dim_product\"]\n  dbt_adventureworks_dwh_dim_order_status[\"dbt_adventureworks_dwh.dim_order_status\"]\n  dbt_adventureworks_dwh_dim_date[\"dbt_adventureworks_dwh.dim_date\"]\n  dbt_adventureworks_dwh_fct_sales[\"dbt_adventureworks_dwh.fct_sales\"]\n  dbt_adventureworks_dwh_obt_sales[\"dbt_adventureworks_dwh.obt_sales\"]\n  data_ops_inventory_db_openlineage[\"data_ops_inventory_db.openlineage\"]\n  data_ops_inventory_db_commit_history[\"data_ops_inventory_db.commit_history\"]\n  data_ops_inventory_db_table_snapshots[\"data_ops_inventory_db.table_snapshots\"]\n  data_ops_inventory_db_kpi_results[\"data_ops_inventory_db.kpi_results\"]\n  demo_etl_customers[\"demo_etl.customers\"]\n  demo_etl_orders[\"demo_etl.orders\"]\n  demo_etl_products[\"demo_etl.products\"]\n  demo_etl_sales[\"demo_etl.sales\"]\n  demo_etl_customers_cleaned[\"demo_etl.customers_cleaned\"]\n  demo_etl_products_enriched[\"demo_etl.products_enriched\"]\n  demo_etl_sales_enriched[\"demo_etl.sales_enriched\"]\n  demo_etl_customer_lifetime_value[\"demo_etl.customer_lifetime_value\"]\n  demo_etl_product_sales_performance[\"demo_etl.product_sales_performance\"]\n  demo_etl_products --> demo_etl_sales_enriched\n  dbt_adventureworks_dwh_dim_address --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_salesorderdetail --> dbt_adventureworks_dwh_fct_sales\n  dbt_adventureworks_seed_store --> dbt_adventureworks_dwh_dim_customer\n  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_customers\n  _2ceb942f_5ba5_42b0_8875_9fd8aad59a1b_Files_onelake_raw_openlineage --> data_ops_inventory_db_openlineage\n  dbt_adventureworks_dwh_dim_customer --> dbt_adventureworks_dwh_obt_sales\n  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_orders\n  datasets_sales_csv --> demo_etl_sales\n  demo_etl_sales --> demo_etl_sales_enriched\n  dbt_adventureworks_dwh_dim_product --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_address --> dbt_adventureworks_dwh_dim_address\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_fct_sales\n  dbt_adventureworks_seed_productcategory --> dbt_adventureworks_dwh_dim_product\n  demo_etl_customers --> demo_etl_customers_cleaned\n  dbt_adventureworks_dwh_fct_sales --> dbt_adventureworks_dwh_obt_sales\n  demo_etl_products --> demo_etl_products_enriched\n  dbt_adventureworks_dwh_dim_order_status --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_date --> dbt_adventureworks_dwh_dim_date\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_credit_card\n  dbt_jaffle_shop_seed_raw_customers --> dbt_jaffle_shop_dwh_customers\n  dbt_adventureworks_seed_customer --> dbt_adventureworks_dwh_dim_customer\n  dbt_adventureworks_seed_stateprovince --> dbt_adventureworks_dwh_dim_address\n  datasets_products_csv --> demo_etl_products\n  demo_etl_orders --> demo_etl_sales_enriched\n  dbt_adventureworks_seed_countryregion --> dbt_adventureworks_dwh_dim_address\n  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_customers\n  datasets_orders_csv --> demo_etl_orders\n  dbt_adventureworks_dwh_dim_date --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_productsubcategory --> dbt_adventureworks_dwh_dim_product\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_order_status\n  dbt_adventureworks_seed_creditcard --> dbt_adventureworks_dwh_dim_credit_card\n  datasets_customers_csv --> demo_etl_customers\n  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_orders\n  dbt_adventureworks_seed_person --> dbt_adventureworks_dwh_dim_customer\n  dbt_adventureworks_dwh_dim_credit_card --> dbt_adventureworks_dwh_obt_sales\n  demo_etl_sales_enriched --> demo_etl_product_sales_performance\n  demo_etl_orders --> demo_etl_customers_cleaned\n  demo_etl_products_enriched --> demo_etl_product_sales_performance\n  demo_etl_sales_enriched --> demo_etl_customer_lifetime_value\n  dbt_adventureworks_seed_product --> dbt_adventureworks_dwh_dim_product\n  data_ops_inventory_db_commit_history --> data_ops_inventory_db_kpi_results\n  style dbt_adventureworks_seed_address,dbt_adventureworks_seed_customer,dbt_adventureworks_seed_person,dbt_adventureworks_seed_creditcard,dbt_adventureworks_seed_countryregion,dbt_adventureworks_seed_date,dbt_adventureworks_seed_salesorderdetail,dbt_adventureworks_seed_salesorderheader,dbt_adventureworks_seed_productsubcategory,dbt_adventureworks_seed_product,dbt_adventureworks_seed_productcategory,dbt_adventureworks_seed_store,dbt_adventureworks_seed_stateprovince,dbt_jaffle_shop_seed_raw_customers,dbt_jaffle_shop_seed_raw_payments,dbt_jaffle_shop_seed_raw_orders,data_ops_inventory_db_commit_history fill:#107C10,color:#fff,stroke:#107C10\n  style dbt_adventureworks_seed_salesorderheadersalesreason,dbt_adventureworks_seed_salesreason,dbt_jaffle_shop_dwh_stg_customers,dbt_jaffle_shop_dwh_stg_orders,dbt_jaffle_shop_dwh_stg_payments,data_ops_inventory_db_table_snapshots fill:#A19F9D,color:#fff,stroke:#A19F9D\n  style dbt_jaffle_shop_dwh_customers,dbt_jaffle_shop_dwh_orders,dbt_adventureworks_dwh_obt_sales,data_ops_inventory_db_openlineage,data_ops_inventory_db_kpi_results,demo_etl_customers_cleaned,demo_etl_customer_lifetime_value,demo_etl_product_sales_performance fill:#D83B01,color:#fff,stroke:#D83B01\n  style dbt_adventureworks_dwh_dim_address,dbt_adventureworks_dwh_dim_customer,dbt_adventureworks_dwh_dim_credit_card,dbt_adventureworks_dwh_dim_product,dbt_adventureworks_dwh_dim_order_status,dbt_adventureworks_dwh_dim_date,dbt_adventureworks_dwh_fct_sales,demo_etl_customers,demo_etl_orders,demo_etl_products,demo_etl_sales,demo_etl_products_enriched,demo_etl_sales_enriched fill:#F2C811,color:#fff,stroke:#F2C811"
+  "mermaid": "graph LR\n  dbt_adventureworks_seed_address[\"dbt_adventureworks_seed.address\"]\n  dbt_adventureworks_seed_customer[\"dbt_adventureworks_seed.customer\"]\n  dbt_adventureworks_seed_person[\"dbt_adventureworks_seed.person\"]\n  dbt_adventureworks_seed_creditcard[\"dbt_adventureworks_seed.creditcard\"]\n  dbt_adventureworks_seed_countryregion[\"dbt_adventureworks_seed.countryregion\"]\n  dbt_adventureworks_seed_date[\"dbt_adventureworks_seed.date\"]\n  dbt_adventureworks_seed_salesorderdetail[\"dbt_adventureworks_seed.salesorderdetail\"]\n  dbt_adventureworks_seed_salesorderheader[\"dbt_adventureworks_seed.salesorderheader\"]\n  dbt_adventureworks_seed_productsubcategory[\"dbt_adventureworks_seed.productsubcategory\"]\n  dbt_adventureworks_seed_product[\"dbt_adventureworks_seed.product\"]\n  dbt_adventureworks_seed_salesorderheadersalesreason[\"dbt_adventureworks_seed.salesorderheadersalesreason\"]\n  dbt_adventureworks_seed_productcategory[\"dbt_adventureworks_seed.productcategory\"]\n  dbt_adventureworks_seed_store[\"dbt_adventureworks_seed.store\"]\n  dbt_adventureworks_seed_salesreason[\"dbt_adventureworks_seed.salesreason\"]\n  dbt_adventureworks_seed_stateprovince[\"dbt_adventureworks_seed.stateprovince\"]\n  dbt_jaffle_shop_seed_raw_customers[\"dbt_jaffle_shop_seed.raw_customers\"]\n  dbt_jaffle_shop_seed_raw_payments[\"dbt_jaffle_shop_seed.raw_payments\"]\n  dbt_jaffle_shop_seed_raw_orders[\"dbt_jaffle_shop_seed.raw_orders\"]\n  dbt_jaffle_shop_dwh_customers[\"dbt_jaffle_shop_dwh.customers\"]\n  dbt_jaffle_shop_dwh_orders[\"dbt_jaffle_shop_dwh.orders\"]\n  dbt_jaffle_shop_dwh_stg_customers[\"dbt_jaffle_shop_dwh.stg_customers\"]\n  dbt_jaffle_shop_dwh_stg_payments[\"dbt_jaffle_shop_dwh.stg_payments\"]\n  dbt_jaffle_shop_dwh_stg_orders[\"dbt_jaffle_shop_dwh.stg_orders\"]\n  dbt_adventureworks_dwh_dim_address[\"dbt_adventureworks_dwh.dim_address\"]\n  dbt_adventureworks_dwh_dim_customer[\"dbt_adventureworks_dwh.dim_customer\"]\n  dbt_adventureworks_dwh_dim_credit_card[\"dbt_adventureworks_dwh.dim_credit_card\"]\n  dbt_adventureworks_dwh_dim_product[\"dbt_adventureworks_dwh.dim_product\"]\n  dbt_adventureworks_dwh_dim_order_status[\"dbt_adventureworks_dwh.dim_order_status\"]\n  dbt_adventureworks_dwh_dim_date[\"dbt_adventureworks_dwh.dim_date\"]\n  dbt_adventureworks_dwh_fct_sales[\"dbt_adventureworks_dwh.fct_sales\"]\n  dbt_adventureworks_dwh_obt_sales[\"dbt_adventureworks_dwh.obt_sales\"]\n  data_ops_inventory_db_openlineage[\"data_ops_inventory_db.openlineage\"]\n  data_ops_inventory_db_commit_history[\"data_ops_inventory_db.commit_history\"]\n  data_ops_inventory_db_table_snapshots[\"data_ops_inventory_db.table_snapshots\"]\n  data_ops_inventory_db_kpi_results[\"data_ops_inventory_db.kpi_results\"]\n  demo_etl_customers[\"demo_etl.customers\"]\n  demo_etl_orders[\"demo_etl.orders\"]\n  demo_etl_products[\"demo_etl.products\"]\n  demo_etl_sales[\"demo_etl.sales\"]\n  demo_etl_customers_cleaned[\"demo_etl.customers_cleaned\"]\n  demo_etl_products_enriched[\"demo_etl.products_enriched\"]\n  demo_etl_sales_enriched[\"demo_etl.sales_enriched\"]\n  demo_etl_customer_lifetime_value[\"demo_etl.customer_lifetime_value\"]\n  demo_etl_product_sales_performance[\"demo_etl.product_sales_performance\"]\n  demo_etl_products --> demo_etl_sales_enriched\n  dbt_adventureworks_dwh_dim_address --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_salesorderdetail --> dbt_adventureworks_dwh_fct_sales\n  dbt_adventureworks_seed_store --> dbt_adventureworks_dwh_dim_customer\n  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_customers\n  _2ceb942f_5ba5_42b0_8875_9fd8aad59a1b_Files_onelake_raw_openlineage --> data_ops_inventory_db_openlineage\n  dbt_adventureworks_dwh_dim_customer --> dbt_adventureworks_dwh_obt_sales\n  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_orders\n  datasets_sales_csv --> demo_etl_sales\n  demo_etl_sales --> demo_etl_sales_enriched\n  dbt_adventureworks_dwh_dim_product --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_address --> dbt_adventureworks_dwh_dim_address\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_fct_sales\n  dbt_adventureworks_seed_productcategory --> dbt_adventureworks_dwh_dim_product\n  demo_etl_customers --> demo_etl_customers_cleaned\n  dbt_adventureworks_dwh_fct_sales --> dbt_adventureworks_dwh_obt_sales\n  demo_etl_products --> demo_etl_products_enriched\n  dbt_adventureworks_dwh_dim_order_status --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_date --> dbt_adventureworks_dwh_dim_date\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_credit_card\n  dbt_jaffle_shop_seed_raw_customers --> dbt_jaffle_shop_dwh_customers\n  dbt_adventureworks_seed_customer --> dbt_adventureworks_dwh_dim_customer\n  dbt_adventureworks_seed_stateprovince --> dbt_adventureworks_dwh_dim_address\n  datasets_products_csv --> demo_etl_products\n  demo_etl_orders --> demo_etl_sales_enriched\n  dbt_adventureworks_seed_countryregion --> dbt_adventureworks_dwh_dim_address\n  dbt_jaffle_shop_seed_raw_payments --> dbt_jaffle_shop_dwh_customers\n  datasets_orders_csv --> demo_etl_orders\n  dbt_adventureworks_dwh_dim_date --> dbt_adventureworks_dwh_obt_sales\n  dbt_adventureworks_seed_productsubcategory --> dbt_adventureworks_dwh_dim_product\n  dbt_adventureworks_seed_salesorderheader --> dbt_adventureworks_dwh_dim_order_status\n  dbt_adventureworks_seed_creditcard --> dbt_adventureworks_dwh_dim_credit_card\n  datasets_customers_csv --> demo_etl_customers\n  dbt_jaffle_shop_seed_raw_orders --> dbt_jaffle_shop_dwh_orders\n  dbt_adventureworks_seed_person --> dbt_adventureworks_dwh_dim_customer\n  data_ops_inventory_db_commit_history --> data_ops_inventory_db_kpi_results\n  dbt_adventureworks_dwh_dim_credit_card --> dbt_adventureworks_dwh_obt_sales\n  demo_etl_sales_enriched --> demo_etl_product_sales_performance\n  demo_etl_orders --> demo_etl_customers_cleaned\n  demo_etl_products_enriched --> demo_etl_product_sales_performance\n  demo_etl_sales_enriched --> demo_etl_customer_lifetime_value\n  dbt_adventureworks_seed_product --> dbt_adventureworks_dwh_dim_product\n  style dbt_adventureworks_seed_address,dbt_adventureworks_seed_customer,dbt_adventureworks_seed_person,dbt_adventureworks_seed_creditcard,dbt_adventureworks_seed_countryregion,dbt_adventureworks_seed_date,dbt_adventureworks_seed_salesorderdetail,dbt_adventureworks_seed_salesorderheader,dbt_adventureworks_seed_productsubcategory,dbt_adventureworks_seed_product,dbt_adventureworks_seed_productcategory,dbt_adventureworks_seed_store,dbt_adventureworks_seed_stateprovince,dbt_jaffle_shop_seed_raw_customers,dbt_jaffle_shop_seed_raw_payments,dbt_jaffle_shop_seed_raw_orders,data_ops_inventory_db_commit_history fill:#107C10,color:#fff,stroke:#107C10\n  style dbt_adventureworks_seed_salesorderheadersalesreason,dbt_adventureworks_seed_salesreason,dbt_jaffle_shop_dwh_stg_customers,dbt_jaffle_shop_dwh_stg_payments,dbt_jaffle_shop_dwh_stg_orders,data_ops_inventory_db_table_snapshots fill:#A19F9D,color:#fff,stroke:#A19F9D\n  style dbt_jaffle_shop_dwh_customers,dbt_jaffle_shop_dwh_orders,dbt_adventureworks_dwh_obt_sales,data_ops_inventory_db_openlineage,data_ops_inventory_db_kpi_results,demo_etl_customers_cleaned,demo_etl_customer_lifetime_value,demo_etl_product_sales_performance fill:#D83B01,color:#fff,stroke:#D83B01\n  style dbt_adventureworks_dwh_dim_address,dbt_adventureworks_dwh_dim_customer,dbt_adventureworks_dwh_dim_credit_card,dbt_adventureworks_dwh_dim_product,dbt_adventureworks_dwh_dim_order_status,dbt_adventureworks_dwh_dim_date,dbt_adventureworks_dwh_fct_sales,demo_etl_customers,demo_etl_orders,demo_etl_products,demo_etl_sales,demo_etl_products_enriched,demo_etl_sales_enriched fill:#F2C811,color:#fff,stroke:#F2C811"
 }

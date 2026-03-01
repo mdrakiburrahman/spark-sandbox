@@ -46,15 +46,25 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
 
   // Filter KPIs by selection
   const filteredKpis = useMemo(() => {
-    return data.kpis.filter((kpi) => {
-      if (selectedDb !== 'ALL') {
-        const [db] = kpi.tableFqn.split('.');
-        if (db !== selectedDb) return false;
-      }
-      if (selectedTable !== 'ALL' && kpi.tableFqn !== selectedTable) return false;
-      return true;
-    });
-  }, [data.kpis, selectedDb, selectedTable]);
+    return data.kpis
+      .filter((kpi) => {
+        if (selectedDb !== 'ALL') {
+          const [db] = kpi.tableFqn.split('.');
+          if (db !== selectedDb) return false;
+        }
+        if (selectedTable !== 'ALL' && kpi.tableFqn !== selectedTable) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        const span = (fqn: string) => {
+          const c = data.commits.get(fqn) ?? [];
+          if (c.length < 2) return 0;
+          const times = c.map((e) => new Date(e.commitTimestamp).getTime());
+          return Math.max(...times) - Math.min(...times);
+        };
+        return span(b.tableFqn) - span(a.tableFqn);
+      });
+  }, [data.kpis, data.commits, selectedDb, selectedTable]);
 
   // Filter commits
   const filteredCommits = useMemo(() => {
