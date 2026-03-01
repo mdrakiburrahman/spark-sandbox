@@ -38,7 +38,7 @@ object LakeDeltaVacuumMetadata extends DeltaVacuumMetadata {
     // =====================================================================
     DesiredDeltaTableConfig(database = "data_ops_inventory_db",       tableNameOrPrefix = "commit_history",                      isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = false,     purgePartitionColumn = SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,    purgePartitionColumnDateType = DateTypes.YearMonthDate,         numPartitionsToRetain = 365,              zOrderColumns = Array("table_fqn")),
     DesiredDeltaTableConfig(database = "data_ops_inventory_db",       tableNameOrPrefix = "kpi_results",                         isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = false,     purgePartitionColumn = SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,    purgePartitionColumnDateType = DateTypes.YearMonthDate,         numPartitionsToRetain = 365,              zOrderColumns = Array("table_fqn")),
-    DesiredDeltaTableConfig(database = "data_ops_inventory_db",       tableNameOrPrefix = "openlineage",                         isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = false,     purgePartitionColumn = SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,    purgePartitionColumnDateType = DateTypes.YearMonthDate,         numPartitionsToRetain = 365,              zOrderColumns = Array("eventType", "event_year_date")),
+    DesiredDeltaTableConfig(database = "data_ops_inventory_db",       tableNameOrPrefix = "openlineage",                         isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = false,     purgePartitionColumn = SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,    purgePartitionColumnDateType = DateTypes.YearMonthDate,         numPartitionsToRetain = 365,              zOrderColumns = Array("eventType")),
     DesiredDeltaTableConfig(database = "data_ops_inventory_db",       tableNameOrPrefix = "table_snapshots",                     isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = false,     purgePartitionColumn = SortableColumnNames.YEAR_MONTH_DATE_EVENT.toString,    purgePartitionColumnDateType = DateTypes.YearMonthDate,         numPartitionsToRetain = 365,              zOrderColumns = Array.empty[String]),
 
     // =====================================================================
@@ -52,15 +52,18 @@ object LakeDeltaVacuumMetadata extends DeltaVacuumMetadata {
     DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "dim_date",                            isPrefix = false,    skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
     DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "dim_order_status",                    isPrefix = false,    skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
     DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "dim_product",                         isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("product_key", "productid")),
-    DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "fct_sales",                           isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("salesorderid", "productid", "customerid")),
-    DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "obt_sales",                           isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("product_key", "customer_key")),
+    DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "fct_sales",                           isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("salesorderid", "product_key", "customer_key")),
+    DesiredDeltaTableConfig(database = "dbt_adventureworks_dwh",      tableNameOrPrefix = "obt_sales",                           isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("salesorderid", "productid", "customerid")),
 
     // =====================================================================
-    // dbt_adventureworks_seed
+    // dbt_adventureworks_seed / dbt_jaffle_shop_seed
     //
     // Seed tables are small CSV loads. VACUUM only, no OPTIMIZE or PURGE.
+    // NOTE: These are mounted from OneLake and are read-only locally.
+    //       The driver excludes them when running in devcontainer.
     // =====================================================================
     DesiredDeltaTableConfig(database = "dbt_adventureworks_seed",     tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
+    DesiredDeltaTableConfig(database = "dbt_jaffle_shop_seed",        tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
 
     // =====================================================================
     // dbt_jaffle_shop_dwh
@@ -69,13 +72,6 @@ object LakeDeltaVacuumMetadata extends DeltaVacuumMetadata {
     // =====================================================================
     DesiredDeltaTableConfig(database = "dbt_jaffle_shop_dwh",        tableNameOrPrefix = "customers",                           isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("customer_id")),
     DesiredDeltaTableConfig(database = "dbt_jaffle_shop_dwh",        tableNameOrPrefix = "orders",                              isPrefix = false,    skipVacuum = false,   skipOptimize = false,    skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array("order_id", "customer_id")),
-
-    // =====================================================================
-    // dbt_jaffle_shop_seed
-    //
-    // Seed tables are small CSV loads. VACUUM only, no OPTIMIZE or PURGE.
-    // =====================================================================
-    DesiredDeltaTableConfig(database = "dbt_jaffle_shop_seed",       tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
 
     // =====================================================================
     // demo_etl
@@ -120,9 +116,12 @@ object MaintenanceDeltaVacuumDriver extends App with Logging {
     "LakeDeltaVacuumMetadata configuration is invalid"
   )
 
-  // Discover current tables
+  // Databases mounted from OneLake are read-only locally but writable in Fabric
+  val readOnlyLocalDatabases = Set("dbt_adventureworks_seed", "dbt_jaffle_shop_seed")
   logInfo("Discovering current Delta tables in the estate...")
-  val allDatabases = metastoreOps.listUserDatabases()
+  val allDatabases = metastoreOps.listUserDatabases().filterNot { db =>
+    !envConfig.isRunningInFabric() && readOnlyLocalDatabases.contains(db)
+  }
   val currentTables = allDatabases.flatMap { db =>
     metastoreOps.listDeltaTables(db).map(table => (db, table))
   }

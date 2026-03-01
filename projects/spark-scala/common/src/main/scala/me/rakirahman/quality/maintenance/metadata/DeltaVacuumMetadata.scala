@@ -4,8 +4,7 @@ package me.rakirahman.quality.maintenance.metadata
   */
 trait DeltaVacuumMetadata {
 
-  /** Represents desired config of all tables - tables not contained in this
-    * list are skipped from maintenance.
+  /** Represents desired config of all tables - tables not contained in this list are skipped from maintenance.
     */
   val desiredDeltaTableConfigs: Array[DesiredDeltaTableConfig]
 }

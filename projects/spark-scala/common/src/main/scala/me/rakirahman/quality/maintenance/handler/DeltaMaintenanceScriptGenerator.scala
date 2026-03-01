@@ -4,8 +4,7 @@ import me.rakirahman.quality.maintenance.metadata._
 import org.apache.spark.internal.Logging
 import scala.collection.mutable.ListBuffer
 
-/** Generates maintenance SQL scripts (VACUUM, OPTIMIZE, PURGE) for Delta
-  * tables based on desired configurations.
+/** Generates maintenance SQL scripts (VACUUM, OPTIMIZE, PURGE) for Delta tables based on desired configurations.
   */
 object DeltaMaintenanceScriptGenerator extends Logging {
 
@@ -43,9 +42,7 @@ object DeltaMaintenanceScriptGenerator extends Logging {
           }
         }
 
-        if (script.nonEmpty && !scriptsToRun.exists(s =>
-              s.databaseName == database && s.tableName == table
-            )) {
+        if (script.nonEmpty && !scriptsToRun.exists(s => s.databaseName == database && s.tableName == table)) {
           scriptsToRun += DeltaMaintenanceScripts(
             database,
             table,
@@ -79,8 +76,7 @@ object DeltaMaintenanceScriptGenerator extends Logging {
     }
   }
 
-  /** Finds tables in the estate that are NOT covered by any desired
-    * configuration.
+  /** Finds tables in the estate that are NOT covered by any desired configuration.
     *
     * @param currentTables
     *   Array of (database, table) pairs.

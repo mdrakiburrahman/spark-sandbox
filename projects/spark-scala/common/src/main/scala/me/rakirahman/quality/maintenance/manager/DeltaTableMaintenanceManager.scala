@@ -10,9 +10,15 @@ import scala.collection.mutable.ListBuffer
   *
   * @param spark
   *   The Spark session.
+  * @param maxRetries
+  *   Maximum number of retries per script.
+  * @param retryDelayMs
+  *   Delay in milliseconds between retries.
   */
 class DeltaTableMaintenanceManager(
-    spark: SparkSession
+    spark: SparkSession,
+    maxRetries: Int = 3,
+    retryDelayMs: Long = 5000
 ) extends TableMaintenanceManager[ListBuffer, DeltaMaintenanceScripts]
     with Logging {
 
@@ -28,19 +34,17 @@ class DeltaTableMaintenanceManager(
       val tableName = script.tableName
       val scriptToRun = script.scriptToRun
       val logPrefix = s"[DB - $databaseName] [TABLE - $tableName]"
-      val maxRetriesPerScript = 10
-      val retryAfterInMilliseconds = 60000
 
       logInfo(s"$logPrefix Initiating maintenance")
       scriptToRun.foreach { script =>
         var retries = 0
         var success = false
 
-        while (retries < maxRetriesPerScript && !success) {
+        while (retries < maxRetries && !success) {
           retries += 1
           try {
             logInfo(
-              s"$logPrefix [ATTEMPT $retries OF $maxRetriesPerScript] Executing script: $script"
+              s"$logPrefix [ATTEMPT $retries OF $maxRetries] Executing script: $script"
             )
 
             spark.sql(script)
@@ -49,20 +53,20 @@ class DeltaTableMaintenanceManager(
           } catch {
             case e: Exception =>
               logWarning(
-                s"$logPrefix Error executing script: $script (Attempt $retries of $maxRetriesPerScript): $e"
+                s"$logPrefix Error executing script: $script (Attempt $retries of $maxRetries): $e"
               )
-              if (retries == maxRetriesPerScript) {
+              if (retries == maxRetries) {
                 logError(
-                  s"Failed despite $maxRetriesPerScript retries with error $e for script: $script"
+                  s"Failed despite $maxRetries retries with error $e for script: $script"
                 )
 
                 false
 
               } else {
                 logWarning(
-                  s"$logPrefix Retrying script: '$script' again in ${retryAfterInMilliseconds} milliseconds"
+                  s"$logPrefix Retrying script: '$script' again in ${retryDelayMs} milliseconds"
                 )
-                Thread.sleep(retryAfterInMilliseconds)
+                Thread.sleep(retryDelayMs)
               }
           }
         }
@@ -87,10 +91,16 @@ object DeltaTableMaintenanceManager {
     *
     * @param spark
     *   The Spark session.
+    * @param maxRetries
+    *   Maximum number of retries per script.
+    * @param retryDelayMs
+    *   Delay in milliseconds between retries.
     */
   def apply(
-      spark: SparkSession
+      spark: SparkSession,
+      maxRetries: Int = 3,
+      retryDelayMs: Long = 5000
   ): DeltaTableMaintenanceManager =
-    new DeltaTableMaintenanceManager(spark)
+    new DeltaTableMaintenanceManager(spark, maxRetries, retryDelayMs)
 
 }
