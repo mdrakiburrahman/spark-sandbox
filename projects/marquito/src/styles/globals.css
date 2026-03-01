@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Inter', 'Roboto', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+body[data-theme="light"] {
+  background-color: #FAF9F8;
+  color: #323130;
+}
+
+body[data-theme="dark"] {
+  background-color: #1B1A19;
+  color: #FAF9F8;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid #0078D4;
+  outline-offset: 2px;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar,
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-track,
+::-webkit-scrollbar-track {
+  background: #F3F2F1;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-thumb,
+::-webkit-scrollbar-thumb {
+  background: #C8C6C4;
+  border-radius: 4px;
+}
+
+body[data-theme="light"] ::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:hover {
+  background: #A19F9D;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #1B1A19;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #484644;
+  border-radius: 4px;
+}
+
+body[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #605E5C;
+}
+
+::selection {
+  background: #0078D4;
+  color: #FFFFFF;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+/* React Flow controls dark mode */
+body[data-theme="dark"] .react-flow__controls {
+  background-color: #252423 !important;
+  border-color: #484644 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+body[data-theme="dark"] .react-flow__controls-button {
+  background-color: #252423 !important;
+  border-color: #484644 !important;
+  fill: #D2D0CE !important;
+  color: #D2D0CE !important;
+}
+
+body[data-theme="dark"] .react-flow__controls-button:hover {
+  background-color: #323130 !important;
+}
+
+body[data-theme="dark"] .react-flow__controls-button svg {
+  fill: #D2D0CE !important;
+}
+
+/* React Flow minimap dark mode */
+body[data-theme="dark"] .react-flow__minimap {
+  background-color: #252423 !important;
+}

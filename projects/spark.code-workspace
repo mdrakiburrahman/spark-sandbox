@@ -16,6 +16,9 @@
       "path": "fabric",
     },
     {
+      "path": "marquito",
+    },
+    {
       "path": "spark-dbt",
     },
     {

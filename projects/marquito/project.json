@@ -1,0 +1,118 @@
+{
+  "name": "marquito",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "rm -rf out .next",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npm install",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "lint": {
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx next lint",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "compile": {
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx tsc --noEmit",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "build": {
+      "dependsOn": ["lint"],
+      "executor": "nx:run-commands",
+      "outputs": ["{projectRoot}/out"],
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx next build",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "serve": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx serve out -l 28081",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "deploy": {
+      "dependsOn": ["build"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "bash scripts/deploy.sh",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/marquito",
+        "commands": [
+          {
+            "command": "npx jest --passWithNoTests",
+            "forwardAllArgs": false
+          }
+        ],
+        "parallel": false
+      }
+    }
+  }
+}
