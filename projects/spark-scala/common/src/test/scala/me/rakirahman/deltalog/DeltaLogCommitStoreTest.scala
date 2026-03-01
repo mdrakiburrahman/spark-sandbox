@@ -93,11 +93,11 @@ class DeltaLogCommitStoreTest extends AnyFunSpec with Matchers {
         result.count() shouldBe 2
 
         val columns = result.columns.toSet
-        columns should contain("databaseName")
-        columns should contain("tableName")
-        columns should contain("tableFqn")
+        columns should contain("database_name")
+        columns should contain("table_name")
+        columns should contain("table_fqn")
         columns should contain("version")
-        columns should contain("commitTimestamp")
+        columns should contain("commit_timestamp")
         columns should contain("operation")
         columns should contain("ingested_at")
         columns should contain("snapshot_date")
@@ -228,12 +228,12 @@ class DeltaLogCommitStoreTest extends AnyFunSpec with Matchers {
         snapshots.count() should be >= 1L
 
         val columns = snapshots.columns.toSet
-        columns should contain("databaseName")
-        columns should contain("tableName")
-        columns should contain("tableFqn")
+        columns should contain("database_name")
+        columns should contain("table_name")
+        columns should contain("table_fqn")
         columns should contain("format")
-        columns should contain("numFiles")
-        columns should contain("sizeInBytes")
+        columns should contain("num_files")
+        columns should contain("size_in_bytes")
         columns should contain("snapshot_date")
 
         // Cleanup

@@ -203,11 +203,11 @@ describe("spark-scala integration tests", () => {
         .filter((r) => !r.startsWith("#") && !r.startsWith("col_name"))
         .map((r) => r.split(/\s+/)[0]);
 
-      expect(columns).toContain("databaseName");
-      expect(columns).toContain("tableName");
-      expect(columns).toContain("tableFqn");
+      expect(columns).toContain("database_name");
+      expect(columns).toContain("table_name");
+      expect(columns).toContain("table_fqn");
       expect(columns).toContain("version");
-      expect(columns).toContain("commitTimestamp");
+      expect(columns).toContain("commit_timestamp");
       expect(columns).toContain("operation");
       expect(columns).toContain("snapshot_date");
     }, 120_000);
@@ -250,7 +250,7 @@ describe("spark-scala integration tests", () => {
 
     it("commit_history covers all tables in the estate", async () => {
       const rows = await SparkSql.queryRowsAsync(
-        `SELECT COUNT(DISTINCT tableFqn) AS cnt FROM ${INVENTORY_DB}.commit_history`,
+        `SELECT COUNT(DISTINCT table_fqn) AS cnt FROM ${INVENTORY_DB}.commit_history`,
       );
       const dataRows = rows.filter((r) => !isNaN(Number(r)));
       expect(dataRows.length).toBeGreaterThan(0);
