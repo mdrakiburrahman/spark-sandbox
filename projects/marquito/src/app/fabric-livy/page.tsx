@@ -157,16 +157,39 @@ export default function FabricLivyPage() {
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 'calc(100vh - 96px)',
-          padding: '48px 24px',
+          padding: '0 24px 48px',
           fontFamily: "'Segoe UI', sans-serif",
         }}
       >
-        <h1 style={{ fontSize: '28px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', marginBottom: '8px' }}>
-          Fabric Livy
-        </h1>
-        <p style={{ fontSize: '14px', color: isDark ? '#A19F9D' : '#605E5C', marginBottom: '32px', textAlign: 'center', maxWidth: '560px', lineHeight: '1.5' }}>
-          Connect to a Microsoft Fabric Lakehouse via the Livy API to monitor Delta table health and visualize data lineage.
-        </p>
+        {/* Fabric-themed hero banner */}
+        <div
+          style={{
+            width: '100%',
+            background: isDark
+              ? 'linear-gradient(135deg, #1a3a2a 0%, #0d4b2e 30%, #117a3e 60%, #1b9e4a 100%)'
+              : 'linear-gradient(135deg, #e6f5ec 0%, #b8e6c8 30%, #6cc98b 60%, #117a3e 100%)',
+            padding: '48px 24px 40px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginBottom: '32px',
+          }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/fabric.svg"
+            alt="Microsoft Fabric"
+            width={48}
+            height={48}
+            style={{ marginBottom: '16px', filter: isDark ? 'brightness(1.2)' : 'none' }}
+          />
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: isDark ? '#FFFFFF' : '#FFFFFF', marginBottom: '8px' }}>
+            Fabric Livy
+          </h1>
+          <p style={{ fontSize: '14px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.9)', marginBottom: '0', textAlign: 'center', maxWidth: '560px', lineHeight: '1.5' }}>
+            Connect to a Microsoft Fabric Lakehouse via the Livy API to monitor Delta table health and visualize data lineage.
+          </p>
+        </div>
 
         <div style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#A19F9D' : '#605E5C', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px', maxWidth: '600px', width: '100%' }}>
           Choose an option

@@ -2,7 +2,7 @@
 
 import { useThemeContext } from './ThemeProvider';
 import ThemeToggle from './ThemeToggle';
-import { Open16Regular, PlugConnected20Regular } from '@fluentui/react-icons';
+import { Open16Regular } from '@fluentui/react-icons';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -100,22 +100,23 @@ const Header = () => {
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px',
+                gap: '5px',
                 textDecoration: 'none',
                 fontSize: '13px',
                 fontFamily: "'Segoe UI', sans-serif",
                 padding: '4px 10px',
                 borderRadius: '4px',
                 color: pathname === '/fabric-livy'
-                  ? '#0078D4'
+                  ? '#117a3e'
                   : isDark ? '#D2D0CE' : '#605E5C',
                 backgroundColor: pathname === '/fabric-livy'
-                  ? isDark ? 'rgba(0,120,212,0.15)' : 'rgba(0,120,212,0.08)'
+                  ? isDark ? 'rgba(17,122,62,0.18)' : 'rgba(17,122,62,0.08)'
                   : 'transparent',
                 fontWeight: pathname === '/fabric-livy' ? 600 : 400,
               }}
             >
-              <PlugConnected20Regular />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/fabric.svg" alt="Fabric" width={16} height={16} style={{ objectFit: 'contain' }} />
               Fabric Livy
             </Link>
           </nav>
