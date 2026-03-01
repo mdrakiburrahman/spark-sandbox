@@ -9,7 +9,7 @@ import {
 } from './types';
 
 const INVALID_SESSION_STATES = new Set(['dead', 'shutting_down', 'killed', 'error', 'not_found']);
-const RETRYABLE_KEYWORDS = ['pending', 'temporary', 'retry', 'timeout', 'unavailable', 'transient', 'throttling', 'rate limit', 'connection reset', 'service busy'];
+const RETRYABLE_KEYWORDS = ['pending', 'temporary', 'retry', 'timeout', 'unavailable', 'transient', 'throttling', 'rate limit', 'connection reset', 'service busy', 'not_found'];
 
 function authHeaders(jwt: string): Record<string, string> {
   return {
@@ -77,6 +77,8 @@ export async function pollSessionUntilIdle(
   abortSignal?: AbortSignal
 ): Promise<void> {
   const interval = LIVY_DEFAULTS.sessionPollIntervalMs;
+  // Fabric may return not_found briefly after session creation; allow a grace period
+  let notFoundRetries = 3;
 
   while (true) {
     if (abortSignal?.aborted) throw new Error('Aborted');
@@ -87,6 +89,16 @@ export async function pollSessionUntilIdle(
     onProgress?.(state);
 
     if (state === 'idle') return;
+
+    if (state === 'not_found') {
+      if (notFoundRetries > 0) {
+        notFoundRetries--;
+        await delay(interval);
+        continue;
+      }
+      throw new Error(`Livy session entered invalid state: ${state}`);
+    }
+
     if (INVALID_SESSION_STATES.has(state)) {
       throw new Error(`Livy session entered invalid state: ${state}`);
     }
@@ -220,7 +232,7 @@ export async function connectWithRetry(
   config: LivyConfig,
   existingSessionId?: string | null,
   onProgress?: (status: string, sql?: string) => void,
-  retries: number = 1,
+  retries: number = 2,
   retryDelayMs: number = 10_000
 ): Promise<{ sessionId: string; warning?: string }> {
   let warning: string | undefined;

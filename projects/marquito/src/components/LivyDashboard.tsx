@@ -5,6 +5,7 @@ import { useThemeContext } from './ThemeProvider';
 import CommitFreshness from './CommitFreshness';
 import RowCompleteness from './RowCompleteness';
 import UberLineage from './UberLineage';
+import LivyColumnLineage from './LivyColumnLineage';
 import { KpiResult, DeltaCommitEntry, UberLineage as UberLineageType } from '@/lib/livy/types';
 import {
   CheckmarkCircle20Filled,
@@ -27,6 +28,7 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
   const { isDark } = useThemeContext();
   const [selectedDb, setSelectedDb] = useState<string>('ALL');
   const [selectedTable, setSelectedTable] = useState<string>('ALL');
+  const [showColumnLineage, setShowColumnLineage] = useState(false);
 
   // Derive unique databases
   const databases = useMemo(() => {
@@ -209,15 +211,41 @@ const LivyDashboard = ({ data, onDisconnect }: LivyDashboardProps) => {
           overflow: 'hidden',
         }}
       >
-        <div style={{ padding: '12px 16px', backgroundColor: isDark ? '#252423' : '#FAF9F8', borderBottom: `1px solid ${isDark ? '#323130' : '#EDEBE9'}` }}>
-          <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Uber Lineage
-          </span>
-          <span style={{ fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D', marginLeft: '8px' }}>
-            All tables and their relationships
-          </span>
+        <div style={{ padding: '12px 16px', backgroundColor: isDark ? '#252423' : '#FAF9F8', borderBottom: `1px solid ${isDark ? '#323130' : '#EDEBE9'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#FAF9F8' : '#323130', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              {showColumnLineage ? 'Column-Level Lineage' : 'Uber Lineage'}
+            </span>
+            <span style={{ fontSize: '11px', color: isDark ? '#605E5C' : '#A19F9D', marginLeft: '8px' }}>
+              {showColumnLineage
+                ? `${data.lineage.columnEdges.length} column edges`
+                : 'All tables and their relationships'}
+            </span>
+          </div>
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '12px',
+              color: isDark ? '#A19F9D' : '#605E5C',
+              cursor: 'pointer',
+              fontFamily: "'Segoe UI', sans-serif",
+              userSelect: 'none',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={showColumnLineage}
+              onChange={(e) => setShowColumnLineage(e.target.checked)}
+              style={{ accentColor: '#0078D4', cursor: 'pointer' }}
+            />
+            Column lineage
+          </label>
         </div>
-        <UberLineage lineage={data.lineage} />
+        {showColumnLineage
+          ? <LivyColumnLineage lineage={data.lineage} />
+          : <UberLineage lineage={data.lineage} />}
       </div>
     </div>
   );

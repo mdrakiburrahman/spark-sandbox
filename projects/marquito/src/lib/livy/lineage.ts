@@ -1,7 +1,7 @@
-import { LivyConfig, LineageEdge, LineageDataset, UberLineage } from './types';
+import { LivyConfig, LineageEdge, LineageDataset, UberLineage, LivyColumnLineageEdge } from './types';
 import { executeQuery } from './client';
 import { getAllTables, getTableSnapshot } from './deltalog';
-import { tableLineageQuery, tableLineageFromJsonQuery } from './queries';
+import { tableLineageQuery, tableLineageFromJsonQuery, columnLineageQuery } from './queries';
 
 // Lineage extraction via OpenLineage telemetry table
 
@@ -27,23 +27,50 @@ export async function extractTableLineage(
   sessionId: string,
   locationMap?: Map<string, string>
 ): Promise<LineageEdge[]> {
-  // Try flattened columns first (faster, avoids JSON parsing)
+  // Try flattened columns first (faster, avoids JSON parsing).
+  // If a query succeeds but returns 0 rows, continue to next variant.
   const queries = [tableLineageQuery(), tableLineageFromJsonQuery()];
 
   for (const query of queries) {
     try {
       const result = await executeQuery(config, sessionId, query.sql);
-      return result.rows.map((row) => ({
+      const edges = result.rows.map((row) => ({
         source: resolveDatasetName(String(row['input_name'] ?? ''), locationMap),
         target: resolveDatasetName(String(row['output_name'] ?? ''), locationMap),
         jobName: String(row['job_name'] ?? ''),
       }));
+      if (edges.length > 0) return edges;
+      // 0 rows — try next query variant
     } catch {
-      // Try next query variant
+      // Query failed — try next variant
     }
   }
 
   return [];
+}
+
+/** Extracts column-level lineage edges from OpenLineage telemetry.
+ *  Uses the columnLineageQuery to parse request_body JSON for column mappings.
+ */
+export async function extractColumnLineage(
+  config: LivyConfig,
+  sessionId: string,
+  locationMap?: Map<string, string>
+): Promise<LivyColumnLineageEdge[]> {
+  const query = columnLineageQuery();
+  try {
+    const result = await executeQuery(config, sessionId, query.sql);
+    return result.rows.map((row) => ({
+      sourceDataset: resolveDatasetName(String(row['source_name'] ?? ''), locationMap),
+      sourceField: String(row['source_field'] ?? ''),
+      targetDataset: resolveDatasetName(String(row['target_name'] ?? ''), locationMap),
+      targetField: String(row['target_field'] ?? ''),
+      transformationType: String(row['transformation_type'] ?? 'UNKNOWN'),
+      transformationSubtype: String(row['transformation_subtype'] ?? 'UNKNOWN'),
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /** Builds a location→FQN map by running DESCRIBE DETAIL on each table.
@@ -94,7 +121,7 @@ export async function buildUberLineage(
     const datasets: LineageDataset[] = tables.map((t) => ({
       fqn: t.fqn, database: t.database, table: t.table, role: 'standalone' as const,
     }));
-    return { datasets, edges: [], mermaid: toMermaid(datasets, []) };
+    return { datasets, edges: [], columnEdges: [], mermaid: toMermaid(datasets, []) };
   }
 
   // Build location map for resolving file paths → database.table names
@@ -102,7 +129,23 @@ export async function buildUberLineage(
   const locationMap = await buildLocationMap(config, sessionId, tables, onProgress);
 
   onProgress?.('Extracting table lineage edges...');
-  const edges = await extractTableLineage(config, sessionId, locationMap);
+  let edges = await extractTableLineage(config, sessionId, locationMap);
+
+  onProgress?.('Extracting column lineage edges...');
+  const columnEdges = await extractColumnLineage(config, sessionId, locationMap);
+
+  // Fallback: derive table-level edges from column-level edges when table queries returned nothing.
+  // This handles Fabric scenarios where inputs array may be empty but column lineage facets exist.
+  if (edges.length === 0 && columnEdges.length > 0) {
+    const edgeSet = new Set<string>();
+    for (const ce of columnEdges) {
+      const key = `${ce.sourceDataset}→${ce.targetDataset}`;
+      if (!edgeSet.has(key)) {
+        edgeSet.add(key);
+        edges.push({ source: ce.sourceDataset, target: ce.targetDataset });
+      }
+    }
+  }
 
   // Build dataset role map
   const sourceSet = new Set(edges.map((e) => e.source));
@@ -127,7 +170,7 @@ export async function buildUberLineage(
   });
 
   const mermaid = toMermaid(datasets, edges);
-  return { datasets, edges, mermaid };
+  return { datasets, edges, columnEdges, mermaid };
 }
 
 // Mermaid diagram generation (ported from OpenLineageExtractor.toMermaid)

@@ -177,8 +177,18 @@ export interface LineageDataset {
   role: 'source' | 'intermediate' | 'target' | 'standalone';
 }
 
+export interface LivyColumnLineageEdge {
+  sourceDataset: string;
+  sourceField: string;
+  targetDataset: string;
+  targetField: string;
+  transformationType: string;
+  transformationSubtype: string;
+}
+
 export interface UberLineage {
   datasets: LineageDataset[];
   edges: LineageEdge[];
+  columnEdges: LivyColumnLineageEdge[];
   mermaid: string;
 }

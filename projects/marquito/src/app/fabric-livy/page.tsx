@@ -23,8 +23,8 @@ export default function FabricLivyPage() {
   const { isDark } = useThemeContext();
   const [mode, setMode] = useState<'choose' | 'connect' | 'dashboard'>('choose');
   const [jwt, setJwt] = useState('');
-  const [workspaceId, setWorkspaceId] = useState('');
-  const [lakehouseId, setLakehouseId] = useState('');
+  const [workspaceId, setWorkspaceId] = useState('3ea60ae5-e979-4d31-a317-66491ab497fb');
+  const [lakehouseId, setLakehouseId] = useState('4d8783be-e822-46d0-82e4-9b77c7f33992');
   const [userSessionId, setUserSessionId] = useState('');
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [connectionPhase, setConnectionPhase] = useState<ConnectionPhase>('idle');
@@ -65,7 +65,8 @@ export default function FabricLivyPage() {
       const { fetchAllKpis } = await import('@/lib/livy/deltalog');
       const { buildUberLineage } = await import('@/lib/livy/lineage');
 
-      const cachedSession = userSessionId || sessionId;
+      // Only reuse a session if the user explicitly provided one
+      const cachedSession = userSessionId.trim() ? userSessionId.trim() : null;
       const result = await connectWithRetry(
         config,
         cachedSession,
