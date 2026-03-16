@@ -26,7 +26,7 @@
    cd ~/
 
    read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
-   read -p "Enter your Microsoft email (e.g. 'your-msft-alias@blah.com'): " user_email
+   read -p "Enter your GitHub email (e.g. 'your-email@blah.com'): " user_email
    read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
     
    git clone https://github.com/mdrakiburrahman/spark-sandbox.git

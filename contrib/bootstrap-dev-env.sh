@@ -20,6 +20,12 @@ else
   echo "docker is already installed."
 fi
 
+sudo mkdir -p /etc/docker
+echo '{"max-concurrent-downloads": 32}' | sudo tee /etc/docker/daemon.json > /dev/null
+
+echo "docker is installed, restarting..."
+sudo systemctl restart docker
+
 sudo chmod 666 /var/run/docker.sock
 docker container ls
 docker ps -q | xargs -r docker kill
