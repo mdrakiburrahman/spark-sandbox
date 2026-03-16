@@ -31,3 +31,7 @@ This repository contains POCs/POTs in Apache Spark.
 1. Dig into:
    - [spark-scala](projects/spark-scala/README.md) to run local Scala demonstrations.
    - [spark-dbt](projects/spark-dbt/README.md) to run local dbt demonstrations.
+
+## Repo Architecture
+
+![Diagram](/.imgs/repo-architecture.png)
