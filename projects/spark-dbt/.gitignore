@@ -9,3 +9,4 @@ __pycache__/
 .temp/
 .venv/*
 livy-session-id.txt
+**/*.dbdiagram

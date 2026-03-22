@@ -1,73 +1,84 @@
-// DBML generated from dbt project: jaffle_shop
-// Generated at: 2026-01-26T01:24:21Z
-
+//Tables (based on the selection criteria)
+//--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table customers {
-  customer_id bigint [pk]
-  first_name string
-  last_name string
-  first_order date
-  most_recent_order date
-  number_of_orders bigint
-  customer_lifetime_value double
-}
+  "customer_id" "bigint" [note: "This is a unique identifier for a customer"]
+  "first_name" "string" [note: "Customer's first name. PII."]
+  "last_name" "string" [note: "Customer's last name. PII."]
+  "first_order" "date" [note: "Date (UTC) of a customer's first order"]
+  "most_recent_order" "date" [note: "Date (UTC) of a customer's most recent order"]
+  "number_of_orders" "bigint" [note: "Count of the number of orders a customer has placed"]
+  "customer_lifetime_value" "double"
+  "total_order_amount" "unknown" [note: "Total value (AUD) of a customer's orders"]
 
+  Note: "This table has basic information about a customer, as well as some derived facts based on a customer's orders"
+}
+//--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table orders {
-  order_id bigint [pk]
-  customer_id bigint
-  order_date date
-  status string
-  credit_card_amount double
-  coupon_amount double
-  bank_transfer_amount double
-  gift_card_amount double
-  amount double
-}
+  "order_id" "bigint" [note: "This is a unique identifier for an order"]
+  "customer_id" "bigint" [note: "Foreign key to the customers table"]
+  "order_date" "date" [note: "Date (UTC) that the order was placed"]
+  "status" "string" [note: "Orders can be one of the following statuses:\n\n| status         | description                                                                                                            |\n| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n| placed         | The order has been placed but has not yet left the warehouse                                                           |\n| shipped        | The order has ben shipped to the customer and is currently in transit                                                  |\n| completed      | The order has been received by the customer                                                                            |\n| return_pending | The customer has indicated that they would like to return the order, but it has not yet been received at the warehouse |\n| returned       | The order has been returned by the customer and received at the warehouse                                              |"]
+  "credit_card_amount" "double" [note: "Amount of the order (AUD) paid for by credit card"]
+  "coupon_amount" "double" [note: "Amount of the order (AUD) paid for by coupon"]
+  "bank_transfer_amount" "double" [note: "Amount of the order (AUD) paid for by bank transfer"]
+  "gift_card_amount" "double" [note: "Amount of the order (AUD) paid for by gift card"]
+  "amount" "double" [note: "Total amount (AUD) of the order"]
 
-Table raw_customers {
-  id bigint [pk]
-  first_name string
-  last_name string
+  Note: "This table has basic information about orders, as well as some derived facts based on payments"
 }
-
-Table raw_orders {
-  id bigint [pk]
-  user_id bigint
-  order_date date
-  status string
-}
-
-Table raw_payments {
-  id bigint [pk]
-  order_id bigint
-  payment_method string
-  amount bigint
-}
-
+//--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_customers {
-  customer_id bigint [pk]
-  first_name string
-  last_name string
-}
+  "customer_id" "bigint"
+  "first_name" "string"
+  "last_name" "string"
 
+  Note: ""
+}
+//--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_orders {
-  order_id bigint [pk]
-  customer_id bigint
-  order_date date
-  status string
-}
+  "order_id" "bigint"
+  "customer_id" "bigint"
+  "order_date" "date"
+  "status" "string"
 
+  Note: ""
+}
+//--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_payments {
-  payment_id bigint [pk]
-  order_id bigint
-  payment_method string
-  amount double
+  "payment_id" "bigint"
+  "order_id" "bigint"
+  "payment_method" "string"
+  "amount" "double"
+
+  Note: ""
 }
+//--configured at schema: spark_catalog.dbt_jaffle_shop_seed
+Table raw_customers {
+  "id" "bigint"
+  "first_name" "string"
+  "last_name" "string"
 
-// Relationships from dbt tests
-Ref: orders.customer_id > customers.customer_id
+  Note: ""
+}
+//--configured at schema: spark_catalog.dbt_jaffle_shop_seed
+Table raw_orders {
+  "id" "bigint"
+  "user_id" "bigint"
+  "order_date" "date"
+  "status" "string"
 
-// Inferred relationships (from column naming patterns)
-Ref: raw_orders.user_id > raw_customers.id
-Ref: raw_payments.order_id > raw_orders.id
-Ref: stg_orders.customer_id > stg_customers.customer_id
-Ref: stg_payments.order_id > stg_orders.order_id
+  Note: ""
+}
+//--configured at schema: spark_catalog.dbt_jaffle_shop_seed
+Table raw_payments {
+  "id" "bigint"
+  "order_id" "bigint"
+  "payment_method" "string"
+  "amount" "bigint"
+
+  Note: ""
+}
+//Refs (based on the DBT Relationship Tests)
+Ref: orders."customer_id" > customers."customer_id"
+Ref: stg_orders."customer_id" > stg_customers."customer_id"
+Ref: stg_payments."order_id" > stg_orders."order_id"

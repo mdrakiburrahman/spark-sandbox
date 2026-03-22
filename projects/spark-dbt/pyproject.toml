@@ -19,6 +19,8 @@ path = ".venv"
 skip-install = true
 dependencies = [
   "dbt-fabricspark @ https://rakirahman.blob.core.windows.net/public/whls/dbt_fabricspark-1.9.1-py3-none-any.whl",
+  "dbterd",
+  "dbt-artifacts-parser",
 ]
 
 [tool.hatch.envs.default.env-vars]
