@@ -22,6 +22,11 @@ if [ "$cmake_version" != "$required_version" ]; then
 fi
 cmake_location=$(pip show cmake | grep Location | awk '{print $2}')
 
+if pip show fabric &>/dev/null; then
+    echo "Removing conflicting 'fabric' (SSH) package from here https://github.com/fabric/fabric/issues/1830..."
+    pip uninstall fabric -y
+fi
+
 if ! command -v fab &>/dev/null; then
     echo "fab cli not found. installing..."
     retry pip install ms-fabric-cli==1.0.1 --upgrade
