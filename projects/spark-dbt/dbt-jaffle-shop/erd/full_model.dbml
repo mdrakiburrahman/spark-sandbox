@@ -1,7 +1,7 @@
 //Tables (based on the selection criteria)
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table customers {
-  "customer_id" "bigint" [note: "This is a unique identifier for a customer"]
+  "customer_id" "bigint" [pk, note: "This is a unique identifier for a customer"]
   "first_name" "string" [note: "Customer's first name. PII."]
   "last_name" "string" [note: "Customer's last name. PII."]
   "first_order" "date" [note: "Date (UTC) of a customer's first order"]
@@ -14,7 +14,7 @@ Table customers {
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table orders {
-  "order_id" "bigint" [note: "This is a unique identifier for an order"]
+  "order_id" "bigint" [pk, note: "This is a unique identifier for an order"]
   "customer_id" "bigint" [note: "Foreign key to the customers table"]
   "order_date" "date" [note: "Date (UTC) that the order was placed"]
   "status" "string" [note: "Orders can be one of the following statuses:\n\n| status         | description                                                                                                            |\n| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n| placed         | The order has been placed but has not yet left the warehouse                                                           |\n| shipped        | The order has ben shipped to the customer and is currently in transit                                                  |\n| completed      | The order has been received by the customer                                                                            |\n| return_pending | The customer has indicated that they would like to return the order, but it has not yet been received at the warehouse |\n| returned       | The order has been returned by the customer and received at the warehouse                                              |"]
@@ -28,57 +28,53 @@ Table orders {
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_customers {
-  "customer_id" "bigint"
+  "customer_id" "bigint" [pk]
   "first_name" "string"
   "last_name" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_orders {
-  "order_id" "bigint"
+  "order_id" "bigint" [pk]
   "customer_id" "bigint"
   "order_date" "date"
   "status" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_payments {
-  "payment_id" "bigint"
+  "payment_id" "bigint" [pk]
   "order_id" "bigint"
   "payment_method" "string"
   "amount" "double"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_seed
 Table raw_customers {
-  "id" "bigint"
+  "id" "bigint" [pk]
   "first_name" "string"
   "last_name" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_seed
 Table raw_orders {
-  "id" "bigint"
+  "id" "bigint" [pk]
   "user_id" "bigint"
   "order_date" "date"
   "status" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_seed
 Table raw_payments {
-  "id" "bigint"
+  "id" "bigint" [pk]
   "order_id" "bigint"
   "payment_method" "string"
   "amount" "bigint"
 
-  Note: ""
 }
 //Refs (based on the DBT Relationship Tests)
 Ref: orders."customer_id" > customers."customer_id"
+Ref: raw_orders."user_id" > raw_customers."id"
+Ref: raw_payments."order_id" > raw_orders."id"
 Ref: stg_orders."customer_id" > stg_customers."customer_id"
 Ref: stg_payments."order_id" > stg_orders."order_id"

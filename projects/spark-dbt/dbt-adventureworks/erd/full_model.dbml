@@ -1,37 +1,34 @@
 //Tables (based on the selection criteria)
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_address {
-  "address_key" "string" [note: "The surrogate key of the addressid"]
-  "addressid" "int" [note: "The natural key"]
+  "address_key" "string" [pk, note: "The surrogate key of the addressid"]
+  "addressid" "int" [pk, note: "The natural key"]
   "city_name" "string" [note: "The city name"]
   "state_name" "string" [note: "The state name"]
   "country_name" "string" [note: "The country name"]
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_credit_card {
   "creditcard_key" "string" [note: "The surrogate key of the creditcard id"]
-  "creditcardid" "int" [note: "The natural key of the creditcard"]
+  "creditcardid" "int" [pk, note: "The natural key of the creditcard"]
   "cardtype" "string" [note: "The card name"]
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_customer {
-  "customer_key" "string" [note: "The surrogate key of the customer"]
-  "customerid" "int" [note: "The natural key of the customer"]
+  "customer_key" "string" [pk, note: "The surrogate key of the customer"]
+  "customerid" "int" [pk, note: "The natural key of the customer"]
   "businessentityid" "int"
   "fullname" "string" [note: "The customer name. Adopted as customer_fullname when person name is not null."]
   "storebusinessentityid" "int"
   "storename" "string" [note: "The store name."]
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_date {
-  "date_key" "string" [note: "The surrogate key of the date table"]
-  "date_day" "date" [note: "The natural key of the date table"]
+  "date_key" "string" [pk, note: "The surrogate key of the date table"]
+  "date_day" "date" [pk, note: "The natural key of the date table"]
   "prior_date_day" "date"
   "next_date_day" "date"
   "prior_year_date_day" "date"
@@ -41,20 +38,18 @@ Table dim_date {
   "day_of_month" "int"
   "day_of_year" "int"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_order_status {
-  "order_status_key" "string" [note: "The surrogate key of the order status"]
-  "order_status" "smallint" [note: "The natural key of the order status table"]
+  "order_status_key" "string" [pk, note: "The surrogate key of the order status"]
+  "order_status" "smallint" [pk, note: "The natural key of the order status table"]
   "order_status_name" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_product {
-  "product_key" "string" [note: "The surrogate key of the product"]
-  "productid" "int" [note: "The natural key of the product"]
+  "product_key" "string" [pk, note: "The surrogate key of the product"]
+  "productid" "int" [pk, note: "The natural key of the product"]
   "product_name" "string" [note: "The product name"]
   "productnumber" "string"
   "color" "string"
@@ -62,11 +57,10 @@ Table dim_product {
   "product_subcategory_name" "string"
   "product_category_name" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table fct_sales {
-  "sales_key" "string" [note: "The surrogate key of the fct sales"]
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
   "product_key" "string" [note: "The foreign key of the product"]
   "customer_key" "string" [note: "The foreign key of the customer"]
   "creditcard_key" "string" [note: "The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash."]
@@ -79,11 +73,10 @@ Table fct_sales {
   "orderqty" "smallint" [note: "The quantity of the product"]
   "revenue" "decimal(16,0)" [note: "The revenue obtained by multiplying unitprice and orderqty"]
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table obt_sales {
-  "sales_key" "string" [note: "The surrogate key of the fct sales"]
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
   "salesorderid" "int" [note: "The natural key of the saleorderheader"]
   "salesorderdetailid" "int" [note: "The natural key of the salesorderdetail"]
   "unitprice" "decimal(10,0)" [note: "The unit price of the product"]
@@ -119,11 +112,10 @@ Table obt_sales {
   "day_of_month" "int"
   "day_of_year" "int"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table address {
-  "addressid" "int"
+  "addressid" "int" [pk]
   "addressline1" "string"
   "addressline2" "string"
   "city" "string"
@@ -133,39 +125,35 @@ Table address {
   "rowguid" "string"
   "modifieddate" "timestamp"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table countryregion {
-  "countryregioncode" "string"
+  "countryregioncode" "string" [pk]
   "modifieddate" "timestamp"
   "name" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table creditcard {
-  "creditcardid" "int"
+  "creditcardid" "int" [pk]
   "cardtype" "string"
   "expyear" "smallint"
   "modifieddate" "timestamp"
   "expmonth" "smallint"
   "cardnumber" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table customer {
-  "customerid" "int"
+  "customerid" "int" [pk]
   "personid" "int"
   "storeid" "int"
   "territoryid" "int"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table date {
-  "date_day" "date"
+  "date_day" "date" [pk]
   "prior_date_day" "date"
   "next_date_day" "date"
   "prior_year_date_day" "date"
@@ -175,11 +163,10 @@ Table date {
   "day_of_month" "int"
   "day_of_year" "int"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table person {
-  "businessentityid" "int"
+  "businessentityid" "int" [pk]
   "title" "string"
   "firstname" "string"
   "middlename" "string"
@@ -191,11 +178,10 @@ Table person {
   "rowguid" "string"
   "emailpromotion" "int"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table product {
-  "productid" "int"
+  "productid" "int" [pk]
   "name" "string"
   "safetystocklevel" "smallint"
   "finishedgoodsflag" "boolean"
@@ -216,28 +202,25 @@ Table product {
   "sellstartdate" "timestamp"
   "weight" "decimal(10,0)"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table productcategory {
-  "productcategoryid" "int"
+  "productcategoryid" "int" [pk]
   "name" "string"
   "modifieddate" "timestamp"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table productsubcategory {
-  "productsubcategoryid" "int"
+  "productsubcategoryid" "int" [pk]
   "productcategoryid" "int"
   "name" "string"
   "modifieddate" "timestamp"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table salesorderdetail {
-  "salesorderid" "int"
+  "salesorderid" "int" [pk]
   "orderqty" "smallint"
   "salesorderdetailid" "int"
   "unitprice" "decimal(10,0)"
@@ -251,7 +234,7 @@ Table salesorderdetail {
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table salesorderheader {
-  "salesorderid" "int"
+  "salesorderid" "int" [pk]
   "shipmethodid" "int"
   "billtoaddressid" "int"
   "modifieddate" "timestamp"
@@ -279,7 +262,7 @@ Table salesorderheader {
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table salesorderheadersalesreason {
-  "salesorderid" "int"
+  "salesorderid" "int" [pk]
   "modifieddate" "timestamp"
   "salesreasonid" "int"
 
@@ -287,16 +270,15 @@ Table salesorderheadersalesreason {
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table salesreason {
-  "salesreasonid" "int"
+  "salesreasonid" "int" [pk]
   "name" "string"
   "reasontype" "string"
   "modifieddate" "timestamp"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table stateprovince {
-  "stateprovinceid" "int"
+  "stateprovinceid" "int" [pk]
   "countryregioncode" "string"
   "modifieddate" "timestamp"
   "rowguid" "string"
@@ -305,16 +287,14 @@ Table stateprovince {
   "isonlystateprovinceflag" "boolean"
   "stateprovincecode" "string"
 
-  Note: ""
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table store {
-  "businessentityid" "int"
+  "businessentityid" "int" [pk]
   "storename" "string"
   "salespersonid" "int"
   "modifieddate" "timestamp"
 
-  Note: ""
 }
 //Refs (based on the DBT Relationship Tests)
 Ref: fct_sales."creditcard_key" > dim_credit_card."creditcard_key"
@@ -323,3 +303,20 @@ Ref: fct_sales."order_date_key" > dim_date."date_key"
 Ref: fct_sales."order_status_key" > dim_order_status."order_status_key"
 Ref: fct_sales."product_key" > dim_product."product_key"
 Ref: fct_sales."ship_address_key" > dim_address."address_key"
+
+
+//Refs (based on the Source Relationship Tests)
+Ref: address."stateprovinceid" > stateprovince."stateprovinceid"
+Ref: customer."personid" > person."businessentityid"
+Ref: customer."storeid" > store."businessentityid"
+Ref: product."productsubcategoryid" > productsubcategory."productsubcategoryid"
+Ref: productsubcategory."productcategoryid" > productcategory."productcategoryid"
+Ref: salesorderdetail."productid" > product."productid"
+Ref: salesorderdetail."salesorderid" > salesorderheader."salesorderid"
+Ref: salesorderheader."billtoaddressid" > address."addressid"
+Ref: salesorderheader."creditcardid" > creditcard."creditcardid"
+Ref: salesorderheader."customerid" > customer."customerid"
+Ref: salesorderheader."shiptoaddressid" > address."addressid"
+Ref: salesorderheadersalesreason."salesorderid" > salesorderheader."salesorderid"
+Ref: salesorderheadersalesreason."salesreasonid" > salesreason."salesreasonid"
+Ref: stateprovince."countryregioncode" > countryregion."countryregioncode"

@@ -7,10 +7,10 @@ a full_model.dbml file in each project's erd/ directory.
 
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
-from glob import glob
 from pathlib import Path
 
 from dbterd.api import DbtErd
@@ -28,6 +28,131 @@ def patch_manifest(manifest: dict) -> int:
                 v["database"] = "spark_catalog"
                 patched += 1
     return patched
+
+
+def get_primary_keys(manifest: dict, catalog: dict) -> set:
+    """Find primary key columns from tests (unique+not_null) and catalog first-column fallback."""
+    # Collect explicit PKs from unique + not_null tests
+    column_tests = {}  # (model_name, column_name) -> set of test names
+    for node in manifest.get("nodes", {}).values():
+        if node.get("resource_type") != "test":
+            continue
+        test_meta = node.get("test_metadata", {})
+        test_name = test_meta.get("name", "")
+        if test_name not in ("unique", "not_null"):
+            continue
+        col = node.get("column_name")
+        if not col:
+            continue
+        refs = node.get("refs", [])
+        for ref in refs:
+            model_name = ref.get("name", "") if isinstance(ref, dict) else ref
+            if model_name:
+                key = (model_name.lower(), col.lower())
+                column_tests.setdefault(key, set()).add(test_name)
+                break
+
+    pks = {k for k, v in column_tests.items() if {"unique", "not_null"}.issubset(v)}
+
+    # Fallback: for tables without explicit PKs, use first column (index 0) from catalog
+    tables_with_pks = {table for table, _ in pks}
+    for node in catalog.get("nodes", {}).values():
+        table_name = node.get("metadata", {}).get("name", "").lower()
+        if not table_name or table_name in tables_with_pks:
+            continue
+        columns = node.get("columns", {})
+        for col_data in columns.values():
+            if col_data.get("index", -1) == 0:
+                pks.add((table_name, col_data.get("name", "").lower()))
+                break
+
+    return pks
+
+
+def get_source_relationships(manifest: dict) -> list:
+    """Extract relationship tests between source tables, mapped to seed names."""
+    refs = []
+    for node in manifest.get("nodes", {}).values():
+        if node.get("resource_type") != "test":
+            continue
+        test_meta = node.get("test_metadata", {})
+        if test_meta.get("name") != "relationships":
+            continue
+
+        column_name = node.get("column_name")
+        kwargs = test_meta.get("kwargs", {})
+        to_field = kwargs.get("field")
+        to_expr = kwargs.get("to", "")
+
+        if "source(" not in to_expr:
+            continue
+
+        match = re.search(r"source\(['\"]([^'\"]+)['\"],\s*['\"]([^'\"]+)['\"]\)", to_expr)
+        if not match:
+            continue
+        to_table = match.group(2)
+
+        # depends_on has both the FROM and TO source nodes; pick the one that isn't to_table
+        from_table = None
+        for dep in node.get("depends_on", {}).get("nodes", []):
+            if dep.startswith("source."):
+                parts = dep.split(".")
+                if len(parts) >= 4 and parts[3] != to_table:
+                    from_table = parts[3]
+                    break
+
+        if from_table and column_name and to_table and to_field:
+            refs.append((from_table, column_name, to_table, to_field))
+
+    return refs
+
+
+def enhance_dbml(dbml: str, manifest: dict, catalog: dict) -> str:
+    """Post-process DBML to add [pk] markers and source-level relationships."""
+    pks = get_primary_keys(manifest, catalog)
+    source_refs = get_source_relationships(manifest)
+
+    lines = dbml.split("\n")
+    enhanced = []
+    current_table = None
+
+    for line in lines:
+        # Track current table
+        if line.startswith("Table "):
+            table_match = re.match(r'Table\s+"?([^"\s{]+)"?\s*\{', line)
+            if table_match:
+                current_table = table_match.group(1).lower()
+        elif line.strip() == "}":
+            current_table = None
+
+        # Add [pk] to matching columns
+        if current_table and line.strip().startswith('"'):
+            col_match = re.match(r'^(\s+)"([^"]+)"\s+"([^"]+)"(.*)$', line)
+            if col_match:
+                indent, col_name, col_type, rest = col_match.groups()
+                if (current_table, col_name.lower()) in pks:
+                    if "[" in rest:
+                        rest = rest.replace("[", "[pk, ", 1)
+                    else:
+                        rest = " [pk]" + rest
+                    line = f'{indent}"{col_name}" "{col_type}"{rest}'
+
+        # Remove empty Note lines
+        if line.strip() == 'Note: ""':
+            continue
+
+        enhanced.append(line)
+
+    # Append source-level relationships
+    if source_refs:
+        has_refs = any(l.startswith("Ref:") for l in enhanced)
+        if has_refs:
+            enhanced.append("")
+        enhanced.append("//Refs (based on the Source Relationship Tests)")
+        for from_table, from_col, to_table, to_field in sorted(source_refs):
+            enhanced.append(f'Ref: {from_table}."{from_col}" > {to_table}."{to_field}"')
+
+    return "\n".join(enhanced)
 
 
 def compile_project(project_dir: Path) -> bool:
@@ -61,6 +186,8 @@ def compile_project(project_dir: Path) -> bool:
         ).get_erd()
     finally:
         shutil.rmtree(tmpdir)
+
+    erd = enhance_dbml(erd, manifest, json.loads(catalog_path.read_text()))
 
     erd_dir = project_dir / "erd"
     erd_dir.mkdir(exist_ok=True)
