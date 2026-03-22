@@ -57,7 +57,7 @@ sbt scalafmtAll
 npx nx run spark-scala:lint
 
 # Run a specific spark-submit job
-npx nx run spark-scala:run -- --job demo-etl
+npx nx run spark-scala:run -- --JOB demo-etl
 ```
 
 ### Integration tests (Jest, root level)
