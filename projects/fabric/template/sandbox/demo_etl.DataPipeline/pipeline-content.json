@@ -39,7 +39,13 @@
         "type": "TridentNotebook",
         "typeProperties": {
           "notebookId": "ec428990-55f6-4c0b-a668-f32fec2c4629",
-          "workspaceId": "00000000-0000-0000-0000-000000000000"
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "dbt_project_name": {
+              "value": "dbt-adventureworks",
+              "type": "string"
+            }
+          }
         },
         "policy": {
           "retry": 0,
@@ -47,8 +53,30 @@
           "secureInput": false,
           "secureOutput": false
         },
-        "name": "Run dbt",
-        "description": "Runs multiple dbt models",
+        "name": "Run dbt-adventureworks",
+        "description": "Runs dbt-adventureworks models",
+        "dependsOn": []
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "ec428990-55f6-4c0b-a668-f32fec2c4629",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "dbt_project_name": {
+              "value": "dbt-jaffle-shop",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run dbt-jaffle-shop",
+        "description": "Runs dbt-jaffle-shop models",
         "dependsOn": []
       },
       {
@@ -84,7 +112,11 @@
         },
         "dependsOn": [
           {
-            "activity": "Run dbt",
+            "activity": "Run dbt-adventureworks",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run dbt-jaffle-shop",
             "dependencyConditions": ["Succeeded"]
           },
           {
@@ -142,7 +174,11 @@
         },
         "dependsOn": [
           {
-            "activity": "Run dbt",
+            "activity": "Run dbt-adventureworks",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run dbt-jaffle-shop",
             "dependencyConditions": ["Succeeded"]
           },
           {
