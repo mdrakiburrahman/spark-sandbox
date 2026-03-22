@@ -73,6 +73,14 @@
         "commands": [".scripts/package-fabric.sh"]
       }
     },
+    "compile": {
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [".scripts/compile-erd.sh"]
+      }
+    },
     "test": {
       "dependsOn": ["init"],
       "executor": "nx:run-commands",

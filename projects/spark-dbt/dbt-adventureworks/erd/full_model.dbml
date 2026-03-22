@@ -1,320 +1,322 @@
-// DBML generated from dbt project: adventureworks
-// Generated at: 2026-01-26T01:35:00Z
-
-// ===========================================
-// MART LAYER - Dimensional Model
-// ===========================================
-
-Table fct_sales {
-  sales_key string [pk]
-  product_key string
-  customer_key string
-  creditcard_key string
-  ship_address_key string
-  order_status_key string
-  order_date_key string
-  salesorderid int
-  salesorderdetailid int
-  unitprice decimal
-  orderqty smallint
-  revenue decimal
-}
-
-Table dim_product {
-  product_key string [pk]
-  productid int
-  product_name string
-  productnumber string
-  color string
-  class string
-  product_subcategory_name string
-  product_category_name string
-}
-
-Table dim_customer {
-  customer_key string [pk]
-  customerid int
-  businessentityid int
-  fullname string
-  storebusinessentityid int
-  storename string
-}
-
-Table dim_credit_card {
-  creditcard_key string [pk]
-  creditcardid int
-  cardtype string
-}
-
+//Tables (based on the selection criteria)
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_address {
-  address_key string [pk]
-  addressid int
-  city_name string
-  state_name string
-  country_name string
-}
+  "address_key" "string" [pk, note: "The surrogate key of the addressid"]
+  "addressid" "int" [pk, note: "The natural key"]
+  "city_name" "string" [note: "The city name"]
+  "state_name" "string" [note: "The state name"]
+  "country_name" "string" [note: "The country name"]
 
-Table dim_order_status {
-  order_status_key string [pk]
-  order_status smallint
-  order_status_name string
 }
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
+Table dim_credit_card {
+  "creditcard_key" "string" [note: "The surrogate key of the creditcard id"]
+  "creditcardid" "int" [pk, note: "The natural key of the creditcard"]
+  "cardtype" "string" [note: "The card name"]
 
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
+Table dim_customer {
+  "customer_key" "string" [pk, note: "The surrogate key of the customer"]
+  "customerid" "int" [pk, note: "The natural key of the customer"]
+  "businessentityid" "int"
+  "fullname" "string" [note: "The customer name. Adopted as customer_fullname when person name is not null."]
+  "storebusinessentityid" "int"
+  "storename" "string" [note: "The store name."]
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_date {
-  date_key string [pk]
-  date_day date
-  prior_date_day date
-  next_date_day date
-  prior_year_date_day date
-  prior_year_over_year_date_day date
-  day_of_week int
-  day_of_week_name string
-  day_of_month int
-  day_of_year int
-}
+  "date_key" "string" [pk, note: "The surrogate key of the date table"]
+  "date_day" "date" [pk, note: "The natural key of the date table"]
+  "prior_date_day" "date"
+  "next_date_day" "date"
+  "prior_year_date_day" "date"
+  "prior_year_over_year_date_day" "date"
+  "day_of_week" "int"
+  "day_of_week_name" "string"
+  "day_of_month" "int"
+  "day_of_year" "int"
 
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
+Table dim_order_status {
+  "order_status_key" "string" [pk, note: "The surrogate key of the order status"]
+  "order_status" "smallint" [pk, note: "The natural key of the order status table"]
+  "order_status_name" "string"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
+Table dim_product {
+  "product_key" "string" [pk, note: "The surrogate key of the product"]
+  "productid" "int" [pk, note: "The natural key of the product"]
+  "product_name" "string" [note: "The product name"]
+  "productnumber" "string"
+  "color" "string"
+  "class" "string"
+  "product_subcategory_name" "string"
+  "product_category_name" "string"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
+Table fct_sales {
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
+  "product_key" "string" [note: "The foreign key of the product"]
+  "customer_key" "string" [note: "The foreign key of the customer"]
+  "creditcard_key" "string" [note: "The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash."]
+  "ship_address_key" "string" [note: "The foreign key of the shipping address"]
+  "order_status_key" "string" [note: "The foreign key of the order status"]
+  "order_date_key" "string" [note: "The foreign key of the order date"]
+  "salesorderid" "int" [note: "The natural key of the saleorderheader"]
+  "salesorderdetailid" "int" [note: "The natural key of the salesorderdetail"]
+  "unitprice" "decimal(10,0)" [note: "The unit price of the product"]
+  "orderqty" "smallint" [note: "The quantity of the product"]
+  "revenue" "decimal(16,0)" [note: "The revenue obtained by multiplying unitprice and orderqty"]
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table obt_sales {
-  sales_key string [pk]
-  salesorderid int
-  salesorderdetailid int
-  unitprice decimal
-  orderqty smallint
-  revenue decimal
-  productid int
-  product_name string
-  productnumber string
-  color string
-  class string
-  product_subcategory_name string
-  product_category_name string
-  customerid int
-  businessentityid int
-  fullname string
-  storebusinessentityid int
-  storename string
-  creditcardid int
-  cardtype string
-  addressid int
-  city_name string
-  state_name string
-  country_name string
-  order_status smallint
-  order_status_name string
-  date_day date
-  prior_date_day date
-  next_date_day date
-  prior_year_date_day date
-  prior_year_over_year_date_day date
-  day_of_week int
-  day_of_week_name string
-  day_of_month int
-  day_of_year int
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
+  "salesorderid" "int" [note: "The natural key of the saleorderheader"]
+  "salesorderdetailid" "int" [note: "The natural key of the salesorderdetail"]
+  "unitprice" "decimal(10,0)" [note: "The unit price of the product"]
+  "orderqty" "smallint" [note: "The quantity of the product"]
+  "revenue" "decimal(16,0)" [note: "The revenue obtained by multiplying unitprice and orderqty"]
+  "productid" "int"
+  "product_name" "string"
+  "productnumber" "string"
+  "color" "string"
+  "class" "string"
+  "product_subcategory_name" "string"
+  "product_category_name" "string"
+  "customerid" "int"
+  "businessentityid" "int"
+  "fullname" "string"
+  "storebusinessentityid" "int"
+  "storename" "string"
+  "creditcardid" "int"
+  "cardtype" "string"
+  "addressid" "int"
+  "city_name" "string"
+  "state_name" "string"
+  "country_name" "string"
+  "order_status" "smallint"
+  "order_status_name" "string"
+  "date_day" "date"
+  "prior_date_day" "date"
+  "next_date_day" "date"
+  "prior_year_date_day" "date"
+  "prior_year_over_year_date_day" "date"
+  "day_of_week" "int"
+  "day_of_week_name" "string"
+  "day_of_month" "int"
+  "day_of_year" "int"
+
 }
-
-// ===========================================
-// STAGING LAYER - Seeds / Source Tables
-// ===========================================
-
-Table salesorderheader {
-  salesorderid int [pk]
-  shipmethodid int
-  billtoaddressid int
-  modifieddate timestamp
-  rowguid string
-  taxamt decimal
-  shiptoaddressid int
-  onlineorderflag boolean
-  territoryid int
-  status smallint
-  orderdate timestamp
-  creditcardapprovalcode string
-  subtotal decimal
-  creditcardid int
-  currencyrateid int
-  revisionnumber smallint
-  freight decimal
-  duedate timestamp
-  totaldue decimal
-  customerid int
-  salespersonid int
-  shipdate timestamp
-  accountnumber string
-}
-
-Table salesorderdetail {
-  salesorderid int [pk]
-  orderqty smallint
-  salesorderdetailid int
-  unitprice decimal
-  specialofferid int
-  modifieddate timestamp
-  rowguid string
-  productid int
-  unitpricediscount decimal
-}
-
-Table customer {
-  customerid int [pk]
-  personid int
-  storeid int
-  territoryid int
-}
-
-Table person {
-  businessentityid int [pk]
-  title string
-  firstname string
-  middlename string
-  lastname string
-  persontype string
-  namestyle boolean
-  suffix string
-  modifieddate timestamp
-  rowguid string
-  emailpromotion int
-}
-
-Table store {
-  businessentityid int [pk]
-  storename string
-  salespersonid int
-  modifieddate timestamp
-}
-
-Table product {
-  productid int [pk]
-  name string
-  safetystocklevel smallint
-  finishedgoodsflag boolean
-  class string
-  makeflag boolean
-  productnumber string
-  reorderpoint smallint
-  modifieddate timestamp
-  rowguid string
-  productmodelid int
-  weightunitmeasurecode string
-  standardcost decimal
-  productsubcategoryid int
-  listprice decimal
-  daystomanufacture int
-  productline string
-  color string
-  sellstartdate timestamp
-  weight decimal
-}
-
-Table productcategory {
-  productcategoryid int [pk]
-  name string
-  modifieddate timestamp
-}
-
-Table productsubcategory {
-  productsubcategoryid int [pk]
-  productcategoryid int
-  name string
-  modifieddate timestamp
-}
-
-Table creditcard {
-  creditcardid int [pk]
-  cardtype string
-  expyear smallint
-  modifieddate timestamp
-  expmonth smallint
-  cardnumber string
-}
-
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table address {
-  addressid int [pk]
-  addressline1 string
-  addressline2 string
-  city string
-  stateprovinceid int
-  postalcode string
-  spatiallocation string
-  rowguid string
-  modifieddate timestamp
-}
+  "addressid" "int" [pk]
+  "addressline1" "string"
+  "addressline2" "string"
+  "city" "string"
+  "stateprovinceid" "int"
+  "postalcode" "string"
+  "spatiallocation" "string"
+  "rowguid" "string"
+  "modifieddate" "timestamp"
 
-Table stateprovince {
-  stateprovinceid int [pk]
-  countryregioncode string
-  modifieddate timestamp
-  rowguid string
-  name string
-  territoryid int
-  isonlystateprovinceflag boolean
-  stateprovincecode string
 }
-
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table countryregion {
-  countryregioncode string [pk]
-  modifieddate timestamp
-  name string
-}
+  "countryregioncode" "string" [pk]
+  "modifieddate" "timestamp"
+  "name" "string"
 
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table creditcard {
+  "creditcardid" "int" [pk]
+  "cardtype" "string"
+  "expyear" "smallint"
+  "modifieddate" "timestamp"
+  "expmonth" "smallint"
+  "cardnumber" "string"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table customer {
+  "customerid" "int" [pk]
+  "personid" "int"
+  "storeid" "int"
+  "territoryid" "int"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table date {
-  date_day date [pk]
-  prior_date_day date
-  next_date_day date
-  prior_year_date_day date
-  prior_year_over_year_date_day date
-  day_of_week int
-  day_of_week_name string
-  day_of_month int
-  day_of_year int
-}
+  "date_day" "date" [pk]
+  "prior_date_day" "date"
+  "next_date_day" "date"
+  "prior_year_date_day" "date"
+  "prior_year_over_year_date_day" "date"
+  "day_of_week" "int"
+  "day_of_week_name" "string"
+  "day_of_month" "int"
+  "day_of_year" "int"
 
-Table salesreason {
-  salesreasonid int [pk]
-  name string
-  reasontype string
-  modifieddate timestamp
 }
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table person {
+  "businessentityid" "int" [pk]
+  "title" "string"
+  "firstname" "string"
+  "middlename" "string"
+  "lastname" "string"
+  "persontype" "string"
+  "namestyle" "boolean"
+  "suffix" "string"
+  "modifieddate" "timestamp"
+  "rowguid" "string"
+  "emailpromotion" "int"
 
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table product {
+  "productid" "int" [pk]
+  "name" "string"
+  "safetystocklevel" "smallint"
+  "finishedgoodsflag" "boolean"
+  "class" "string"
+  "makeflag" "boolean"
+  "productnumber" "string"
+  "reorderpoint" "smallint"
+  "modifieddate" "timestamp"
+  "rowguid" "string"
+  "productmodelid" "int"
+  "weightunitmeasurecode" "string"
+  "standardcost" "decimal(10,0)"
+  "productsubcategoryid" "int"
+  "listprice" "decimal(10,0)"
+  "daystomanufacture" "int"
+  "productline" "string"
+  "color" "string"
+  "sellstartdate" "timestamp"
+  "weight" "decimal(10,0)"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table productcategory {
+  "productcategoryid" "int" [pk]
+  "name" "string"
+  "modifieddate" "timestamp"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table productsubcategory {
+  "productsubcategoryid" "int" [pk]
+  "productcategoryid" "int"
+  "name" "string"
+  "modifieddate" "timestamp"
+
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table salesorderdetail {
+  "salesorderid" "int" [pk]
+  "orderqty" "smallint"
+  "salesorderdetailid" "int"
+  "unitprice" "decimal(10,0)"
+  "specialofferid" "int"
+  "modifieddate" "timestamp"
+  "rowguid" "string"
+  "productid" "int"
+  "unitpricediscount" "decimal(10,0)"
+
+  Note: "contains sales data between 2011-01-01 to 2011-12-31."
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table salesorderheader {
+  "salesorderid" "int" [pk]
+  "shipmethodid" "int"
+  "billtoaddressid" "int"
+  "modifieddate" "timestamp"
+  "rowguid" "string"
+  "taxamt" "decimal(10,0)"
+  "shiptoaddressid" "int"
+  "onlineorderflag" "boolean"
+  "territoryid" "int"
+  "status" "smallint"
+  "orderdate" "timestamp"
+  "creditcardapprovalcode" "string"
+  "subtotal" "decimal(10,0)"
+  "creditcardid" "int"
+  "currencyrateid" "int"
+  "revisionnumber" "smallint"
+  "freight" "decimal(10,0)"
+  "duedate" "timestamp"
+  "totaldue" "decimal(10,0)"
+  "customerid" "int"
+  "salespersonid" "int"
+  "shipdate" "timestamp"
+  "accountnumber" "string"
+
+  Note: "contains sales data between 2011-01-01 to 2011-12-31."
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
 Table salesorderheadersalesreason {
-  salesorderid int [pk]
-  modifieddate timestamp
-  salesreasonid int
+  "salesorderid" "int" [pk]
+  "modifieddate" "timestamp"
+  "salesreasonid" "int"
+
+  Note: "contains sales data between 2011-01-01 to 2011-12-31."
 }
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table salesreason {
+  "salesreasonid" "int" [pk]
+  "name" "string"
+  "reasontype" "string"
+  "modifieddate" "timestamp"
 
-// ===========================================
-// RELATIONSHIPS - Fact to Dimensions (Star Schema)
-// ===========================================
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table stateprovince {
+  "stateprovinceid" "int" [pk]
+  "countryregioncode" "string"
+  "modifieddate" "timestamp"
+  "rowguid" "string"
+  "name" "string"
+  "territoryid" "int"
+  "isonlystateprovinceflag" "boolean"
+  "stateprovincecode" "string"
 
-Ref: fct_sales.product_key > dim_product.product_key
-Ref: fct_sales.customer_key > dim_customer.customer_key
-Ref: fct_sales.creditcard_key > dim_credit_card.creditcard_key
-Ref: fct_sales.ship_address_key > dim_address.address_key
-Ref: fct_sales.order_status_key > dim_order_status.order_status_key
-Ref: fct_sales.order_date_key > dim_date.date_key
+}
+//--configured at schema: spark_catalog.dbt_adventureworks_seed
+Table store {
+  "businessentityid" "int" [pk]
+  "storename" "string"
+  "salespersonid" "int"
+  "modifieddate" "timestamp"
 
-// ===========================================
-// RELATIONSHIPS - Staging Layer
-// ===========================================
+}
+//Refs (based on the DBT Relationship Tests)
+Ref: fct_sales."creditcard_key" > dim_credit_card."creditcard_key"
+Ref: fct_sales."customer_key" > dim_customer."customer_key"
+Ref: fct_sales."order_date_key" > dim_date."date_key"
+Ref: fct_sales."order_status_key" > dim_order_status."order_status_key"
+Ref: fct_sales."product_key" > dim_product."product_key"
+Ref: fct_sales."ship_address_key" > dim_address."address_key"
 
-// Sales Order relationships
-Ref: salesorderdetail.salesorderid > salesorderheader.salesorderid
-Ref: salesorderheader.customerid > customer.customerid
-Ref: salesorderheader.creditcardid > creditcard.creditcardid
-Ref: salesorderheader.shiptoaddressid > address.addressid
-Ref: salesorderheader.billtoaddressid > address.addressid
 
-// Customer relationships
-Ref: customer.personid > person.businessentityid
-Ref: customer.storeid > store.businessentityid
-
-// Product relationships
-Ref: salesorderdetail.productid > product.productid
-Ref: product.productsubcategoryid > productsubcategory.productsubcategoryid
-Ref: productsubcategory.productcategoryid > productcategory.productcategoryid
-
-// Address relationships
-Ref: address.stateprovinceid > stateprovince.stateprovinceid
-Ref: stateprovince.countryregioncode > countryregion.countryregioncode
-
-// Sales reason relationships
-Ref: salesorderheadersalesreason.salesorderid > salesorderheader.salesorderid
-Ref: salesorderheadersalesreason.salesreasonid > salesreason.salesreasonid
+//Refs (based on the Source Relationship Tests)
+Ref: address."stateprovinceid" > stateprovince."stateprovinceid"
+Ref: customer."personid" > person."businessentityid"
+Ref: customer."storeid" > store."businessentityid"
+Ref: product."productsubcategoryid" > productsubcategory."productsubcategoryid"
+Ref: productsubcategory."productcategoryid" > productcategory."productcategoryid"
+Ref: salesorderdetail."productid" > product."productid"
+Ref: salesorderdetail."salesorderid" > salesorderheader."salesorderid"
+Ref: salesorderheader."billtoaddressid" > address."addressid"
+Ref: salesorderheader."creditcardid" > creditcard."creditcardid"
+Ref: salesorderheader."customerid" > customer."customerid"
+Ref: salesorderheader."shiptoaddressid" > address."addressid"
+Ref: salesorderheadersalesreason."salesorderid" > salesorderheader."salesorderid"
+Ref: salesorderheadersalesreason."salesreasonid" > salesreason."salesreasonid"
+Ref: stateprovince."countryregioncode" > countryregion."countryregioncode"
