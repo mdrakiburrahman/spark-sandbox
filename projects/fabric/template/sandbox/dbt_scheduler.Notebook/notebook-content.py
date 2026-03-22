@@ -38,6 +38,7 @@ import re
 import notebookutils
 import requests
 import os
+from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor
 from dbt.cli.main import dbtRunner
 from dbt_common.events.event_manager_client import get_event_manager
@@ -46,16 +47,17 @@ PROJECTS = ["dbt-adventureworks", "dbt-jaffle-shop"]
 TARGET = "fabric-fabric"
 
 os.environ["GIT_ROOT"] = "/tmp/dbt-fabric-bundle"
-os.environ["DBT_LOG_PATH"] = "/lakehouse/default/Files/onelake/logs/dbt"
+DBT_LOG_BASE = "/lakehouse/default/Files/onelake/logs/dbt"
 
-dbt_log_file = os.path.join(os.environ["DBT_LOG_PATH"], "dbt.log")
-if os.path.exists(dbt_log_file):
-    from datetime import datetime, timezone
-
-    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    archived = os.path.join(os.environ["DBT_LOG_PATH"], f"dbt-archived-at-{ts}.log")
-    os.rename(dbt_log_file, archived)
-    print(f"Archived previous dbt.log to {archived}")
+for project in PROJECTS:
+    log_dir = os.path.join(DBT_LOG_BASE, project)
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "dbt.log")
+    if os.path.exists(log_file):
+        ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        archived = os.path.join(log_dir, f"dbt-archived-at-{ts}.log")
+        os.rename(log_file, archived)
+        print(f"[{project}] Archived previous dbt.log to {archived}")
 
 
 def resolve_env_var(yaml_value, env_key):
@@ -97,7 +99,7 @@ def close_livy_sessions():
             print(f"Warning: failed to close Livy session {session_id}: {e}")
 
 
-def flush_dbt_logs():
+def flush_dbt_logs(log_file):
     """Flush dbt file logger and fsync to persistent storage (OneLake/FUSE).
 
     cleanup_event_logger() clears loggers without flushing, so on a FUSE
@@ -109,7 +111,7 @@ def flush_dbt_logs():
     except Exception:
         pass
     try:
-        with open(dbt_log_file, "a") as f:
+        with open(log_file, "a") as f:
             os.fsync(f.fileno())
     except OSError:
         pass
@@ -117,26 +119,25 @@ def flush_dbt_logs():
 
 def run_dbt_project(project):
     project_dir = f"/tmp/dbt-fabric-bundle/projects/{project}"
+    log_path = os.path.join(DBT_LOG_BASE, project)
+    log_file = os.path.join(log_path, "dbt.log")
 
-    base_args = ["--project-dir", project_dir, "--profiles-dir", project_dir, "--target", TARGET]
+    global_args = ["--log-path", log_path]
+    cmd_args = ["--project-dir", project_dir, "--profiles-dir", project_dir, "--target", TARGET]
 
     runner = dbtRunner()
-    for cmd in [
-        ["deps"] + base_args,
-        ["debug"] + base_args,
-        ["run"] + base_args,
-        ["test"] + base_args,
-    ]:
-        result = runner.invoke(cmd)
-        flush_dbt_logs()
-        print(f"[{project}] {cmd[0]}: {'success' if result.success else 'FAILED'}")
+    for step in ["deps", "debug", "run", "test"]:
+        result = runner.invoke(global_args + [step] + cmd_args)
+        flush_dbt_logs(log_file)
+        print(f"[{project}] {step}: {'success' if result.success else 'FAILED'}")
         if not result.success:
-            raise RuntimeError(f"[{project}] {cmd[0]} failed")
+            raise RuntimeError(f"[{project}] {step} failed")
     return project
 
 
 try:
-    results = [run_dbt_project(project) for project in PROJECTS]
+    with ThreadPoolExecutor(max_workers=len(PROJECTS)) as pool:
+        results = list(pool.map(run_dbt_project, PROJECTS))
 finally:
     close_livy_sessions()
 
