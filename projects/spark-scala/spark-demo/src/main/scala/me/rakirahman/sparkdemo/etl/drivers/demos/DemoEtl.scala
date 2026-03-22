@@ -17,7 +17,17 @@ object DemoEtl extends App with Logging {
   spark.sql(s"CREATE DATABASE IF NOT EXISTS ${dbName}")
   spark.catalog.setCurrentDatabase(dbName)
 
-  val allTables = Array("customers", "orders", "products", "sales", "customers_cleaned", "products_enriched", "sales_enriched", "customer_lifetime_value", "product_sales_performance")
+  val allTables = Array(
+    "customers",
+    "orders",
+    "products",
+    "sales",
+    "customers_cleaned",
+    "products_enriched",
+    "sales_enriched",
+    "customer_lifetime_value",
+    "product_sales_performance"
+  )
   allTables.filter(metastore.tableExists(dbName, _)).foreach { t =>
     logInfo(s"Truncating table: ${dbName}.${t}")
     spark.sql(s"DELETE FROM ${dbName}.${t} WHERE 1=1")
