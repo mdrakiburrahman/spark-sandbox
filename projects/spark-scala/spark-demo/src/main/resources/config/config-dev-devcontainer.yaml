@@ -39,6 +39,8 @@ DeltaMountDriver:
       RootPath: "file:///tmp/.mnt/onelake/dbt_adventureworks_seed"
     - Database: dbt_jaffle_shop_seed
       RootPath: "file:///tmp/.mnt/onelake/dbt_jaffle_shop_seed"
+    - Database: data_ops_inventory_db_prod
+      RootPath: "file:///tmp/.mnt/onelake/data_ops_inventory_db"
 
 # Local secret store
 #
