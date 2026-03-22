@@ -166,6 +166,7 @@
     },
     "test-scala": {
       "cache": true,
+      "dependsOn": ["build-jar"],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
