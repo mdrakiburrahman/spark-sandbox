@@ -31,6 +31,17 @@
 # META   "language_group": "jupyter_python"
 # META }
 
+# PARAMETERS CELL ********************
+
+dbt_project_name = ""
+
+# METADATA ********************
+
+# META {
+# META   "language": "python",
+# META   "language_group": "jupyter_python"
+# META }
+
 # CELL ********************
 
 import yaml
@@ -38,15 +49,14 @@ import re
 import notebookutils
 import requests
 import os
-from concurrent.futures import ThreadPoolExecutor
 from dbt.cli.main import dbtRunner
 from dbt_common.events.event_manager_client import get_event_manager
 
-PROJECTS = ["dbt-adventureworks", "dbt-jaffle-shop"]
 TARGET = "fabric-fabric"
 
 os.environ["GIT_ROOT"] = "/tmp/dbt-fabric-bundle"
-os.environ["DBT_LOG_PATH"] = "/lakehouse/default/Files/onelake/logs/dbt"
+os.environ["DBT_LOG_PATH"] = f"/lakehouse/default/Files/onelake/logs/dbt/{dbt_project_name}"
+os.makedirs(os.environ["DBT_LOG_PATH"], exist_ok=True)
 
 dbt_log_file = os.path.join(os.environ["DBT_LOG_PATH"], "dbt.log")
 if os.path.exists(dbt_log_file):
@@ -70,31 +80,23 @@ def resolve_env_var(yaml_value, env_key):
     return yaml_value
 
 
-def close_livy_sessions():
-    """Read session IDs from all project profiles, deduplicate, and close."""
-    seen = {}
-    for project in PROJECTS:
-        try:
-            profiles = yaml.safe_load(open(f"/tmp/dbt-fabric-bundle/projects/{project}/profiles.yml"))
-            profile_name = next(iter(profiles))
-            cfg = profiles[profile_name]["outputs"][TARGET]
-            session_id = open(cfg["session_id_file"]).read().strip()
-            if session_id not in seen:
-                seen[session_id] = (project, cfg)
-        except Exception as e:
-            print(f"Warning: failed to read session for {project}: {e}")
+def close_livy_session(project):
+    """Read session ID from project profile and close it."""
+    try:
+        profiles = yaml.safe_load(open(f"/tmp/dbt-fabric-bundle/projects/{project}/profiles.yml"))
+        profile_name = next(iter(profiles))
+        cfg = profiles[profile_name]["outputs"][TARGET]
+        session_id = open(cfg["session_id_file"]).read().strip()
 
-    for session_id, (project, cfg) in seen.items():
-        try:
-            workspace_id = resolve_env_var(cfg["workspaceid"], "FABRIC_WORKSPACE_ID")
-            lakehouse_id = resolve_env_var(cfg["lakehouseid"], "FABRIC_LAKEHOUSE_ID")
+        workspace_id = resolve_env_var(cfg["workspaceid"], "FABRIC_WORKSPACE_ID")
+        lakehouse_id = resolve_env_var(cfg["lakehouseid"], "FABRIC_LAKEHOUSE_ID")
 
-            url = f"https://api.fabric.microsoft.com/v1/workspaces/{workspace_id}/lakehouses/{lakehouse_id}/livyApi/versions/2023-12-01/sessions/{session_id}"
-            print(f"Deleting session {session_id}: {url}")
-            r = requests.delete(url, headers={"Authorization": f"Bearer {notebookutils.credentials.getToken('pbi')}"})
-            print(f"Delete session {session_id}: {r.status_code} {r.reason}")
-        except Exception as e:
-            print(f"Warning: failed to close Livy session {session_id}: {e}")
+        url = f"https://api.fabric.microsoft.com/v1/workspaces/{workspace_id}/lakehouses/{lakehouse_id}/livyApi/versions/2023-12-01/sessions/{session_id}"
+        print(f"Deleting session {session_id}: {url}")
+        r = requests.delete(url, headers={"Authorization": f"Bearer {notebookutils.credentials.getToken('pbi')}"})
+        print(f"Delete session {session_id}: {r.status_code} {r.reason}")
+    except Exception as e:
+        print(f"Warning: failed to close Livy session for {project}: {e}")
 
 
 def flush_dbt_logs():
@@ -135,10 +137,11 @@ def run_dbt_project(project):
     return project
 
 
+print(f"Running dbt project: {dbt_project_name}")
 try:
-    results = [run_dbt_project(project) for project in PROJECTS]
+    run_dbt_project(dbt_project_name)
 finally:
-    close_livy_sessions()
+    close_livy_session(dbt_project_name)
 
 # METADATA ********************
 
