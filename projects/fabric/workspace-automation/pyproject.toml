@@ -1,0 +1,77 @@
+[build-system]
+requires = ["hatchling>=1.17.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "workspace-automation"
+dynamic = ["version"]
+description = "CLI tool for Microsoft Fabric workspace automation tasks"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+  { name = "Raki Rahman", email = "mdrakiburrahman@gmail.com" },
+]
+dependencies = [
+  "click>=8.1.0",
+  "fabric-cicd @ https://rakirahman.blob.core.windows.net/public/whls/fabric_cicd-0.1.34.3-py3-none-any.whl",
+  "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@8b4388b112ab0b4e8088edf2f1cadedc7dc9e193",
+]
+
+[project.scripts]
+workspace-automation = "workspace_automation.cli:main"
+
+[project.urls]
+Source = "https://github.com/mdrakiburrahman/spark-sandbox"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.version]
+source = "code"
+path = "src/workspace_automation/__about__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/workspace_automation"]
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+installer = "uv"
+dependencies = [
+  "pytest>=9.0.0",
+  "black",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+lint-check = "black --check ."
+lint-format = "black ."
+
+[tool.hatch.envs.build]
+path = ".venv-build"
+dependencies = [
+  "pyinstaller>=6.0.0",
+]
+
+[tool.hatch.envs.build.scripts]
+binary = "pyinstaller workspace-automation.spec"
+clean = "rm -rf build dist"
+
+[tool.black]
+line-length = 300
+
+[tool.coverage.run]
+source_pkgs = ["workspace_automation", "tests"]
+branch = true
+parallel = true
+omit = [
+  "src/workspace_automation/__about__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "no cov",
+  "if __name__ == .__main__.:",
+  "if TYPE_CHECKING:",
+]

@@ -71,5 +71,5 @@ wsl --shutdown
 
 winget install -e --id Microsoft.GitCredentialManagerCore
 
-Write-Host "Installing Ubuntu-24.04"
-wsl --install -d Ubuntu-24.04
+Write-Host "Installing Ubuntu"
+wsl --install -d Ubuntu

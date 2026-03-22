@@ -1,0 +1,73 @@
+{
+  "name": "workspace-automation",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "clean": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf .venv .venv-build build dist *.egg-info .pytest_cache .mypy_cache .ruff_cache .coverage htmlcov",
+          "hatch env prune 2>/dev/null || true",
+          "rm -rf ~/.local/share/hatch/env/virtual/workspace-automation 2>/dev/null || true",
+          "find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true"
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    },
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "bash .scripts/hatch.sh env"
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "commands": [
+          "bash .scripts/hatch.sh build binary"
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "commands": [
+          "bash .scripts/hatch.sh run test"
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "commands": [
+          "bash .scripts/hatch.sh run lint-check"
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    },
+    "run": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["build"],
+      "options": {
+        "COMMAND": "kill-pipeline",
+        "commands": [
+          {
+            "command": "bash .scripts/run.sh {args.COMMAND} --verbose",
+            "forwardAllArgs": false
+          }
+        ],
+        "cwd": "projects/fabric/workspace-automation"
+      }
+    }
+  }
+}
