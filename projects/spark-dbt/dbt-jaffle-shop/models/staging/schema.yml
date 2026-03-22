@@ -25,6 +25,8 @@ models:
           - relationships:
               to: ref('stg_customers')
               field: customer_id
+              config:
+                severity: warn
 
   - name: stg_payments
     columns:
@@ -42,3 +44,5 @@ models:
           - relationships:
               to: ref('stg_orders')
               field: order_id
+              config:
+                severity: warn

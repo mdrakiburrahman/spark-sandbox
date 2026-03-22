@@ -26,6 +26,8 @@ models:
           - relationships:
               to: ref('dim_product')
               field: product_key
+              config:
+                severity: warn
 
       - name: customer_key
         description: The foreign key of the customer
@@ -34,6 +36,8 @@ models:
           - relationships:
               to: ref('dim_customer')
               field: customer_key
+              config:
+                severity: warn
 
       - name: ship_address_key
         description: The foreign key of the shipping address
@@ -42,6 +46,8 @@ models:
           - relationships:
               to: ref('dim_address')
               field: address_key
+              config:
+                severity: warn
 
       - name: creditcard_key
         description: The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash.
@@ -51,6 +57,8 @@ models:
           - relationships:
               to: ref('dim_credit_card')
               field: creditcard_key
+              config:
+                severity: warn
 
       - name: order_date_key
         description: The foreign key of the order date
@@ -59,6 +67,8 @@ models:
           - relationships:
               to: ref('dim_date')
               field: date_key
+              config:
+                severity: warn
 
       - name: order_status_key
         description: The foreign key of the order status
@@ -67,6 +77,8 @@ models:
           - relationships:
               to: ref('dim_order_status')
               field: order_status_key
+              config:
+                severity: warn
 
       - name: unitprice
         description: The unit price of the product

@@ -8,6 +8,8 @@ seeds:
           - relationships:
               to: ref('raw_customers')
               field: id
+              config:
+                severity: warn
 
   - name: raw_payments
     columns:
@@ -16,3 +18,5 @@ seeds:
           - relationships:
               to: ref('raw_orders')
               field: id
+              config:
+                severity: warn

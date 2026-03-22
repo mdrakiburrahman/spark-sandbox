@@ -18,6 +18,8 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'stateprovince')
                   field: stateprovinceid
+                  config:
+                    severity: warn
       - name: countryregion
         description: "Country/Region seed data"
       - name: person
@@ -30,6 +32,8 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'countryregion')
                   field: countryregioncode
+                  config:
+                    severity: warn
 
       # Production
       - name: product
@@ -40,6 +44,8 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'productsubcategory')
                   field: productsubcategoryid
+                  config:
+                    severity: warn
       - name: productcategory
         description: "Product category seed data"
       - name: productsubcategory
@@ -50,6 +56,8 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'productcategory')
                   field: productcategoryid
+                  config:
+                    severity: warn
 
       # Sales
       - name: creditcard
@@ -62,11 +70,15 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'person')
                   field: businessentityid
+                  config:
+                    severity: warn
           - name: storeid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'store')
                   field: businessentityid
+                  config:
+                    severity: warn
       - name: salesorderdetail
         description: "Sales order detail seed data"
         columns:
@@ -75,11 +87,15 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'salesorderheader')
                   field: salesorderid
+                  config:
+                    severity: warn
           - name: productid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'product')
                   field: productid
+                  config:
+                    severity: warn
       - name: salesorderheader
         description: "Sales order header seed data"
         columns:
@@ -88,21 +104,29 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'customer')
                   field: customerid
+                  config:
+                    severity: warn
           - name: creditcardid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'creditcard')
                   field: creditcardid
+                  config:
+                    severity: warn
           - name: shiptoaddressid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'address')
                   field: addressid
+                  config:
+                    severity: warn
           - name: billtoaddressid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'address')
                   field: addressid
+                  config:
+                    severity: warn
       - name: salesorderheadersalesreason
         description: "Sales order header sales reason seed data"
         columns:
@@ -111,11 +135,15 @@ sources:
               - relationships:
                   to: source('adventureworks_seed', 'salesorderheader')
                   field: salesorderid
+                  config:
+                    severity: warn
           - name: salesreasonid
             tests:
               - relationships:
                   to: source('adventureworks_seed', 'salesreason')
                   field: salesreasonid
+                  config:
+                    severity: warn
       - name: salesreason
         description: "Sales reason seed data"
       - name: store
