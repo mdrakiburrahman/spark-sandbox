@@ -43,5 +43,6 @@ echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}'"
 
 dbt debug --target "${DBT_TARGET}"
 dbt deps
-dbt build --target "${DBT_TARGET}"
-dbt docs generate --target "${DBT_TARGET}"
+dbt seed --target "${DBT_TARGET}"
+dbt build --exclude resource_type:seed --target "${DBT_TARGET}"
+dbt docs generate --target "${DBT_TARGET}" || echo "Warning: catalog generation encountered errors (non-fatal)"

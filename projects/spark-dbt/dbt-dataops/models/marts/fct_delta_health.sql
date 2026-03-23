@@ -12,7 +12,7 @@ with src as (
     select * from {{ ref('stg_delta_kpi_results') }}
     {% if is_incremental() %}
     where
-        snapshot_date >= (select max(snapshot_date) from {{ this }})
+        date_key >= (select max(date_key) from {{ this }})
         and evaluation_timestamp > (select max(evaluation_timestamp) from {{ this }})
     {% endif %}
 ),
@@ -52,6 +52,7 @@ select
     src.daily_row_count_min_expected,
     src.daily_row_count_max_expected,
     src.latest_version,
+    src.snapshot_date,
     src.optimize_count_7d,
     src.vacuum_count_7d
 
