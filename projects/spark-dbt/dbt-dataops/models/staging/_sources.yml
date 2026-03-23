@@ -1,0 +1,61 @@
+version: 2
+
+sources:
+  - name: dataops_inventory
+    description: "DataOps inventory database containing Delta transaction logs, table snapshots, KPI results, and OpenLineage telemetry."
+    schema: >-
+      {%- if target.name == 'local-local' -%}
+        data_ops_inventory_db_prod
+      {%- else -%}
+        data_ops_inventory_db
+      {%- endif -%}
+    tables:
+      - name: commit_history
+        description: "Delta Lake transaction log commit entries, partitioned by snapshot_date (yyyyMMdd)."
+        columns:
+          - name: table_fqn
+            description: "Fully qualified table name (database.table)."
+          - name: snapshot_date
+            description: "Hive partition column in yyyyMMdd format."
+          - name: commit_timestamp
+            description: "Timestamp of the Delta commit."
+        loaded_at_field: commit_timestamp
+        freshness:
+          warn_after: { count: 2, period: day }
+          error_after: { count: 7, period: day }
+
+      - name: table_snapshots
+        description: "Point-in-time table metadata from DESCRIBE DETAIL, partitioned by snapshot_date (yyyyMMdd)."
+        columns:
+          - name: table_fqn
+            description: "Fully qualified table name."
+          - name: snapshot_date
+            description: "Hive partition column in yyyyMMdd format."
+          - name: ingested_at
+            description: "Timestamp when the snapshot was captured."
+        loaded_at_field: ingested_at
+        freshness:
+          warn_after: { count: 2, period: day }
+          error_after: { count: 7, period: day }
+
+      - name: kpi_results
+        description: "Pre-computed health KPI assessments (freshness, completeness, operational), partitioned by snapshot_date."
+        columns:
+          - name: table_fqn
+            description: "Fully qualified table name."
+          - name: snapshot_date
+            description: "Hive partition column in yyyyMMdd format."
+          - name: evaluation_timestamp
+            description: "Timestamp when KPIs were computed."
+        loaded_at_field: evaluation_timestamp
+        freshness:
+          warn_after: { count: 2, period: day }
+          error_after: { count: 7, period: day }
+
+      - name: openlineage
+        description: "OpenLineage silver table with flattened event data, partitioned by event_year_date (yyyyMMdd)."
+        columns:
+          - name: event_year_date
+            description: "Hive partition column in yyyyMMdd format."
+          - name: result_timestamp
+            description: "Event timestamp."

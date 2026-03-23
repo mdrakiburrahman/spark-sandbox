@@ -1,12 +1,12 @@
 with stg_salesorderheader as (
     select distinct creditcardid
-    from {{ source('adventureworks_seed', 'salesorderheader') }}
+    from {{ ref('salesorderheader') }}
     where creditcardid is not null
 ),
 
 stg_creditcard as (
     select *
-    from {{ source('adventureworks_seed', 'creditcard') }}
+    from {{ ref('creditcard') }}
 )
 
 select

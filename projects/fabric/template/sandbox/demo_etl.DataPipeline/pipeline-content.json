@@ -186,6 +186,37 @@
             "dependencyConditions": ["Succeeded"]
           }
         ]
+      },
+      {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "ec428990-55f6-4c0b-a668-f32fec2c4629",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "dbt_project_name": {
+              "value": "dbt-dataops",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run dbt-dataops",
+        "description": "Runs dbt-dataops Kimball STAR schema models (DataOps KPIs)",
+        "dependsOn": [
+          {
+            "activity": "OpenLineage Stream Processing",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Delta Log Monitor",
+            "dependencyConditions": ["Succeeded"]
+          }
+        ]
       }
     ]
   }

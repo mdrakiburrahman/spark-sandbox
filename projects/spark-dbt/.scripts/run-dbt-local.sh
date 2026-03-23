@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 #
-#       Script to run a dbt project end-to-end, including debug, deps, seed,
-#       run, test, and docs generation.
+#       Script to run a dbt project end-to-end, including debug, deps, build,
+#       and docs generation.
 #
 #       Usage: run-dbt-local.sh <dbt-project> [target]
 #       Example: run-dbt-local.sh dbt-adventureworks local-local
@@ -43,7 +43,5 @@ echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}'"
 
 dbt debug --target "${DBT_TARGET}"
 dbt deps
-[[ $(yq e ".${DBT_PROJECT//-/_}.outputs.${DBT_TARGET}.livy_mode" profiles.yml) == "fabric" ]] && dbt seed --target "${DBT_TARGET}" || echo "Skipping dbt seed (livy_mode = local)"
-dbt run --target "${DBT_TARGET}"
-dbt test --target "${DBT_TARGET}"
+dbt build --target "${DBT_TARGET}"
 dbt docs generate --target "${DBT_TARGET}"

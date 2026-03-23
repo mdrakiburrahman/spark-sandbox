@@ -8,6 +8,7 @@ node_modules/
 .temp/*
 *.log
 .fabric/*
+logs/*
 
 # Scala
 .metals/*

@@ -126,8 +126,7 @@ def run_dbt_project(project):
     for cmd in [
         ["deps"] + base_args,
         ["debug"] + base_args,
-        ["run"] + base_args,
-        ["test"] + base_args,
+        ["build"] + base_args,
     ]:
         result = runner.invoke(cmd)
         flush_dbt_logs()

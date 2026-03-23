@@ -1,0 +1,76 @@
+version: 2
+
+models:
+  - name: stg_delta_commit_history
+    description: "Cleaned and typed Delta Lake commit history entries."
+    columns:
+      - name: table_fqn
+        description: "Fully qualified table name (database.table)."
+        tests:
+          - not_null
+      - name: version
+        description: "Delta commit version number."
+        tests:
+          - not_null
+      - name: commit_timestamp
+        description: "Timestamp of the commit."
+        tests:
+          - not_null
+      - name: operation
+        description: "Delta operation type (WRITE, MERGE, UPDATE, etc.)."
+        tests:
+          - not_null
+      - name: snapshot_date
+        description: "Partition key in yyyyMMdd format."
+        tests:
+          - not_null
+
+  - name: stg_delta_table_snapshots
+    description: "Deduplicated table metadata snapshots with SCD hash columns. One row per table per day."
+    columns:
+      - name: table_fqn
+        description: "Fully qualified table name (business key for dim_delta_table)."
+        tests:
+          - not_null
+      - name: __scd2_hash
+        description: "SHA-256 hash of SCD2-tracked columns for change detection."
+        tests:
+          - not_null
+      - name: __scd1_hash
+        description: "SHA-256 hash of SCD1-tracked columns for update detection."
+        tests:
+          - not_null
+
+  - name: stg_delta_kpi_results
+    description: "Cleaned health KPI assessment results."
+    columns:
+      - name: table_fqn
+        description: "Fully qualified table name."
+        tests:
+          - not_null
+      - name: overall_status
+        description: "Overall health status: Healthy, Unhealthy, or Training."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["Healthy", "Unhealthy", "Training"]
+      - name: snapshot_date
+        description: "Assessment date partition key."
+        tests:
+          - not_null
+
+  - name: stg_delta_lineage
+    description: "Table-level lineage edges extracted from OpenLineage COMPLETE events."
+    columns:
+      - name: source_name
+        description: "Source dataset name/path."
+        tests:
+          - not_null
+      - name: target_name
+        description: "Target dataset name/path."
+        tests:
+          - not_null
+      - name: event_year_date
+        description: "Event date partition key."
+        tests:
+          - not_null

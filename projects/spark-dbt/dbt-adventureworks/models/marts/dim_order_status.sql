@@ -1,7 +1,7 @@
 with stg_order_status as (
     select distinct status as order_status
     from
-        {{ source('adventureworks_seed', 'salesorderheader') }}
+        {{ ref('salesorderheader') }}
 )
 
 select

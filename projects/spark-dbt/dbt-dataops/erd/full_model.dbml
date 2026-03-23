@@ -1,0 +1,119 @@
+//Tables (based on the selection criteria)
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table dim_date {
+  "date_key" "unknown" [pk, note: "Date key in yyyyMMdd format."]
+
+  Note: "Conformed calendar date dimension."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table dim_delta_table {
+  "__pk" "unknown" [pk, note: "Surrogate key unique per SCD2 version. SHA-256 of (table_fqn, row_effective_start)."]
+  "table_fqn" "unknown" [note: "Business key: fully qualified table name (database.table)."]
+  "is_row_effective" "unknown" [note: "True if this is the currently effective version of the table dimension."]
+  "row_effective_start" "unknown" [note: "Timestamp when this SCD2 version became effective."]
+  "row_effective_end" "unknown" [note: "Timestamp when this SCD2 version became inactive. NULL indicates the current version."]
+
+  Note: "Central table dimension with mixed SCD1/SCD2 tracking. SCD2 columns (clustering_columns, table_properties, min_reader_version, min_writer_version) are version-specific. SCD1 columns (table_id, location, format, partition_columns) are propagated to all versions."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table dim_delta_table_health_status {
+  "health_status_key" "unknown" [pk, note: "Surrogate key (SHA-256 of status name)."]
+  "status" "unknown" [pk, note: "Health status: Healthy, Training, or Unhealthy."]
+
+  Note: "Static enum dimension for health status values."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table dim_delta_table_operation_type {
+  "operation_type_key" "unknown" [pk, note: "Surrogate key (SHA-256 of operation name)."]
+  "operation" "unknown" [pk, note: "Delta Lake operation name."]
+
+  Note: "Reference dimension classifying Delta Lake operation types."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table fct_delta_commit {
+  "commit_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + version)."]
+  "table_key" "unknown" [note: "FK to dim_delta_table."]
+  "operation_type_key" "unknown" [note: "FK to dim_delta_table_operation_type."]
+  "date_key" "unknown" [note: "FK to dim_date."]
+  "commit_timestamp" "unknown" [note: "Timestamp of the Delta commit."]
+
+  Note: "Fact table capturing individual Delta Lake commits. Grain: one row per table per commit version."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table fct_delta_health {
+  "health_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date + evaluation_timestamp)."]
+  "table_key" "unknown" [note: "FK to dim_delta_table."]
+  "date_key" "unknown" [note: "FK to dim_date."]
+  "overall_status_key" "unknown" [note: "FK to dim_delta_table_health_status for overall status."]
+  "freshness_status_key" "unknown" [note: "FK to dim_delta_table_health_status for freshness status."]
+  "completeness_status_key" "unknown" [note: "FK to dim_delta_table_health_status for completeness status."]
+  "most_common_operation_key" "unknown" [note: "FK to dim_delta_table_operation_type for most common operation."]
+
+  Note: "Fact table capturing daily health KPI assessments. Grain: one row per table per snapshot date."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table fct_delta_lineage_dependency {
+  "lineage_key" "unknown" [note: "Surrogate key for the lineage edge."]
+  "source_table_key" "unknown" [note: "FK to dim_delta_table for source dataset."]
+  "target_table_key" "unknown" [note: "FK to dim_delta_table for target dataset."]
+  "date_key" "unknown" [note: "FK to dim_date."]
+
+  Note: "Fact table capturing table-level data lineage edges from OpenLineage. Grain: one edge per source\u2192target per job per day."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table fct_delta_storage {
+  "storage_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date)."]
+  "table_key" "unknown" [note: "FK to dim_delta_table."]
+  "date_key" "unknown" [note: "FK to dim_date."]
+
+  Note: "Fact table capturing daily table storage metrics. Grain: one row per table per snapshot date."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table stg_delta_commit_history {
+  "table_fqn" "unknown" [note: "Fully qualified table name (database.table)."]
+  "version" "unknown" [note: "Delta commit version number."]
+  "commit_timestamp" "unknown" [note: "Timestamp of the commit."]
+  "operation" "unknown" [note: "Delta operation type (WRITE, MERGE, UPDATE, etc.)."]
+  "snapshot_date" "unknown" [note: "Partition key in yyyyMMdd format."]
+
+  Note: "Cleaned and typed Delta Lake commit history entries."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table stg_delta_kpi_results {
+  "table_fqn" "unknown" [note: "Fully qualified table name."]
+  "overall_status" "unknown" [note: "Overall health status: Healthy, Unhealthy, or Training."]
+  "snapshot_date" "unknown" [note: "Assessment date partition key."]
+
+  Note: "Cleaned health KPI assessment results."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table stg_delta_lineage {
+  "source_name" "unknown" [note: "Source dataset name/path."]
+  "target_name" "unknown" [note: "Target dataset name/path."]
+  "event_year_date" "unknown" [note: "Event date partition key."]
+
+  Note: "Table-level lineage edges extracted from OpenLineage COMPLETE events."
+}
+//--configured at schema: spark_catalog.dbt_dataops_dwh
+Table stg_delta_table_snapshots {
+  "table_fqn" "unknown" [note: "Fully qualified table name (business key for dim_delta_table)."]
+  "__scd2_hash" "unknown" [note: "SHA-256 hash of SCD2-tracked columns for change detection."]
+  "__scd1_hash" "unknown" [note: "SHA-256 hash of SCD1-tracked columns for update detection."]
+
+  Note: "Deduplicated table metadata snapshots with SCD hash columns. One row per table per day."
+}
+//Refs (based on the DBT Relationship Tests)
+Ref: fct_delta_commit."date_key" > dim_date."date_key"
+Ref: fct_delta_commit."operation_type_key" > dim_delta_table_operation_type."operation_type_key"
+Ref: fct_delta_commit."table_key" > dim_delta_table."__pk"
+Ref: fct_delta_health."completeness_status_key" > dim_delta_table_health_status."health_status_key"
+Ref: fct_delta_health."date_key" > dim_date."date_key"
+Ref: fct_delta_health."freshness_status_key" > dim_delta_table_health_status."health_status_key"
+Ref: fct_delta_health."most_common_operation_key" > dim_delta_table_operation_type."operation_type_key"
+Ref: fct_delta_health."overall_status_key" > dim_delta_table_health_status."health_status_key"
+Ref: fct_delta_health."table_key" > dim_delta_table."__pk"
+Ref: fct_delta_lineage_dependency."date_key" > dim_date."date_key"
+Ref: fct_delta_lineage_dependency."source_table_key" > dim_delta_table."__pk"
+Ref: fct_delta_lineage_dependency."target_table_key" > dim_delta_table."__pk"
+Ref: fct_delta_storage."date_key" > dim_date."date_key"
+Ref: fct_delta_storage."table_key" > dim_delta_table."__pk"
