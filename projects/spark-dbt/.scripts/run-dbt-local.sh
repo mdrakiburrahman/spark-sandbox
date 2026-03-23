@@ -51,5 +51,8 @@ dbt debug --target "${DBT_TARGET}"
 dbt deps
 dbt seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
 dbt build --exclude resource_type:seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
-dbt run-operation cleanup_dbt_tmp_relations --target "${DBT_TARGET}"
+# Only run cleanup macro if the project defines it
+if grep -rql 'macro cleanup_dbt_tmp_relations' macros/ 2>/dev/null; then
+    dbt run-operation cleanup_dbt_tmp_relations --target "${DBT_TARGET}"
+fi
 dbt docs generate --target "${DBT_TARGET}"
