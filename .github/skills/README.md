@@ -22,6 +22,16 @@ npx nx run spark-scala:init
 /fleet @//workspaces/spark-sandbox/.github/skills/whatever-skill/skill.md
 ```
 
+## 📋 PR Review
+
+End-to-end PR review comment resolution — study comments, make code changes, run regression loops, push, poll CI, and resolve threads.
+
+```bash
+/fleet @//workspaces/spark-sandbox/.github/skills/pr-review/skill.md
+```
+
+The skill will ask for the PR URL, then orchestrate the full workflow including firing Ralph loops in parallel for affected projects.
+
 ## 🔁 Ralph Loop
 
 ![*Chuckles*](.imgs/ralph.gif)
