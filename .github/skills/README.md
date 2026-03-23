@@ -32,6 +32,16 @@ End-to-end PR review comment resolution — study comments, make code changes, r
 
 The skill will ask for the PR URL, then orchestrate the full workflow including firing Ralph loops in parallel for affected projects.
 
+## 🟢 CI Green Runner
+
+Fix a failing CI run end-to-end — download logs, diagnose failures, apply code fixes, run local tests, push, poll CI, and iterate until green.
+
+```bash
+/fleet @//workspaces/spark-sandbox/.github/skills/ci-green-runner/skill.md
+```
+
+The skill will ask for the PR URL and the failed CI run URL, then orchestrate the full diagnose → fix → validate → push → poll loop.
+
 ## 🔁 Ralph Loop
 
 ![*Chuckles*](.imgs/ralph.gif)
