@@ -27,7 +27,7 @@ dataops:
       connect_timeout: 10
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
-      lakehouseid: "{{ env_var('DBT_DATAOPS_LAKEHOUSE_ID', '') }}"
+      lakehouseid: 091ca1a7-9243-4453-8199-8d0663598107
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
       threads: 12
@@ -48,7 +48,7 @@ dataops:
       connect_timeout: 60
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
-      lakehouseid: "{{ env_var('DBT_DATAOPS_LAKEHOUSE_ID', '') }}"
+      lakehouseid: 091ca1a7-9243-4453-8199-8d0663598107
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
       threads: 12
