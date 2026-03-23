@@ -51,4 +51,5 @@ dbt debug --target "${DBT_TARGET}"
 dbt deps
 dbt seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
 dbt build --exclude resource_type:seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
+dbt run-operation cleanup_dbt_tmp_relations --target "${DBT_TARGET}"
 dbt docs generate --target "${DBT_TARGET}"
