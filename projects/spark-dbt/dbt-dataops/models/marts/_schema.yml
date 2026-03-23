@@ -98,6 +98,12 @@ models:
         description: "Timestamp of the Delta commit."
         tests:
           - not_null
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
 
   - name: fct_delta_health
     description: "Fact table capturing daily health KPI assessments. Grain: one row per table per snapshot date."
@@ -154,6 +160,12 @@ models:
               field: operation_type_key
               config:
                 where: "most_common_operation_key is not null"
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
 
   - name: fct_delta_storage
     description: "Fact table capturing daily table storage metrics. Grain: one row per table per snapshot date."
@@ -178,6 +190,12 @@ models:
           - relationships:
               to: ref('dim_date')
               field: date_key
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
 
   - name: fct_delta_lineage_dependency
     description: "Fact table capturing table-level data lineage edges from OpenLineage. Grain: one edge per source→target per job per day."
@@ -209,3 +227,9 @@ models:
           - relationships:
               to: ref('dim_date')
               field: date_key
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null

@@ -4,7 +4,8 @@
         incremental_strategy='append',
         file_format='delta',
         location_root='none',
-        on_schema_change='append_new_columns'
+        on_schema_change='append_new_columns',
+        partition_by=['event_year_date']
     )
 }}
 
@@ -41,7 +42,9 @@ select
     src.size_in_gb,
     src.created_at,
     src.last_modified,
-    src.ingested_at
+    src.ingested_at,
+    current_timestamp() as dbt_loaded_at,
+    date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
 
 from src
 left join dim_tbl

@@ -7,7 +7,8 @@
         strategy='check',
         check_cols=['__scd2_hash'],
         file_format='delta',
-        location_root='none'
+        location_root='none',
+        partition_by=['event_year_date']
     )
 }}
 
@@ -32,7 +33,11 @@ select
     -- Hash columns
     __scd2_hash,
     __scd1_hash,
-    __merge_effective_date
+    __merge_effective_date,
+
+    -- Partition and audit columns
+    current_timestamp() as dbt_loaded_at,
+    date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
 
 from {{ ref('stg_delta_table_snapshots') }}
 

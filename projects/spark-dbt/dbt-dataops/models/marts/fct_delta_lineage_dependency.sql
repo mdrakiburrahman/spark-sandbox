@@ -4,7 +4,8 @@
         incremental_strategy='append',
         file_format='delta',
         location_root='none',
-        on_schema_change='append_new_columns'
+        on_schema_change='append_new_columns',
+        partition_by=['event_year_date']
     )
 }}
 
@@ -48,7 +49,9 @@ select
     de.date_key,
     de.first_seen_timestamp,
     de.last_seen_timestamp,
-    de.event_count
+    de.event_count,
+    current_timestamp() as dbt_loaded_at,
+    date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
 
 from daily_edges de
 left join dim_tbl as src_tbl
