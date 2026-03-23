@@ -50,6 +50,7 @@ Then browse each `dbt-...` project and follow the READMEs:
 
 - [dbt-jaffle-shop](dbt-jaffle-shop/README.md) to test the simple Jaffle Shop simple dataset.
 - [dbt-adventureworks](dbt-adventureworks/README.md) to test the Adventureworks Kimball STAR Schema dataset.
+- [dbt-dataops](dbt-dataops/README.md) to test the Delta Lake KPI STAR schema.
 
 ## 🚀 Using nx
 
