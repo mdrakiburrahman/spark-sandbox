@@ -38,11 +38,17 @@ cd "${DBT_PROJECT}"
 
 export DBT_PROFILES_DIR=$(pwd)
 export DBT_DEBUG="${DBT_DEBUG:-false}"
+FULL_REFRESH="${FULL_REFRESH:-0}"
 
-echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}'"
+FULL_REFRESH_FLAG=""
+if [[ "${FULL_REFRESH}" == "1" ]]; then
+    FULL_REFRESH_FLAG="--full-refresh"
+fi
+
+echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}' (full_refresh=${FULL_REFRESH})"
 
 dbt debug --target "${DBT_TARGET}"
 dbt deps
-dbt seed --target "${DBT_TARGET}"
-dbt build --exclude resource_type:seed --target "${DBT_TARGET}"
-dbt docs generate --target "${DBT_TARGET}" || echo "Warning: catalog generation encountered errors (non-fatal)"
+dbt seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
+dbt build --exclude resource_type:seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
+dbt docs generate --target "${DBT_TARGET}"

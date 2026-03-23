@@ -107,10 +107,27 @@ def get_source_relationships(manifest: dict) -> list:
     return refs
 
 
+def get_catalog_types(catalog: dict) -> dict:
+    """Build a map of (table_name, column_name) -> data_type from catalog.json."""
+    type_map = {}
+    for section in ("nodes", "sources"):
+        for node in catalog.get(section, {}).values():
+            table_name = node.get("metadata", {}).get("name", "").lower()
+            if not table_name:
+                continue
+            for col_data in node.get("columns", {}).values():
+                col_name = col_data.get("name", "").lower()
+                col_type = col_data.get("type", "")
+                if col_name and col_type:
+                    type_map[(table_name, col_name)] = col_type
+    return type_map
+
+
 def enhance_dbml(dbml: str, manifest: dict, catalog: dict) -> str:
-    """Post-process DBML to add [pk] markers and source-level relationships."""
+    """Post-process DBML to add [pk] markers, resolve unknown types, and source-level relationships."""
     pks = get_primary_keys(manifest, catalog)
     source_refs = get_source_relationships(manifest)
+    catalog_types = get_catalog_types(catalog)
 
     lines = dbml.split("\n")
     enhanced = []
@@ -125,17 +142,21 @@ def enhance_dbml(dbml: str, manifest: dict, catalog: dict) -> str:
         elif line.strip() == "}":
             current_table = None
 
-        # Add [pk] to matching columns
+        # Add [pk] to matching columns and resolve "unknown" types from catalog
         if current_table and line.strip().startswith('"'):
             col_match = re.match(r'^(\s+)"([^"]+)"\s+"([^"]+)"(.*)$', line)
             if col_match:
                 indent, col_name, col_type, rest = col_match.groups()
+                if col_type == "unknown":
+                    resolved = catalog_types.get((current_table, col_name.lower()))
+                    if resolved:
+                        col_type = resolved
                 if (current_table, col_name.lower()) in pks:
                     if "[" in rest:
                         rest = rest.replace("[", "[pk, ", 1)
                     else:
                         rest = " [pk]" + rest
-                    line = f'{indent}"{col_name}" "{col_type}"{rest}'
+                line = f'{indent}"{col_name}" "{col_type}"{rest}'
 
         # Remove empty Note lines
         if line.strip() == 'Note: ""':

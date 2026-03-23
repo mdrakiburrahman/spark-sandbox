@@ -1,47 +1,51 @@
 //Tables (based on the selection criteria)
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table customers {
-  "customer_id" "unknown" [pk, note: "This is a unique identifier for a customer"]
-  "first_name" "unknown" [note: "Customer's first name. PII."]
-  "last_name" "unknown" [note: "Customer's last name. PII."]
-  "first_order" "unknown" [note: "Date (UTC) of a customer's first order"]
-  "most_recent_order" "unknown" [note: "Date (UTC) of a customer's most recent order"]
-  "number_of_orders" "unknown" [note: "Count of the number of orders a customer has placed"]
-  "total_order_amount" "unknown" [note: "Total value (AUD) of a customer's orders"]
+  "customer_id" "bigint" [pk, note: "This is a unique identifier for a customer"]
+  "first_name" "string" [note: "Customer's first name. PII."]
+  "last_name" "string" [note: "Customer's last name. PII."]
+  "first_order" "date" [note: "Date (UTC) of a customer's first order"]
+  "most_recent_order" "date" [note: "Date (UTC) of a customer's most recent order"]
+  "number_of_orders" "bigint" [note: "Count of the number of orders a customer has placed"]
+  "customer_lifetime_value" "double" [note: "Total value (AUD) of a customer's orders"]
 
   Note: "This table has basic information about a customer, as well as some derived facts based on a customer's orders"
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table orders {
-  "order_id" "unknown" [pk, note: "This is a unique identifier for an order"]
-  "customer_id" "unknown" [note: "Foreign key to the customers table"]
-  "order_date" "unknown" [note: "Date (UTC) that the order was placed"]
-  "status" "unknown" [note: "Orders can be one of the following statuses:\n\n| status         | description                                                                                                            |\n| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n| placed         | The order has been placed but has not yet left the warehouse                                                           |\n| shipped        | The order has ben shipped to the customer and is currently in transit                                                  |\n| completed      | The order has been received by the customer                                                                            |\n| return_pending | The customer has indicated that they would like to return the order, but it has not yet been received at the warehouse |\n| returned       | The order has been returned by the customer and received at the warehouse                                              |"]
-  "amount" "unknown" [note: "Total amount (AUD) of the order"]
-  "credit_card_amount" "unknown" [note: "Amount of the order (AUD) paid for by credit card"]
-  "coupon_amount" "unknown" [note: "Amount of the order (AUD) paid for by coupon"]
-  "bank_transfer_amount" "unknown" [note: "Amount of the order (AUD) paid for by bank transfer"]
-  "gift_card_amount" "unknown" [note: "Amount of the order (AUD) paid for by gift card"]
+  "order_id" "bigint" [pk, note: "This is a unique identifier for an order"]
+  "customer_id" "bigint" [note: "Foreign key to the customers table"]
+  "order_date" "date" [note: "Date (UTC) that the order was placed"]
+  "status" "string" [note: "Orders can be one of the following statuses:\n\n| status         | description                                                                                                            |\n| -------------- | ---------------------------------------------------------------------------------------------------------------------- |\n| placed         | The order has been placed but has not yet left the warehouse                                                           |\n| shipped        | The order has ben shipped to the customer and is currently in transit                                                  |\n| completed      | The order has been received by the customer                                                                            |\n| return_pending | The customer has indicated that they would like to return the order, but it has not yet been received at the warehouse |\n| returned       | The order has been returned by the customer and received at the warehouse                                              |"]
+  "credit_card_amount" "double" [note: "Amount of the order (AUD) paid for by credit card"]
+  "coupon_amount" "double" [note: "Amount of the order (AUD) paid for by coupon"]
+  "bank_transfer_amount" "double" [note: "Amount of the order (AUD) paid for by bank transfer"]
+  "gift_card_amount" "double" [note: "Amount of the order (AUD) paid for by gift card"]
+  "amount" "double" [note: "Total amount (AUD) of the order"]
 
   Note: "This table has basic information about orders, as well as some derived facts based on payments"
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_customers {
-  "customer_id" "unknown" [pk]
+  "customer_id" "bigint" [pk]
+  "first_name" "string"
+  "last_name" "string"
 
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_orders {
-  "order_id" "unknown" [pk]
-  "status" "unknown"
-  "customer_id" "unknown"
+  "order_id" "bigint" [pk]
+  "customer_id" "bigint"
+  "order_date" "date"
+  "status" "string"
 
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_dwh
 Table stg_payments {
-  "payment_id" "unknown" [pk]
-  "payment_method" "unknown"
-  "order_id" "unknown"
+  "payment_id" "bigint" [pk]
+  "order_id" "bigint"
+  "payment_method" "string"
+  "amount" "double"
 
 }
 //--configured at schema: spark_catalog.dbt_jaffle_shop_seed

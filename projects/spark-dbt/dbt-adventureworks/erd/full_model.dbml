@@ -1,73 +1,116 @@
 //Tables (based on the selection criteria)
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_address {
-  "address_key" "unknown" [pk, note: "The surrogate key of the addressid"]
-  "addressid" "unknown" [pk, note: "The natural key"]
-  "city_name" "unknown" [note: "The city name"]
-  "state_name" "unknown" [note: "The state name"]
-  "country_name" "unknown" [note: "The country name"]
+  "address_key" "string" [pk, note: "The surrogate key of the addressid"]
+  "addressid" "int" [pk, note: "The natural key"]
+  "city_name" "string" [note: "The city name"]
+  "state_name" "string" [note: "The state name"]
+  "country_name" "string" [note: "The country name"]
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_credit_card {
-  "creditcard_key" "unknown" [note: "The surrogate key of the creditcard id"]
-  "creditcardid" "unknown" [pk, note: "The natural key of the creditcard"]
-  "cardtype" "unknown" [note: "The card name"]
+  "creditcard_key" "string" [note: "The surrogate key of the creditcard id"]
+  "creditcardid" "int" [pk, note: "The natural key of the creditcard"]
+  "cardtype" "string" [note: "The card name"]
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_customer {
-  "customer_key" "unknown" [pk, note: "The surrogate key of the customer"]
-  "customerid" "unknown" [pk, note: "The natural key of the customer"]
-  "fullname" "unknown" [note: "The customer name. Adopted as customer_fullname when person name is not null."]
-  "businessentityid" "unknown"
-  "storebusinessentityid" "unknown"
-  "storename" "unknown" [note: "The store name."]
+  "customer_key" "string" [pk, note: "The surrogate key of the customer"]
+  "customerid" "int" [pk, note: "The natural key of the customer"]
+  "businessentityid" "int"
+  "fullname" "string" [note: "The customer name. Adopted as customer_fullname when person name is not null."]
+  "storebusinessentityid" "int"
+  "storename" "string" [note: "The store name."]
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_date {
-  "date_key" "unknown" [pk, note: "The surrogate key of the date table"]
-  "date_day" "unknown" [pk, note: "The natural key of the date table"]
+  "date_key" "string" [pk, note: "The surrogate key of the date table"]
+  "date_day" "date" [pk, note: "The natural key of the date table"]
+  "prior_date_day" "date"
+  "next_date_day" "date"
+  "prior_year_date_day" "date"
+  "prior_year_over_year_date_day" "date"
+  "day_of_week" "int"
+  "day_of_week_name" "string"
+  "day_of_month" "int"
+  "day_of_year" "int"
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_order_status {
-  "order_status_key" "unknown" [pk, note: "The surrogate key of the order status"]
-  "order_status" "unknown" [pk, note: "The natural key of the order status table"]
+  "order_status_key" "string" [pk, note: "The surrogate key of the order status"]
+  "order_status" "smallint" [pk, note: "The natural key of the order status table"]
+  "order_status_name" "string"
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table dim_product {
-  "product_key" "unknown" [pk, note: "The surrogate key of the product"]
-  "productid" "unknown" [pk, note: "The natural key of the product"]
-  "product_name" "unknown" [note: "The product name"]
+  "product_key" "string" [pk, note: "The surrogate key of the product"]
+  "productid" "int" [pk, note: "The natural key of the product"]
+  "product_name" "string" [note: "The product name"]
+  "productnumber" "string"
+  "color" "string"
+  "class" "string"
+  "product_subcategory_name" "string"
+  "product_category_name" "string"
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table fct_sales {
-  "sales_key" "unknown" [pk, note: "The surrogate key of the fct sales"]
-  "salesorderid" "unknown" [note: "The natural key of the saleorderheader"]
-  "salesorderdetailid" "unknown" [note: "The natural key of the salesorderdetail"]
-  "product_key" "unknown" [note: "The foreign key of the product"]
-  "customer_key" "unknown" [note: "The foreign key of the customer"]
-  "ship_address_key" "unknown" [note: "The foreign key of the shipping address"]
-  "creditcard_key" "unknown" [note: "The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash."]
-  "order_date_key" "unknown" [note: "The foreign key of the order date"]
-  "order_status_key" "unknown" [note: "The foreign key of the order status"]
-  "unitprice" "unknown" [note: "The unit price of the product"]
-  "orderqty" "unknown" [note: "The quantity of the product"]
-  "revenue" "unknown" [note: "The revenue obtained by multiplying unitprice and orderqty"]
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
+  "product_key" "string" [note: "The foreign key of the product"]
+  "customer_key" "string" [note: "The foreign key of the customer"]
+  "creditcard_key" "string" [note: "The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash."]
+  "ship_address_key" "string" [note: "The foreign key of the shipping address"]
+  "order_status_key" "string" [note: "The foreign key of the order status"]
+  "order_date_key" "string" [note: "The foreign key of the order date"]
+  "salesorderid" "int" [note: "The natural key of the saleorderheader"]
+  "salesorderdetailid" "int" [note: "The natural key of the salesorderdetail"]
+  "unitprice" "decimal(10,0)" [note: "The unit price of the product"]
+  "orderqty" "smallint" [note: "The quantity of the product"]
+  "revenue" "decimal(16,0)" [note: "The revenue obtained by multiplying unitprice and orderqty"]
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_dwh
 Table obt_sales {
-  "sales_key" "unknown" [pk, note: "The surrogate key of the fct sales"]
-  "salesorderid" "unknown" [note: "The natural key of the saleorderheader"]
-  "salesorderdetailid" "unknown" [note: "The natural key of the salesorderdetail"]
-  "unitprice" "unknown" [note: "The unit price of the product"]
-  "orderqty" "unknown" [note: "The quantity of the product"]
-  "revenue" "unknown" [note: "The revenue obtained by multiplying unitprice and orderqty"]
+  "sales_key" "string" [pk, note: "The surrogate key of the fct sales"]
+  "salesorderid" "int" [note: "The natural key of the saleorderheader"]
+  "salesorderdetailid" "int" [note: "The natural key of the salesorderdetail"]
+  "unitprice" "decimal(10,0)" [note: "The unit price of the product"]
+  "orderqty" "smallint" [note: "The quantity of the product"]
+  "revenue" "decimal(16,0)" [note: "The revenue obtained by multiplying unitprice and orderqty"]
+  "productid" "int"
+  "product_name" "string"
+  "productnumber" "string"
+  "color" "string"
+  "class" "string"
+  "product_subcategory_name" "string"
+  "product_category_name" "string"
+  "customerid" "int"
+  "businessentityid" "int"
+  "fullname" "string"
+  "storebusinessentityid" "int"
+  "storename" "string"
+  "creditcardid" "int"
+  "cardtype" "string"
+  "addressid" "int"
+  "city_name" "string"
+  "state_name" "string"
+  "country_name" "string"
+  "order_status" "smallint"
+  "order_status_name" "string"
+  "date_day" "date"
+  "prior_date_day" "date"
+  "next_date_day" "date"
+  "prior_year_date_day" "date"
+  "prior_year_over_year_date_day" "date"
+  "day_of_week" "int"
+  "day_of_week_name" "string"
+  "day_of_month" "int"
+  "day_of_year" "int"
 
 }
 //--configured at schema: spark_catalog.dbt_adventureworks_seed

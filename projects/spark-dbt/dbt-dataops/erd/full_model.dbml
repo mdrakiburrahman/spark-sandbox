@@ -1,104 +1,229 @@
 //Tables (based on the selection criteria)
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table dim_date {
-  "date_key" "unknown" [pk, note: "Date key in yyyyMMdd format."]
+  "date_key" "string" [pk, note: "Date key in yyyyMMdd format."]
+  "full_date" "date"
+  "year" "int"
+  "quarter" "int"
+  "month" "int"
+  "month_name" "string"
+  "day_of_month" "int"
+  "day_of_week" "int"
+  "day_name" "string"
+  "week_of_year" "int"
+  "is_weekend" "boolean"
 
   Note: "Conformed calendar date dimension."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table dim_delta_table {
-  "__pk" "unknown" [pk, note: "Surrogate key unique per SCD2 version. SHA-256 of (table_fqn, row_effective_start)."]
-  "table_fqn" "unknown" [note: "Business key: fully qualified table name (database.table)."]
-  "is_row_effective" "unknown" [note: "True if this is the currently effective version of the table dimension."]
-  "row_effective_start" "unknown" [note: "Timestamp when this SCD2 version became effective."]
-  "row_effective_end" "unknown" [note: "Timestamp when this SCD2 version became inactive. NULL indicates the current version."]
+  "__pk" "string" [pk, note: "Surrogate key unique per SCD2 version. SHA-256 of (table_fqn, row_effective_start)."]
+  "table_fqn" "string" [note: "Business key: fully qualified table name (database.table)."]
+  "database_name" "string"
+  "table_name" "string"
+  "table_id" "string"
+  "location" "string"
+  "format" "string"
+  "partition_columns" "string"
+  "clustering_columns" "string"
+  "table_properties" "string"
+  "min_reader_version" "int"
+  "min_writer_version" "int"
+  "__scd2_hash" "string"
+  "__scd1_hash" "string"
+  "__merge_effective_date" "date"
+  "row_effective_start" "timestamp" [note: "Timestamp when this SCD2 version became effective."]
+  "row_effective_end" "timestamp" [note: "Timestamp when this SCD2 version became inactive. NULL indicates the current version."]
+  "is_row_effective" "boolean" [note: "True if this is the currently effective version of the table dimension."]
+  "__scd_id" "string"
+  "__merge_ingest_time" "timestamp"
 
   Note: "Central table dimension with mixed SCD1/SCD2 tracking. SCD2 columns (clustering_columns, table_properties, min_reader_version, min_writer_version) are version-specific. SCD1 columns (table_id, location, format, partition_columns) are propagated to all versions."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table dim_delta_table_health_status {
-  "health_status_key" "unknown" [pk, note: "Surrogate key (SHA-256 of status name)."]
-  "status" "unknown" [pk, note: "Health status: Healthy, Training, or Unhealthy."]
+  "health_status_key" "string" [pk, note: "Surrogate key (SHA-256 of status name)."]
+  "status" "string" [pk, note: "Health status: Healthy, Training, or Unhealthy."]
+  "description" "string"
+  "severity_rank" "int"
 
   Note: "Static enum dimension for health status values."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table dim_delta_table_operation_type {
-  "operation_type_key" "unknown" [pk, note: "Surrogate key (SHA-256 of operation name)."]
-  "operation" "unknown" [pk, note: "Delta Lake operation name."]
+  "operation_type_key" "string" [pk, note: "Surrogate key (SHA-256 of operation name)."]
+  "operation" "string" [pk, note: "Delta Lake operation name."]
+  "operation_category" "string"
+  "is_data_changing" "boolean"
+  "is_row_producing" "boolean"
+  "description" "string"
 
   Note: "Reference dimension classifying Delta Lake operation types."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table fct_delta_commit {
-  "commit_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + version)."]
-  "table_key" "unknown" [note: "FK to dim_delta_table."]
-  "operation_type_key" "unknown" [note: "FK to dim_delta_table_operation_type."]
-  "date_key" "unknown" [note: "FK to dim_date."]
-  "commit_timestamp" "unknown" [note: "Timestamp of the Delta commit."]
+  "commit_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + version)."]
+  "table_key" "string" [note: "FK to dim_delta_table."]
+  "operation_type_key" "string" [note: "FK to dim_delta_table_operation_type."]
+  "date_key" "string" [note: "FK to dim_date."]
+  "version" "bigint"
+  "commit_timestamp" "timestamp" [note: "Timestamp of the Delta commit."]
+  "num_output_rows" "bigint"
+  "num_added_files" "bigint"
+  "num_removed_files" "bigint"
+  "num_output_bytes" "bigint"
+  "execution_time_ms" "bigint"
+  "is_blind_append" "boolean"
+  "ingested_at" "timestamp"
 
   Note: "Fact table capturing individual Delta Lake commits. Grain: one row per table per commit version."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table fct_delta_health {
-  "health_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date + evaluation_timestamp)."]
-  "table_key" "unknown" [note: "FK to dim_delta_table."]
-  "date_key" "unknown" [note: "FK to dim_date."]
-  "overall_status_key" "unknown" [note: "FK to dim_delta_table_health_status for overall status."]
-  "freshness_status_key" "unknown" [note: "FK to dim_delta_table_health_status for freshness status."]
-  "completeness_status_key" "unknown" [note: "FK to dim_delta_table_health_status for completeness status."]
-  "most_common_operation_key" "unknown" [note: "FK to dim_delta_table_operation_type for most common operation."]
+  "health_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date + evaluation_timestamp)."]
+  "table_key" "string" [note: "FK to dim_delta_table."]
+  "date_key" "string" [note: "FK to dim_date."]
+  "overall_status_key" "string" [note: "FK to dim_delta_table_health_status for overall status."]
+  "freshness_status_key" "string" [note: "FK to dim_delta_table_health_status for freshness status."]
+  "completeness_status_key" "string" [note: "FK to dim_delta_table_health_status for completeness status."]
+  "most_common_operation_key" "string" [note: "FK to dim_delta_table_operation_type for most common operation."]
+  "evaluation_timestamp" "timestamp"
+  "last_commit_timestamp" "timestamp"
+  "predicted_next_commit" "timestamp"
+  "median_commit_interval_seconds" "bigint"
+  "p95_commit_interval_seconds" "bigint"
+  "commits_in_last_24h" "bigint"
+  "commits_in_last_7d" "bigint"
+  "days_since_last_commit" "double"
+  "daily_row_count_actual" "bigint"
+  "daily_row_count_min_expected" "bigint"
+  "daily_row_count_max_expected" "bigint"
+  "latest_version" "bigint"
+  "snapshot_date" "string"
+  "optimize_count_7d" "bigint"
+  "vacuum_count_7d" "bigint"
 
   Note: "Fact table capturing daily health KPI assessments. Grain: one row per table per snapshot date."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table fct_delta_lineage_dependency {
-  "lineage_key" "unknown" [note: "Surrogate key for the lineage edge."]
-  "source_table_key" "unknown" [note: "FK to dim_delta_table for source dataset."]
-  "target_table_key" "unknown" [note: "FK to dim_delta_table for target dataset."]
-  "date_key" "unknown" [note: "FK to dim_date."]
+  "lineage_key" "string" [pk, note: "Surrogate key for the lineage edge."]
+  "source_table_key" "string" [note: "FK to dim_delta_table for source dataset."]
+  "target_table_key" "string" [note: "FK to dim_delta_table for target dataset."]
+  "date_key" "string" [note: "FK to dim_date."]
+  "first_seen_timestamp" "timestamp"
+  "last_seen_timestamp" "timestamp"
+  "event_count" "bigint"
 
   Note: "Fact table capturing table-level data lineage edges from OpenLineage. Grain: one edge per source\u2192target per job per day."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table fct_delta_storage {
-  "storage_key" "unknown" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date)."]
-  "table_key" "unknown" [note: "FK to dim_delta_table."]
-  "date_key" "unknown" [note: "FK to dim_date."]
+  "storage_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date)."]
+  "table_key" "string" [note: "FK to dim_delta_table."]
+  "date_key" "string" [note: "FK to dim_date."]
+  "num_files" "bigint"
+  "size_in_bytes" "bigint"
+  "size_in_gb" "double"
+  "created_at" "timestamp"
+  "last_modified" "timestamp"
+  "ingested_at" "timestamp"
 
   Note: "Fact table capturing daily table storage metrics. Grain: one row per table per snapshot date."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table stg_delta_commit_history {
-  "table_fqn" "unknown" [note: "Fully qualified table name (database.table)."]
-  "version" "unknown" [note: "Delta commit version number."]
-  "commit_timestamp" "unknown" [note: "Timestamp of the commit."]
-  "operation" "unknown" [note: "Delta operation type (WRITE, MERGE, UPDATE, etc.)."]
-  "snapshot_date" "unknown" [note: "Partition key in yyyyMMdd format."]
+  "table_fqn" "string" [pk, note: "Fully qualified table name (database.table)."]
+  "database_name" "string"
+  "table_name" "string"
+  "table_id" "string"
+  "version" "bigint" [note: "Delta commit version number."]
+  "commit_timestamp" "timestamp" [note: "Timestamp of the commit."]
+  "operation" "string" [note: "Delta operation type (WRITE, MERGE, UPDATE, etc.)."]
+  "operation_parameters" "map<string,string>"
+  "operation_metrics" "map<string,string>"
+  "read_version" "bigint"
+  "isolation_level" "string"
+  "is_blind_append" "boolean"
+  "user_id" "string"
+  "user_name" "string"
+  "user_metadata" "string"
+  "num_output_rows" "bigint"
+  "num_added_files" "bigint"
+  "num_removed_files" "bigint"
+  "num_output_bytes" "bigint"
+  "execution_time_ms" "bigint"
+  "ingested_at" "timestamp"
+  "snapshot_date" "string" [note: "Partition key in yyyyMMdd format."]
+  "date_key" "string"
 
   Note: "Cleaned and typed Delta Lake commit history entries."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table stg_delta_kpi_results {
-  "table_fqn" "unknown" [note: "Fully qualified table name."]
-  "overall_status" "unknown" [note: "Overall health status: Healthy, Unhealthy, or Training."]
-  "snapshot_date" "unknown" [note: "Assessment date partition key."]
+  "table_fqn" "string" [pk, note: "Fully qualified table name."]
+  "overall_status" "string" [note: "Overall health status: Healthy, Unhealthy, or Training."]
+  "evaluation_timestamp" "timestamp"
+  "freshness_status" "string"
+  "last_commit_timestamp" "timestamp"
+  "predicted_next_commit" "timestamp"
+  "median_commit_interval_seconds" "bigint"
+  "p95_commit_interval_seconds" "bigint"
+  "commits_in_last_24h" "bigint"
+  "commits_in_last_7d" "bigint"
+  "days_since_last_commit" "double"
+  "completeness_status" "string"
+  "daily_row_count_actual" "bigint"
+  "daily_row_count_min_expected" "bigint"
+  "daily_row_count_max_expected" "bigint"
+  "latest_version" "bigint"
+  "most_common_operation" "string"
+  "optimize_count_7d" "bigint"
+  "vacuum_count_7d" "bigint"
+  "snapshot_date" "string" [note: "Assessment date partition key."]
+  "date_key" "string"
 
   Note: "Cleaned health KPI assessment results."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table stg_delta_lineage {
-  "source_name" "unknown" [note: "Source dataset name/path."]
-  "target_name" "unknown" [note: "Target dataset name/path."]
-  "event_year_date" "unknown" [note: "Event date partition key."]
+  "source_namespace" "string" [pk]
+  "source_name" "string" [note: "Source dataset name/path."]
+  "target_namespace" "string"
+  "target_name" "string" [note: "Target dataset name/path."]
+  "job_name" "string"
+  "job_namespace" "string"
+  "event_timestamp" "timestamp"
+  "event_year_date" "string" [note: "Event date partition key."]
+  "date_key" "string"
 
   Note: "Table-level lineage edges extracted from OpenLineage COMPLETE events."
 }
 //--configured at schema: spark_catalog.dbt_dataops_dwh
 Table stg_delta_table_snapshots {
-  "table_fqn" "unknown" [note: "Fully qualified table name (business key for dim_delta_table)."]
-  "__scd2_hash" "unknown" [note: "SHA-256 hash of SCD2-tracked columns for change detection."]
-  "__scd1_hash" "unknown" [note: "SHA-256 hash of SCD1-tracked columns for update detection."]
+  "table_fqn" "string" [pk, note: "Fully qualified table name (business key for dim_delta_table)."]
+  "database_name" "string"
+  "table_name" "string"
+  "table_id" "string"
+  "location" "string"
+  "format" "string"
+  "partition_columns" "string"
+  "clustering_columns" "string"
+  "table_properties" "string"
+  "min_reader_version" "int"
+  "min_writer_version" "int"
+  "num_files" "bigint"
+  "size_in_bytes" "bigint"
+  "size_in_gb" "double"
+  "created_at" "timestamp"
+  "last_modified" "timestamp"
+  "ingested_at" "timestamp"
+  "snapshot_date" "string"
+  "date_key" "string"
+  "__scd2_hash" "string" [note: "SHA-256 hash of SCD2-tracked columns for change detection."]
+  "__scd1_hash" "string" [note: "SHA-256 hash of SCD1-tracked columns for update detection."]
+  "__merge_effective_date" "date"
+  "__merge_ingest_time" "timestamp"
 
   Note: "Deduplicated table metadata snapshots with SCD hash columns. One row per table per day."
 }

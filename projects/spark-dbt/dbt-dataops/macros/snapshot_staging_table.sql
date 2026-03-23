@@ -1,10 +1,13 @@
 {#
-    Override of default__snapshot_staging_table to fix AMBIGUOUS_REFERENCE error on Spark.
+    Override of default__snapshot_staging_table for Spark adapter compatibility.
 
-    Spark rejects `SELECT *, col AS dbt_unique_key FROM tbl` when `tbl` already
-    contains a `dbt_unique_key` column (from a prior snapshot run).  We fix this
-    by explicitly listing columns from the target relation and excluding
-    `dbt_unique_key` before re-adding it via unique_key_fields().
+    Spark raises AMBIGUOUS_REFERENCE on `SELECT *, col AS dbt_unique_key FROM tbl`
+    when `tbl` already contains a `dbt_unique_key` column from a prior snapshot run.
+    This macro explicitly lists target columns (excluding dbt_unique_key) before
+    re-adding it via unique_key_fields(), avoiding the ambiguity.
+
+    Upstream issue: dbt-core's default macro assumes the query engine tolerates
+    duplicate column names in SELECT *, which Spark does not.
 #}
 
 {% macro default__snapshot_staging_table(strategy, source_sql, target_relation) -%}

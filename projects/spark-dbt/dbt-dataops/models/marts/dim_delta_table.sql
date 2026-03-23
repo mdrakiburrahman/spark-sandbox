@@ -58,7 +58,7 @@ with_scd1_propagation as (
         __scd1_hash,
         __merge_effective_date,
 
-        -- SCD2 tracking columns (renamed from dbt defaults to our convention)
+        -- SCD2 tracking columns
         dbt_valid_from as row_effective_start,
         dbt_valid_to as row_effective_end,
         case when dbt_valid_to is null then true else false end as is_row_effective,

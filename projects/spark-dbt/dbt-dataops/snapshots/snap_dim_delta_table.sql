@@ -17,13 +17,13 @@ select
     database_name,
     table_name,
 
-    -- SCD1 columns (update in place via dim_table model)
+    -- SCD1 columns
     table_id,
     location,
     format,
     partition_columns,
 
-    -- SCD2 columns (tracked by snapshot check strategy)
+    -- SCD2 columns
     clustering_columns,
     table_properties,
     min_reader_version,

@@ -2,8 +2,6 @@ with source as (
     select * from {{ source('dataops_inventory', 'table_snapshots') }}
 ),
 
--- Deduplicate: take the single latest snapshot per table (for SCD2 snapshot)
--- Note: fct_delta_storage reads directly from the source for daily granularity
 ranked as (
     select
         *,
