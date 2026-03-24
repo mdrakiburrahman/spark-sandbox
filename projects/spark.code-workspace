@@ -30,7 +30,7 @@
   ],
   "settings": {
     "files.watcherExclude": {
-      "**/target": true,
+      "**/target": true
     },
     "java.compile.nullAnalysis.mode": "disabled",
     "chat.agentSkillsLocations": {

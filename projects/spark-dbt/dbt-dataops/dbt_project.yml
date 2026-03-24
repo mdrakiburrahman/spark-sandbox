@@ -1,0 +1,27 @@
+name: "dataops"
+version: "1.0.0"
+config-version: 2
+profile: "dataops"
+
+require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+analysis-paths: ["analyses"]
+
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ["dataops", "dbt_utils"]
+
+models:
+  dataops:
+    +file_format: delta
+    +location_root: "none"
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
+      +file_format: delta

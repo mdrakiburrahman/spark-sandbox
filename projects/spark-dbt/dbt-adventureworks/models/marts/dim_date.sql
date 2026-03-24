@@ -1,5 +1,5 @@
 with stg_date as (
-    select * from {{ source('adventureworks_seed', 'date') }}
+    select * from {{ ref('date') }}
 )
 
 select

@@ -1,3 +1,4 @@
 lakehouse_name,lakehouse_guid,folder_to_mount
 dbt_jaffle_shop_seed,1dcd407d-bc28-4e1f-880f-9df1f2464a69,Tables
 dbt_adventureworks_seed,74bd1b67-85dc-4b52-8472-c9acf6277f11,Tables
+data_ops_inventory_db,4d8783be-e822-46d0-82e4-9b77c7f33992,Tables

@@ -34,6 +34,7 @@
 # PARAMETERS CELL ********************
 
 dbt_project_name = ""
+full_refresh = "0"
 
 # METADATA ********************
 
@@ -121,13 +122,15 @@ def run_dbt_project(project):
     project_dir = f"/tmp/dbt-fabric-bundle/projects/{project}"
 
     base_args = ["--project-dir", project_dir, "--profiles-dir", project_dir, "--target", TARGET]
+    if full_refresh == "1":
+        base_args.append("--full-refresh")
 
     runner = dbtRunner()
     for cmd in [
         ["deps"] + base_args,
         ["debug"] + base_args,
-        ["run"] + base_args,
-        ["test"] + base_args,
+        ["seed"] + base_args,
+        ["build", "--exclude", "resource_type:seed"] + base_args,
     ]:
         result = runner.invoke(cmd)
         flush_dbt_logs()

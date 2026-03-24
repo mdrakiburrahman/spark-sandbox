@@ -10,3 +10,6 @@ __pycache__/
 .venv/*
 livy-session-id.txt
 **/*.dbdiagram
+dbt_packages/
+target/
+logs/*

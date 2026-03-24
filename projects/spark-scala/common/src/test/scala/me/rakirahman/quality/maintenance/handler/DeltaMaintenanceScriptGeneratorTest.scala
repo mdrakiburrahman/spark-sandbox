@@ -1,9 +1,20 @@
 package me.rakirahman.quality.maintenance.handler
 
-import me.rakirahman.etl.transformer.sorter.DateTypes
+import java.sql.Timestamp
+import me.rakirahman.etl.transformer.sorter.{DateTypes, SortableColumnNames}
+import me.rakirahman.metastore.PartitionOperations
 import me.rakirahman.quality.maintenance.metadata._
 import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.matchers.should.Matchers
+
+/** Stub implementation of [[PartitionOperations]] for unit testing purge script generation.
+  */
+class StubPartitionOperations(partitionValues: Map[(String, String, String), Array[String]]) extends PartitionOperations {
+  override def getPartitions(databaseName: String, tableName: String): Array[String] = Array.empty
+  override def getDistinctPartitionValues(databaseName: String, tableName: String, partition: String): Array[String] = partitionValues.getOrElse((databaseName, tableName, partition), Array.empty)
+  override def getTimestampPartitionValues(databaseName: String, tableName: String, partition: String, columnName: SortableColumnNames.Types): Array[Timestamp] = Array.empty
+  override def getMinMaxTimestampPartitionValues(databaseName: String, tableName: String, partition: String, columnName: SortableColumnNames.Types): (Timestamp, Timestamp) = (null, null)
+}
 
 class DeltaMaintenanceScriptGeneratorTest extends AnyFunSpec with Matchers {
 
@@ -121,6 +132,93 @@ class DeltaMaintenanceScriptGeneratorTest extends AnyFunSpec with Matchers {
 
         val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs)
         result.length shouldBe 3
+      }
+
+      it("should generate PURGE DELETE script retaining only the N most recent partitions") {
+        val partitionValues = Map(
+          ("db1", "fct_commits", "date_key") -> Array("20250101", "20250102", "20250103", "20250104", "20250105")
+        )
+        val stubOps = new StubPartitionOperations(partitionValues)
+        val tables = Array(("db1", "fct_commits"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "fct_commits", isPrefix = false, Array.empty[String], "date_key", DateTypes.YearMonthDate, 2, true, true, false)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, Some(stubOps))
+        result.length shouldBe 1
+        result.head.scriptToRun.length shouldBe 1
+        result.head.scriptToRun(0) shouldBe "DELETE FROM db1.fct_commits WHERE date_key NOT IN ('20250104', '20250105')"
+      }
+
+      it("should generate PURGE DELETE script with YearMonth partitions") {
+        val partitionValues = Map(
+          ("db1", "events", "event_year_month") -> Array("202407", "202408", "202409", "202410", "202411", "202412")
+        )
+        val stubOps = new StubPartitionOperations(partitionValues)
+        val tables = Array(("db1", "events"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "events", isPrefix = false, Array.empty[String], "event_year_month", DateTypes.YearMonth, 3, true, true, false)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, Some(stubOps))
+        result.length shouldBe 1
+        result.head.scriptToRun(0) shouldBe "DELETE FROM db1.events WHERE event_year_month NOT IN ('202410', '202411', '202412')"
+      }
+
+      it("should not generate PURGE when partition count is within retention") {
+        val partitionValues = Map(
+          ("db1", "small_table", "date_key") -> Array("20250101", "20250102")
+        )
+        val stubOps = new StubPartitionOperations(partitionValues)
+        val tables = Array(("db1", "small_table"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "small_table", isPrefix = false, Array.empty[String], "date_key", DateTypes.YearMonthDate, 7, true, true, false)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, Some(stubOps))
+        result shouldBe empty
+      }
+
+      it("should skip PURGE when skipPurge is true even with partitionOps provided") {
+        val partitionValues = Map(
+          ("db1", "dim_table", "date_key") -> Array("20250101", "20250102", "20250103", "20250104", "20250105")
+        )
+        val stubOps = new StubPartitionOperations(partitionValues)
+        val tables = Array(("db1", "dim_table"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "dim_table", isPrefix = false, Array.empty[String], "", null, Int.MaxValue, false, true, true)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, Some(stubOps))
+        result.head.scriptToRun.foreach { s => s should not include ("DELETE") }
+      }
+
+      it("should generate PURGE before VACUUM and OPTIMIZE when all enabled") {
+        val partitionValues = Map(
+          ("db1", "fct_health", "date_key") -> Array("20250101", "20250102", "20250103", "20250104", "20250105")
+        )
+        val stubOps = new StubPartitionOperations(partitionValues)
+        val tables = Array(("db1", "fct_health"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "fct_health", isPrefix = false, Array("table_key", "date_key"), "date_key", DateTypes.YearMonthDate, 2, false, false, false)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, Some(stubOps))
+        result.head.scriptToRun.length shouldBe 3
+        result.head.scriptToRun(0) shouldBe "DELETE FROM db1.fct_health WHERE date_key NOT IN ('20250104', '20250105')"
+        result.head.scriptToRun(1) shouldBe "VACUUM db1.fct_health RETAIN 168 HOURS;"
+        result.head.scriptToRun(2) shouldBe "OPTIMIZE db1.fct_health ZORDER BY (table_key, date_key);"
+      }
+
+      it("should not generate PURGE when partitionOps is None") {
+        val tables = Array(("db1", "fct_commits"))
+        val configs = Array(
+          DesiredDeltaTableConfig("db1", "fct_commits", isPrefix = false, Array.empty[String], "date_key", DateTypes.YearMonthDate, 2, false, true, false)
+        )
+
+        val result = DeltaMaintenanceScriptGenerator.generateMaintenanceScripts(tables, configs, None)
+        result.head.scriptToRun.length shouldBe 1
+        result.head.scriptToRun(0) shouldBe "VACUUM db1.fct_commits RETAIN 168 HOURS;"
       }
     }
 

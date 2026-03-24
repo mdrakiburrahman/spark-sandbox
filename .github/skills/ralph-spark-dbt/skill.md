@@ -83,10 +83,11 @@ If NO dbt changes are detected at all (only docs/images), skip to the completion
 
 ---
 
-## Step 1: Install Environment
+## Step 1: Install Environment cleanly
 
 ```bash
 cd /workspaces/spark-sandbox
+npx nx run-many -t clean --parallel=3
 npx nx run spark-dbt:install
 ```
 

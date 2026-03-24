@@ -1,0 +1,235 @@
+version: 2
+
+models:
+  - name: dim_delta_table
+    description: "Central table dimension with mixed SCD1/SCD2 tracking. SCD2 columns (clustering_columns, table_properties, min_reader_version, min_writer_version) are version-specific. SCD1 columns (table_id, location, format, partition_columns) are propagated to all versions."
+    columns:
+      - name: __pk
+        description: "Surrogate key unique per SCD2 version. SHA-256 of (table_fqn, row_effective_start)."
+        tests:
+          - unique
+          - not_null
+      - name: table_fqn
+        description: "Business key: fully qualified table name (database.table)."
+        tests:
+          - not_null
+      - name: is_row_effective
+        description: "True if this is the currently effective version of the table dimension."
+        tests:
+          - not_null
+      - name: row_effective_start
+        description: "Timestamp when this SCD2 version became effective."
+        tests:
+          - not_null
+      - name: row_effective_end
+        description: "Timestamp when this SCD2 version became inactive. NULL indicates the current version."
+
+  - name: dim_date
+    description: "Conformed calendar date dimension."
+    columns:
+      - name: date_key
+        description: "Date key in yyyyMMdd format."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_delta_table_operation_type
+    description: "Reference dimension classifying Delta Lake operation types."
+    columns:
+      - name: operation_type_key
+        description: "Surrogate key (SHA-256 of operation name)."
+        tests:
+          - unique
+          - not_null
+      - name: operation
+        description: "Delta Lake operation name."
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_delta_table_health_status
+    description: "Static enum dimension for health status values."
+    columns:
+      - name: health_status_key
+        description: "Surrogate key (SHA-256 of status name)."
+        tests:
+          - unique
+          - not_null
+      - name: status
+        description: "Health status: Healthy, Training, or Unhealthy."
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              values: ["Healthy", "Training", "Unhealthy"]
+
+  - name: fct_delta_commit
+    description: "Fact table capturing individual Delta Lake commits. Grain: one row per table per commit version."
+    columns:
+      - name: commit_key
+        description: "Surrogate key (SHA-256 of table_fqn + version)."
+        tests:
+          - unique
+          - not_null
+      - name: table_key
+        description: "FK to dim_delta_table."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table')
+              field: __pk
+              config:
+                where: "table_key is not null"
+      - name: operation_type_key
+        description: "FK to dim_delta_table_operation_type."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table_operation_type')
+              field: operation_type_key
+              config:
+                where: "operation_type_key is not null"
+      - name: date_key
+        description: "FK to dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: commit_timestamp
+        description: "Timestamp of the Delta commit."
+        tests:
+          - not_null
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
+
+  - name: fct_delta_health
+    description: "Fact table capturing daily health KPI assessments. Grain: one row per table per snapshot date."
+    columns:
+      - name: health_key
+        description: "Surrogate key (SHA-256 of table_fqn + snapshot_date + evaluation_timestamp)."
+        tests:
+          - unique
+          - not_null
+      - name: table_key
+        description: "FK to dim_delta_table."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table')
+              field: __pk
+              config:
+                where: "table_key is not null"
+      - name: date_key
+        description: "FK to dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: overall_status_key
+        description: "FK to dim_delta_table_health_status for overall status."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table_health_status')
+              field: health_status_key
+              config:
+                where: "overall_status_key is not null"
+      - name: freshness_status_key
+        description: "FK to dim_delta_table_health_status for freshness status."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table_health_status')
+              field: health_status_key
+              config:
+                where: "freshness_status_key is not null"
+      - name: completeness_status_key
+        description: "FK to dim_delta_table_health_status for completeness status."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table_health_status')
+              field: health_status_key
+              config:
+                where: "completeness_status_key is not null"
+      - name: most_common_operation_key
+        description: "FK to dim_delta_table_operation_type for most common operation."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table_operation_type')
+              field: operation_type_key
+              config:
+                where: "most_common_operation_key is not null"
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
+
+  - name: fct_delta_storage
+    description: "Fact table capturing daily table storage metrics. Grain: one row per table per snapshot date."
+    columns:
+      - name: storage_key
+        description: "Surrogate key (SHA-256 of table_fqn + snapshot_date)."
+        tests:
+          - unique
+          - not_null
+      - name: table_key
+        description: "FK to dim_delta_table."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table')
+              field: __pk
+              config:
+                where: "table_key is not null"
+      - name: date_key
+        description: "FK to dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null
+
+  - name: fct_delta_lineage_dependency
+    description: "Fact table capturing table-level data lineage edges from OpenLineage. Grain: one edge per source→target per job per day."
+    columns:
+      - name: lineage_key
+        description: "Surrogate key for the lineage edge."
+        tests:
+          - not_null
+      - name: source_table_key
+        description: "FK to dim_delta_table for source dataset."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table')
+              field: __pk
+              config:
+                where: "source_table_key is not null"
+      - name: target_table_key
+        description: "FK to dim_delta_table for target dataset."
+        tests:
+          - relationships:
+              to: ref('dim_delta_table')
+              field: __pk
+              config:
+                where: "target_table_key is not null"
+      - name: date_key
+        description: "FK to dim_date."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_date')
+              field: date_key
+      - name: dbt_loaded_at
+        description: "Spark write timestamp when this row was materialized by dbt."
+      - name: event_year_date
+        description: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."
+        tests:
+          - not_null

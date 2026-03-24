@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 #
-#       Script to run a dbt project end-to-end, including debug, deps, seed,
-#       run, test, and docs generation.
+#       Script to run a dbt project end-to-end, including debug, deps, build,
+#       and docs generation.
 #
 #       Usage: run-dbt-local.sh <dbt-project> [target]
 #       Example: run-dbt-local.sh dbt-adventureworks local-local
@@ -38,12 +38,20 @@ cd "${DBT_PROJECT}"
 
 export DBT_PROFILES_DIR=$(pwd)
 export DBT_DEBUG="${DBT_DEBUG:-false}"
+FULL_REFRESH="${FULL_REFRESH:-0}"
 
-echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}'"
+FULL_REFRESH_FLAG=""
+if [[ "${FULL_REFRESH}" == "1" ]]; then
+    FULL_REFRESH_FLAG="--full-refresh"
+fi
+
+echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}' (full_refresh=${FULL_REFRESH})"
 
 dbt debug --target "${DBT_TARGET}"
 dbt deps
-[[ $(yq e ".${DBT_PROJECT//-/_}.outputs.${DBT_TARGET}.livy_mode" profiles.yml) == "fabric" ]] && dbt seed --target "${DBT_TARGET}" || echo "Skipping dbt seed (livy_mode = local)"
-dbt run --target "${DBT_TARGET}"
-dbt test --target "${DBT_TARGET}"
+dbt seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
+dbt build --exclude resource_type:seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
+if grep -rql 'macro cleanup_dbt_tmp_relations' macros/ 2>/dev/null; then
+    dbt run-operation cleanup_dbt_tmp_relations --target "${DBT_TARGET}"
+fi
 dbt docs generate --target "${DBT_TARGET}"

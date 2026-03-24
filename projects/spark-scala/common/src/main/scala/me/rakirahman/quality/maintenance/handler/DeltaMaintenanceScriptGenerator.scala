@@ -1,5 +1,7 @@
 package me.rakirahman.quality.maintenance.handler
 
+import me.rakirahman.etl.transformer.sorter.DateSorter
+import me.rakirahman.metastore.PartitionOperations
 import me.rakirahman.quality.maintenance.metadata._
 import org.apache.spark.internal.Logging
 import scala.collection.mutable.ListBuffer
@@ -14,12 +16,15 @@ object DeltaMaintenanceScriptGenerator extends Logging {
     *   The current tables in the estate (database, table pairs).
     * @param desiredConfigs
     *   The desired maintenance configurations.
+    * @param partitionOps
+    *   Optional partition operations for purge support. When provided, enables partition-aware DELETE generation by querying actual partition values from the metastore.
     * @return
     *   A [[ListBuffer]] of [[DeltaMaintenanceScripts]] to execute.
     */
   def generateMaintenanceScripts(
       currentTables: Array[(String, String)],
-      desiredConfigs: Array[DesiredDeltaTableConfig]
+      desiredConfigs: Array[DesiredDeltaTableConfig],
+      partitionOps: Option[PartitionOperations] = None
   ): ListBuffer[DeltaMaintenanceScripts] = {
     val scriptsToRun = ListBuffer.empty[DeltaMaintenanceScripts]
 
@@ -28,6 +33,12 @@ object DeltaMaintenanceScriptGenerator extends Logging {
 
       matchingTables.foreach { case (database, table) =>
         val script = ListBuffer.empty[String]
+
+        if (!desiredConfig.skipPurge) {
+          partitionOps.foreach { ops =>
+            generatePurgeScript(database, table, desiredConfig, ops).foreach(script += _)
+          }
+        }
 
         if (!desiredConfig.skipVacuum) {
           script += s"VACUUM ${database}.${table} RETAIN 168 HOURS;"
@@ -52,6 +63,41 @@ object DeltaMaintenanceScriptGenerator extends Logging {
       }
     }
     scriptsToRun
+  }
+
+  /** Generates a purge DELETE statement by querying actual partition values and retaining the N most recent.
+    *
+    * @param database
+    *   The database name.
+    * @param table
+    *   The table name.
+    * @param config
+    *   The desired table config with purge settings.
+    * @param partitionOps
+    *   Partition operations for querying the metastore.
+    * @return
+    *   An optional DELETE SQL string.
+    */
+  def generatePurgeScript(
+      database: String,
+      table: String,
+      config: DesiredDeltaTableConfig,
+      partitionOps: PartitionOperations
+  ): Option[String] = {
+    if (config.purgePartitionColumn.isEmpty || config.purgePartitionColumnDateType == null) return None
+
+    logInfo(s"Purging table ${database}.${table} with purge partition column '${config.purgePartitionColumn}' and date type '${config.purgePartitionColumnDateType}'")
+    val partitions = partitionOps
+      .getDistinctPartitionValues(database, table, config.purgePartitionColumn)
+      .sorted(DateSorter.get(config.purgePartitionColumnDateType))
+
+    if (partitions.length - config.numPartitionsToRetain > 0) {
+      val partitionsToKeep = partitions.takeRight(config.numPartitionsToRetain).map(p => s"'${p}'").mkString(", ")
+      Some(s"DELETE FROM ${database}.${table} WHERE ${config.purgePartitionColumn} NOT IN (${partitionsToKeep})")
+    } else {
+      logInfo(s"Table ${database}.${table} has ${partitions.length} partitions, retaining ${config.numPartitionsToRetain} - no purge needed")
+      None
+    }
   }
 
   /** Finds tables in the estate that match a desired configuration.

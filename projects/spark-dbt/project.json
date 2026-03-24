@@ -88,7 +88,8 @@
         "cwd": "projects/spark-dbt",
         "commands": [
           "npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local --verbose --output-style=stream",
-          "npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local --verbose --output-style=stream"
+          "npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local --verbose --output-style=stream",
+          "npx nx run spark-dbt:run --PROJECT=dbt-dataops --TARGET=local-local --verbose --output-style=stream"
         ],
         "parallel": true
       }

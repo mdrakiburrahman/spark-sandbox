@@ -7,8 +7,7 @@ Table customers {
   "first_order" "date" [note: "Date (UTC) of a customer's first order"]
   "most_recent_order" "date" [note: "Date (UTC) of a customer's most recent order"]
   "number_of_orders" "bigint" [note: "Count of the number of orders a customer has placed"]
-  "customer_lifetime_value" "double"
-  "total_order_amount" "unknown" [note: "Total value (AUD) of a customer's orders"]
+  "customer_lifetime_value" "double" [note: "Total value (AUD) of a customer's orders"]
 
   Note: "This table has basic information about a customer, as well as some derived facts based on a customer's orders"
 }

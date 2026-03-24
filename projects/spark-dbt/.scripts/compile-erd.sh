@@ -13,17 +13,36 @@ source .venv/bin/activate
 DBT_TARGET="${DBT_TARGET:-local-local}"
 export DBT_DEBUG="${DBT_DEBUG:-false}"
 
+PIDS=()
+PROJECTS=()
+
 for PROJECT_DIR in dbt-*/; do
     PROJECT_NAME=$(basename "$PROJECT_DIR")
-    echo "=== Preparing ${PROJECT_NAME} ==="
+    PROJECT_ABS=$(cd "$PROJECT_DIR" && pwd)
+    echo "=== Preparing ${PROJECT_NAME} (background) ==="
 
-    pushd "${PROJECT_DIR}" > /dev/null
-    export DBT_PROFILES_DIR=$(pwd)
-
-    dbt deps --quiet
-    dbt parse --target "${DBT_TARGET}"
-
-    popd > /dev/null
+    (
+        cd "$PROJECT_ABS"
+        export DBT_PROFILES_DIR="$PROJECT_ABS"
+        dbt deps --quiet
+        dbt parse --target "${DBT_TARGET}"
+        dbt docs generate --target "${DBT_TARGET}"
+        echo "=== Done ${PROJECT_NAME} ==="
+    ) &
+    PIDS+=($!)
+    PROJECTS+=("$PROJECT_NAME")
 done
+
+FAILED=0
+for i in "${!PIDS[@]}"; do
+    if ! wait "${PIDS[$i]}"; then
+        echo "ERROR: ${PROJECTS[$i]} failed" >&2
+        FAILED=1
+    fi
+done
+
+if [[ "$FAILED" -ne 0 ]]; then
+    exit 1
+fi
 
 python3 "${SCRIPT_DIR}/compile_erd.py"
