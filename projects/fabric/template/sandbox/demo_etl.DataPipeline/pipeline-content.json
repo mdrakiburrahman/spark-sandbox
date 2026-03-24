@@ -48,6 +48,10 @@
             "full_refresh": {
               "value": "0",
               "type": "string"
+            },
+            "skip_seed": {
+              "value": "1",
+              "type": "string"
             }
           }
         },
@@ -73,6 +77,10 @@
             },
             "full_refresh": {
               "value": "0",
+              "type": "string"
+            },
+            "skip_seed": {
+              "value": "1",
               "type": "string"
             }
           }
