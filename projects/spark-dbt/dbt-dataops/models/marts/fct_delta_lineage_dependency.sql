@@ -1,7 +1,8 @@
 {{
     config(
         materialized='incremental',
-        incremental_strategy='append',
+        incremental_strategy='merge',
+        unique_key='lineage_key',
         file_format='delta',
         location_root='none',
         on_schema_change='append_new_columns',
