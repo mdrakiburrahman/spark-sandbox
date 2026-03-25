@@ -203,6 +203,7 @@ models:
       - name: lineage_key
         description: "Surrogate key for the lineage edge."
         tests:
+          - unique
           - not_null
       - name: source_table_key
         description: "FK to dim_delta_table for source dataset."
