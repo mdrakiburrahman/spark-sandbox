@@ -57,6 +57,7 @@
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployMonitoring",
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deploySpark",
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployTemplate",
+          "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployAlert",
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployModel",
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployShortcut",
           "npx nx run fabric:deploy-fabric --ENV=$NX_TASK_TARGET_CONFIGURATION --OPERATION=deployRbac"
