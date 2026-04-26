@@ -11,7 +11,7 @@
 #
 set -euo pipefail
 
-PYTHON_VERSION="3.11"
+PYTHON_VERSION="3.12"
 PLATFORMS="manylinux2014_x86_64 linux_x86_64 any"
 DBT_PROJECTS=(dbt-adventureworks dbt-jaffle-shop dbt-dataops)
 BUNDLE_NAME="dbt-fabric-bundle"

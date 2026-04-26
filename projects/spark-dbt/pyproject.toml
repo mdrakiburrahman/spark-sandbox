@@ -18,7 +18,7 @@ type = "virtual"
 path = ".venv"
 skip-install = true
 dependencies = [
-  "dbt-fabricspark @ git+https://github.com/microsoft/dbt-fabricspark.git@main",
+  "dbt-fabricspark @ https://rakirahman.blob.core.windows.net/public/whls/dbt_fabricspark-1.9.5-py3-none-any.whl",
   "azure-identity>=1.21.0",
   "azure-core>=1.33.0",
   "dbterd",
