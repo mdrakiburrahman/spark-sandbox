@@ -1,8 +1,7 @@
 {{
     config(
         materialized='incremental',
-        incremental_strategy='merge',
-        unique_key='storage_key',
+        incremental_strategy='append',
         file_format='delta',
         location_root='none',
         on_schema_change='append_new_columns',
@@ -32,23 +31,28 @@ src as (
 dim_tbl as (
     select __pk as table_key, table_fqn, row_effective_start, row_effective_end
     from {{ ref('dim_delta_table') }}
+),
+
+fact as (
+    select
+        sha2(concat_ws('|', src.table_fqn, src.snapshot_date), 256) as storage_key,
+        dim_tbl.table_key,
+        src.snapshot_date as date_key,
+        src.num_files,
+        src.size_in_bytes,
+        src.size_in_gb,
+        src.created_at,
+        src.last_modified,
+        src.ingested_at,
+        current_timestamp() as dbt_loaded_at,
+        date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
+
+    from src
+    inner join dim_tbl
+        on src.table_fqn = dim_tbl.table_fqn
+        and src.ingested_at >= dim_tbl.row_effective_start
+        and src.ingested_at < coalesce(dim_tbl.row_effective_end, cast('9999-12-31' as timestamp))
 )
 
-select
-    sha2(concat_ws('|', src.table_fqn, src.snapshot_date), 256) as storage_key,
-    dim_tbl.table_key,
-    src.snapshot_date as date_key,
-    src.num_files,
-    src.size_in_bytes,
-    src.size_in_gb,
-    src.created_at,
-    src.last_modified,
-    src.ingested_at,
-    current_timestamp() as dbt_loaded_at,
-    date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
-
-from src
-left join dim_tbl
-    on src.table_fqn = dim_tbl.table_fqn
-    and src.ingested_at >= dim_tbl.row_effective_start
-    and src.ingested_at < coalesce(dim_tbl.row_effective_end, cast('9999-12-31' as timestamp))
+select * from fact
+{{ fact_not_exists('storage_key', 'fact') }}

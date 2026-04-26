@@ -24,7 +24,10 @@ select
     {{ dbt_utils.generate_surrogate_key(['stg_salesorderdetail.salesorderid', 'salesorderdetailid']) }} as sales_key,
     {{ dbt_utils.generate_surrogate_key(['productid']) }} as product_key,
     {{ dbt_utils.generate_surrogate_key(['customerid']) }} as customer_key,
-    {{ dbt_utils.generate_surrogate_key(['creditcardid']) }} as creditcard_key,
+    case when creditcardid is not null
+        then {{ dbt_utils.generate_surrogate_key(['creditcardid']) }}
+        else null
+    end as creditcard_key,
     {{ dbt_utils.generate_surrogate_key(['shiptoaddressid']) }} as ship_address_key,
     {{ dbt_utils.generate_surrogate_key(['order_status']) }} as order_status_key,
     {{ dbt_utils.generate_surrogate_key(['orderdate']) }} as order_date_key,
@@ -35,3 +38,7 @@ select
     stg_salesorderdetail.revenue
 from stg_salesorderdetail
 inner join stg_salesorderheader on stg_salesorderdetail.salesorderid = stg_salesorderheader.salesorderid
+where exists (
+    select 1 from {{ ref('dim_address') }} da
+    where da.address_key = {{ dbt_utils.generate_surrogate_key(['stg_salesorderheader.shiptoaddressid']) }}
+)

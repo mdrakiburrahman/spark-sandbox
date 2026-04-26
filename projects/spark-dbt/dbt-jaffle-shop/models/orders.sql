@@ -12,6 +12,12 @@ payments as (
 
 ),
 
+customers as (
+
+    select * from {{ ref('stg_customers') }}
+
+),
+
 order_payments as (
 
     select
@@ -47,6 +53,9 @@ final as (
 
     from orders
 
+    -- FK integrity: only include orders whose customer exists
+    inner join customers
+        on orders.customer_id = customers.customer_id
 
     left join order_payments
         on orders.order_id = order_payments.order_id

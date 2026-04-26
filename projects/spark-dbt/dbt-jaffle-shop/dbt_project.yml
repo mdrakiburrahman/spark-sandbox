@@ -35,8 +35,8 @@ seeds:
 
 models:
   jaffle_shop:
-    materialized: table
-    file_format: delta
-    location_root: "none"
+    +materialized: table
+    +file_format: delta
+    +location_root: "none"
     staging:
-      materialized: view
+      +materialized: view
