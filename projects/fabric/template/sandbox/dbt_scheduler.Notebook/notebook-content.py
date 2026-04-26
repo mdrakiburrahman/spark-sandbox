@@ -35,7 +35,6 @@
 
 dbt_project_name = ""
 full_refresh = "0"
-skip_seed = "0"
 
 # METADATA ********************
 
@@ -126,18 +125,13 @@ def run_dbt_project(project):
     if full_refresh == "1":
         base_args.append("--full-refresh")
 
-    commands = [
+    runner = dbtRunner()
+    for cmd in [
         ["deps"] + base_args,
         ["debug"] + base_args,
-    ]
-    if skip_seed == "1":
-        print(f"[{project}] Skipping seed (skip_seed=1)")
-    else:
-        commands.append(["seed"] + base_args)
-    commands.append(["build", "--exclude", "resource_type:seed"] + base_args)
-
-    runner = dbtRunner()
-    for cmd in commands:
+        ["seed"] + base_args,
+        ["build", "--exclude", "resource_type:seed"] + base_args,
+    ]:
         result = runner.invoke(cmd)
         flush_dbt_logs()
         print(f"[{project}] {cmd[0]}: {'success' if result.success else 'FAILED'}")
