@@ -3,6 +3,9 @@ version: "1.0.0"
 config-version: 2
 profile: "dataops"
 
+flags:
+  cache_selected_only: true
+
 require-dbt-version: [">=1.0.0", "<2.0.0"]
 
 model-paths: ["models"]
@@ -15,6 +18,9 @@ analysis-paths: ["analyses"]
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ["dataops", "dbt_utils"]
+
+on-run-start:
+  - "{{ fabricspark__ensure_database_exists(target.schema) }}"
 
 models:
   dataops:

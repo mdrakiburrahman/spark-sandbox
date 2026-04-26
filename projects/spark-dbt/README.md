@@ -8,7 +8,7 @@
     <br />
     <a href="https://docs.getdbt.com/">dbt Docs</a>
     ·
-    <a href="https://github.com/mdrakiburrahman/dbt-fabricspark/tree/dev/mdrrahman/explore">dbt Adapter - fork for now</a>
+    <a href="https://github.com/microsoft/dbt-fabricspark">dbt Adapter</a>
     ·
     <a href="https://docs.getdbt.com/docs/core/connect-data-platform/fabricspark-setup">dbt-fabricspark setup docs</a>
     ·

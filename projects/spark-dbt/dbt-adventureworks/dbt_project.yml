@@ -10,6 +10,9 @@ config-version: 2
 #
 profile: "adventureworks"
 
+flags:
+  cache_selected_only: true
+
 dispatch:
   - macro_namespace: dbt_utils
     search_order: ['adventureworks', 'dbt_utils']
@@ -29,6 +32,9 @@ target-path: "target" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
+
+on-run-start:
+  - "{{ fabricspark__ensure_database_exists(target.schema) }}"
 
 seeds:
   adventureworks:

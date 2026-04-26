@@ -105,8 +105,8 @@ stateprovinceid,countryregioncode,modifieddate,rowguid,name,territoryid,isonlyst
 104,FR,2008-04-30 00:00:00,6adb6ece-a89e-4b00-a886-90436ecd9b68,Cher,7,f,18 
 105,FR,2008-04-30 00:00:00,2363831b-b0ba-4976-92fa-1930817f66c4,CorrÃ¨ze,7,f,19 
 106,FR,2008-04-30 00:00:00,b424959c-9400-492b-9b4c-9f478b77a02c,Corse,7,f,20 
-107,FR,2008-04-30 00:00:00,6e9c32d8-b47a-444e-818e-54ecce0b779b,CÃ´te d\'Or,7,f,21 
-108,FR,2008-04-30 00:00:00,a18c188b-64ac-44f6-9928-eb8fc2b924fd,CÃ´tes-d\'Armor,7,f,22 
+107,FR,2008-04-30 00:00:00,6e9c32d8-b47a-444e-818e-54ecce0b779b,CÃ´te d''Or,7,f,21 
+108,FR,2008-04-30 00:00:00,a18c188b-64ac-44f6-9928-eb8fc2b924fd,CÃ´tes-d''Armor,7,f,22 
 109,FR,2008-04-30 00:00:00,d745141e-8645-4309-abab-76a95a8b0a83,Creuse,7,f,23 
 110,FR,2008-04-30 00:00:00,6eba51c3-31d2-4376-a4e2-9121b048768f,Dordogne,7,f,24 
 111,FR,2008-04-30 00:00:00,f0622ec9-4eb7-4019-9b08-fd2ed3f74b9b,Toubs,7,f,25 
@@ -179,4 +179,4 @@ stateprovinceid,countryregioncode,modifieddate,rowguid,name,territoryid,isonlyst
 178,FR,2008-04-30 00:00:00,f8fd6d62-a913-4f10-9e42-d348eda02bd9,Hauts de Seine,7,f,92 
 179,FR,2008-04-30 00:00:00,466c15bc-46ec-427d-99db-98c380634527,Seine Saint Denis,7,f,93 
 180,FR,2008-04-30 00:00:00,fe0a2a02-fe1d-4b79-b970-167ec7f724fc,Val de Marne,7,f,94 
-181,FR,2008-04-30 00:00:00,e7580d97-910b-42b4-b4e2-72c8733889e0,Val d\'Oise,7,f,95 
+181,FR,2008-04-30 00:00:00,e7580d97-910b-42b4-b4e2-72c8733889e0,Val d''Oise,7,f,95 

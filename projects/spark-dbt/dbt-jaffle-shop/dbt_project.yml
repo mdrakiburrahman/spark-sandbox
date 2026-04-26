@@ -7,6 +7,7 @@ profile: "jaffle_shop"
 
 flags:
   partial_parse: true
+  cache_selected_only: true
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
@@ -21,6 +22,9 @@ clean-targets:
   - "logs"
 
 require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+on-run-start:
+  - "{{ fabricspark__ensure_database_exists(target.schema) }}"
 
 seeds:
   jaffle_shop:
