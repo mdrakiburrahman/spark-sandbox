@@ -128,7 +128,7 @@ def run_dbt_project(project):
     for cmd in [
         ["deps"] + base_args,
         ["debug"] + base_args,
-        ["seed"] + base_args + refresh_args,
+        ["seed", "--full-refresh"] + base_args,
         ["build", "--exclude", "resource_type:seed"] + base_args + refresh_args,
     ]:
         result = runner.invoke(cmd)
