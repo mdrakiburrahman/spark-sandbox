@@ -14,8 +14,8 @@ authors = [
 ]
 dependencies = [
   "click>=8.1.0",
-  "fabric-cicd @ https://rakirahman.blob.core.windows.net/public/whls/fabric_cicd-0.1.34.3-py3-none-any.whl",
-  "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@8b4388b112ab0b4e8088edf2f1cadedc7dc9e193",
+  "fabric-cicd==1.0.0",
+  "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@main",
 ]
 
 [project.scripts]

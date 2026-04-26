@@ -1,6 +1,21 @@
 {
   "operation": "dryRun",
   "common": {
+    "contacts": {
+      "mdrrahman": {
+        "displayName": "Raki Rahman",
+        "objectId": "b99a3530-636d-4621-8662-bc5c8022b125",
+        "userPrincipalName": "mdrrahman@microsoft.com",
+        "isSecurityGroup": false,
+        "objectType": 1,
+        "groupType": 0,
+        "aadAppId": null,
+        "emailAddress": "mdrrahman@microsoft.com",
+        "relevanceScore": null,
+        "creatorObjectId": null,
+        "contactType": 1
+      }
+    },
     "local": {
       "rootFolder": "{git-root}"
     },
@@ -39,6 +54,15 @@
           "description": "{unique-env-id}'s Personal Sandbox.",
           "datasetStorageMode": 2,
           "skipDeploy": false,
+          "alert": {
+            "default": ["mdrrahman"],
+            "itemTypesInScope": ["DataPipeline"],
+            "overrides": {
+              "demo_etl": {
+                "owners": ["mdrrahman"]
+              }
+            }
+          },
           "monitoring": {
             "kusto": {
               "databaseEnabled": false,
