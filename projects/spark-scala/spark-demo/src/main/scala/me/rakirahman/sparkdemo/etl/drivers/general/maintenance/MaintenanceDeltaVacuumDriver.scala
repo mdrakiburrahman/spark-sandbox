@@ -75,12 +75,12 @@ object LakeDeltaVacuumMetadata extends DeltaVacuumMetadata {
     // =====================================================================
     // dbt_adventureworks_seed / dbt_jaffle_shop_seed
     //
-    // Seed tables are small CSV loads. VACUUM only, no OPTIMIZE or PURGE.
+    // Seed tables are small CSV loads. VACUUM, and OPTIMIZE for small files.
     // NOTE: These are mounted from OneLake and are read-only locally.
     //       The driver excludes them when running in devcontainer.
     // =====================================================================
-    DesiredDeltaTableConfig(database = "dbt_adventureworks_seed",     tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
-    DesiredDeltaTableConfig(database = "dbt_jaffle_shop_seed",        tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = true,     skipPurge = true,      purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
+    DesiredDeltaTableConfig(database = "dbt_adventureworks_seed",     tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = false,     skipPurge = true,    purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
+    DesiredDeltaTableConfig(database = "dbt_jaffle_shop_seed",        tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = false,     skipPurge = true,    purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
 
     // =====================================================================
     // dbt_jaffle_shop_dwh
