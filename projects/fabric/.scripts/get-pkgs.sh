@@ -37,10 +37,10 @@ FABRIC_CICD_WHL="fabric_cicd-0.1.34.3-py3-none-any.whl"
 
 fabric_cicd_version=$(pip show fabric-cicd 2>/dev/null | grep Version | awk '{print $2}' || echo "")
 
-if [ "$fabric_cicd_version" != "0.3.1" ]; then
+if [ "$fabric_cicd_version" != "1.0.0" ]; then
     pip uninstall fabric-cicd -y 2>/dev/null || true
     pip cache purge
-    retry pip install fabric-cicd==0.3.1 --upgrade
+    retry pip install fabric-cicd==1.0.0 --upgrade
 fi
 
 fabric_deploy_installed=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}' || echo "")

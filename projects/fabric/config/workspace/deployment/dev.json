@@ -56,7 +56,12 @@
           "skipDeploy": false,
           "alert": {
             "default": ["mdrrahman"],
-            "itemTypesInScope": ["DataPipeline"]
+            "itemTypesInScope": ["DataPipeline"],
+            "overrides": {
+              "demo_etl": {
+                "owners": ["mdrrahman"]
+              }
+            }
           },
           "monitoring": {
             "kusto": {
