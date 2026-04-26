@@ -19,6 +19,8 @@ path = ".venv"
 skip-install = true
 dependencies = [
   "dbt-fabricspark @ git+https://github.com/microsoft/dbt-fabricspark.git@main",
+  "azure-identity>=1.21.0",
+  "azure-core>=1.33.0",
   "dbterd",
   "dbt-artifacts-parser",
 ]
