@@ -16,6 +16,20 @@ renamed as (
 
     from source
 
+),
+
+-- Deduplicate on natural key
+deduped as (
+    select
+        *,
+        row_number() over (partition by payment_id order by payment_id) as _row_num
+    from renamed
 )
 
-select * from renamed
+select
+    payment_id,
+    order_id,
+    payment_method,
+    amount
+from deduped
+where _row_num = 1

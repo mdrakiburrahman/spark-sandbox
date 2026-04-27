@@ -5,7 +5,7 @@
 # META {
 # META   "kernel_info": {
 # META     "name": "jupyter",
-# META     "jupyter_kernel_name": "python3.11"
+# META     "jupyter_kernel_name": "python3.12"
 # META   },
 # META   "dependencies": {
 # META     "lakehouse": {
@@ -122,21 +122,25 @@ def run_dbt_project(project):
     project_dir = f"/tmp/dbt-fabric-bundle/projects/{project}"
 
     base_args = ["--project-dir", project_dir, "--profiles-dir", project_dir, "--target", TARGET]
-    if full_refresh == "1":
-        base_args.append("--full-refresh")
+    refresh_args = ["--full-refresh"] if full_refresh == "1" else []
 
     runner = dbtRunner()
     for cmd in [
         ["deps"] + base_args,
         ["debug"] + base_args,
-        ["seed"] + base_args,
-        ["build", "--exclude", "resource_type:seed"] + base_args,
+        ["seed", "--full-refresh"] + base_args,
+        ["build", "--exclude", "resource_type:seed"] + base_args + refresh_args,
     ]:
         result = runner.invoke(cmd)
         flush_dbt_logs()
         print(f"[{project}] {cmd[0]}: {'success' if result.success else 'FAILED'}")
         if not result.success:
-            raise RuntimeError(f"[{project}] {cmd[0]} failed")
+            detail = ""
+            if result.exception:
+                detail = f"\n  Exception: {result.exception}"
+            if hasattr(result, "result") and result.result:
+                detail += f"\n  Result: {result.result}"
+            raise RuntimeError(f"[{project}] {cmd[0]} failed{detail}")
     return project
 
 

@@ -10,9 +10,12 @@ config-version: 2
 #
 profile: "adventureworks"
 
+flags:
+  cache_selected_only: true
+
 dispatch:
   - macro_namespace: dbt_utils
-    search_order: ['adventureworks', 'dbt_utils']
+    search_order: ["adventureworks", "dbt_utils"]
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
@@ -30,6 +33,9 @@ clean-targets: # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
+on-run-start:
+  - "{{ fabricspark__ensure_database_exists(target.schema) }}"
+
 seeds:
   adventureworks:
     +schema: dbt_adventureworks_seed
@@ -40,8 +46,8 @@ models:
   adventureworks:
     +materialized: table
     +file_format: delta
-    location_root: "none"
+    +location_root: "none"
     marts:
       +materialized: table
       +file_format: delta
-      location_root: "none"
+      +location_root: "none"

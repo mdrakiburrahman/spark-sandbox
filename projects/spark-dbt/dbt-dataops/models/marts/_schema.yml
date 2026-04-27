@@ -61,7 +61,8 @@ models:
           - unique
           - not_null
           - accepted_values:
-              values: ["Healthy", "Training", "Unhealthy"]
+              arguments:
+                values: ["Healthy", "Training", "Unhealthy"]
 
   - name: fct_delta_commit
     description: "Fact table capturing individual Delta Lake commits. Grain: one row per table per commit version."
@@ -74,17 +75,18 @@ models:
       - name: table_key
         description: "FK to dim_delta_table."
         tests:
+          - not_null
           - relationships:
-              to: ref('dim_delta_table')
-              field: __pk
-              config:
-                where: "table_key is not null"
+              arguments:
+                to: ref('dim_delta_table')
+                field: __pk
       - name: operation_type_key
         description: "FK to dim_delta_table_operation_type."
         tests:
           - relationships:
-              to: ref('dim_delta_table_operation_type')
-              field: operation_type_key
+              arguments:
+                to: ref('dim_delta_table_operation_type')
+                field: operation_type_key
               config:
                 where: "operation_type_key is not null"
       - name: date_key
@@ -92,8 +94,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_date')
-              field: date_key
+              arguments:
+                to: ref('dim_date')
+                field: date_key
       - name: commit_timestamp
         description: "Timestamp of the Delta commit."
         tests:
@@ -116,48 +119,53 @@ models:
       - name: table_key
         description: "FK to dim_delta_table."
         tests:
+          - not_null
           - relationships:
-              to: ref('dim_delta_table')
-              field: __pk
-              config:
-                where: "table_key is not null"
+              arguments:
+                to: ref('dim_delta_table')
+                field: __pk
       - name: date_key
         description: "FK to dim_date."
         tests:
           - not_null
           - relationships:
-              to: ref('dim_date')
-              field: date_key
+              arguments:
+                to: ref('dim_date')
+                field: date_key
       - name: overall_status_key
         description: "FK to dim_delta_table_health_status for overall status."
         tests:
           - relationships:
-              to: ref('dim_delta_table_health_status')
-              field: health_status_key
+              arguments:
+                to: ref('dim_delta_table_health_status')
+                field: health_status_key
               config:
                 where: "overall_status_key is not null"
       - name: freshness_status_key
         description: "FK to dim_delta_table_health_status for freshness status."
         tests:
           - relationships:
-              to: ref('dim_delta_table_health_status')
-              field: health_status_key
+              arguments:
+                to: ref('dim_delta_table_health_status')
+                field: health_status_key
               config:
                 where: "freshness_status_key is not null"
       - name: completeness_status_key
         description: "FK to dim_delta_table_health_status for completeness status."
         tests:
           - relationships:
-              to: ref('dim_delta_table_health_status')
-              field: health_status_key
+              arguments:
+                to: ref('dim_delta_table_health_status')
+                field: health_status_key
               config:
                 where: "completeness_status_key is not null"
       - name: most_common_operation_key
         description: "FK to dim_delta_table_operation_type for most common operation."
         tests:
           - relationships:
-              to: ref('dim_delta_table_operation_type')
-              field: operation_type_key
+              arguments:
+                to: ref('dim_delta_table_operation_type')
+                field: operation_type_key
               config:
                 where: "most_common_operation_key is not null"
       - name: dbt_loaded_at
@@ -178,18 +186,19 @@ models:
       - name: table_key
         description: "FK to dim_delta_table."
         tests:
+          - not_null
           - relationships:
-              to: ref('dim_delta_table')
-              field: __pk
-              config:
-                where: "table_key is not null"
+              arguments:
+                to: ref('dim_delta_table')
+                field: __pk
       - name: date_key
         description: "FK to dim_date."
         tests:
           - not_null
           - relationships:
-              to: ref('dim_date')
-              field: date_key
+              arguments:
+                to: ref('dim_date')
+                field: date_key
       - name: dbt_loaded_at
         description: "Spark write timestamp when this row was materialized by dbt."
       - name: event_year_date
@@ -203,21 +212,24 @@ models:
       - name: lineage_key
         description: "Surrogate key for the lineage edge."
         tests:
+          - unique
           - not_null
       - name: source_table_key
         description: "FK to dim_delta_table for source dataset."
         tests:
           - relationships:
-              to: ref('dim_delta_table')
-              field: __pk
+              arguments:
+                to: ref('dim_delta_table')
+                field: __pk
               config:
                 where: "source_table_key is not null"
       - name: target_table_key
         description: "FK to dim_delta_table for target dataset."
         tests:
           - relationships:
-              to: ref('dim_delta_table')
-              field: __pk
+              arguments:
+                to: ref('dim_delta_table')
+                field: __pk
               config:
                 where: "target_table_key is not null"
       - name: date_key
@@ -225,8 +237,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_date')
-              field: date_key
+              arguments:
+                to: ref('dim_date')
+                field: date_key
       - name: dbt_loaded_at
         description: "Spark write timestamp when this row was materialized by dbt."
       - name: event_year_date

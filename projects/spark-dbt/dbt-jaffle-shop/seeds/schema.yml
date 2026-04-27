@@ -6,8 +6,9 @@ seeds:
       - name: user_id
         tests:
           - relationships:
-              to: ref('raw_customers')
-              field: id
+              arguments:
+                to: ref('raw_customers')
+                field: id
               config:
                 severity: warn
 
@@ -16,7 +17,8 @@ seeds:
       - name: order_id
         tests:
           - relationships:
-              to: ref('raw_orders')
-              field: id
+              arguments:
+                to: ref('raw_orders')
+                field: id
               config:
                 severity: warn

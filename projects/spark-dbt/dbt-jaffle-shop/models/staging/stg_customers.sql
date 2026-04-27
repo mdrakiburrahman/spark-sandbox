@@ -13,6 +13,19 @@ renamed as (
 
     from source
 
+),
+
+-- Deduplicate on natural key
+deduped as (
+    select
+        *,
+        row_number() over (partition by customer_id order by customer_id) as _row_num
+    from renamed
 )
 
-select * from renamed
+select
+    customer_id,
+    first_name,
+    last_name
+from deduped
+where _row_num = 1

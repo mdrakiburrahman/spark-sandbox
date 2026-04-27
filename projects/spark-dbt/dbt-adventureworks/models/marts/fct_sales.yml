@@ -24,61 +24,55 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_product')
-              field: product_key
-              config:
-                severity: warn
+              arguments:
+                to: ref('dim_product')
+                field: product_key
 
       - name: customer_key
         description: The foreign key of the customer
         tests:
           - not_null
           - relationships:
-              to: ref('dim_customer')
-              field: customer_key
-              config:
-                severity: warn
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
 
       - name: ship_address_key
         description: The foreign key of the shipping address
         tests:
           - not_null
           - relationships:
-              to: ref('dim_address')
-              field: address_key
-              config:
-                severity: warn
+              arguments:
+                to: ref('dim_address')
+                field: address_key
 
       - name: creditcard_key
-        description: The foreign key of the creditcard. If no creditcard exists, it was assumed that purchase was made in cash.
-        test:
-          - not_null
+        description: The foreign key of the creditcard. NULL when purchase was made in cash.
         tests:
           - relationships:
-              to: ref('dim_credit_card')
-              field: creditcard_key
+              arguments:
+                to: ref('dim_credit_card')
+                field: creditcard_key
               config:
-                severity: warn
+                where: "creditcard_key is not null"
 
       - name: order_date_key
         description: The foreign key of the order date
         tests:
           - not_null
           - relationships:
-              to: ref('dim_date')
-              field: date_key
-              config:
-                severity: warn
+              arguments:
+                to: ref('dim_date')
+                field: date_key
 
       - name: order_status_key
         description: The foreign key of the order status
         tests:
           - not_null
           - relationships:
-              to: ref('dim_order_status')
-              field: order_status_key
-              config:
-                severity: warn
+              arguments:
+                to: ref('dim_order_status')
+                field: order_status_key
 
       - name: unitprice
         description: The unit price of the product

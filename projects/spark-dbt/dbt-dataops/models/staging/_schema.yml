@@ -53,7 +53,8 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ["Healthy", "Unhealthy", "Training"]
+              arguments:
+                values: ["Healthy", "Unhealthy", "Training"]
       - name: snapshot_date
         description: "Assessment date partition key."
         tests:

@@ -17,14 +17,22 @@ models:
       - name: status
         tests:
           - accepted_values:
-              values:
-                ["placed", "shipped", "completed", "return_pending", "returned"]
+              arguments:
+                values:
+                  [
+                    "placed",
+                    "shipped",
+                    "completed",
+                    "return_pending",
+                    "returned",
+                  ]
       - name: customer_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_customers')
-              field: customer_id
+              arguments:
+                to: ref('stg_customers')
+                field: customer_id
               config:
                 severity: warn
 
@@ -37,12 +45,14 @@ models:
       - name: payment_method
         tests:
           - accepted_values:
-              values: ["credit_card", "coupon", "bank_transfer", "gift_card"]
+              arguments:
+                values: ["credit_card", "coupon", "bank_transfer", "gift_card"]
       - name: order_id
         tests:
           - not_null
           - relationships:
-              to: ref('stg_orders')
-              field: order_id
+              arguments:
+                to: ref('stg_orders')
+                field: order_id
               config:
                 severity: warn
