@@ -17,6 +17,7 @@ authors = [
 type = "virtual"
 path = ".venv"
 skip-install = true
+installer = "uv"
 dependencies = [
   "marimo>=0.12.0",
   "pandas>=2.0.0",
