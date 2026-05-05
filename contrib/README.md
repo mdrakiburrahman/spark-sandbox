@@ -45,3 +45,11 @@
    GIT_ROOT=$(git rev-parse --show-toplevel)
    chmod +x ${GIT_ROOT}/contrib/bootstrap-dev-env.sh && ${GIT_ROOT}/contrib/bootstrap-dev-env.sh
    ```
+
+1. Launch devcontainer:
+
+   ```bash
+   cd /workspaces/spark-sandbox
+   HEX=$(printf '%s' "$(wslpath -w .)" | xxd -ps -c 256)
+   code --folder-uri "vscode-remote://dev-container+${HEX}/workspaces/spark-sandbox"
+   ```
