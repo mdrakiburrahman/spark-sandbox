@@ -23,7 +23,7 @@
     > You can technically run the Devcontainer using Windows Docker Desktop, but the I/O experience is slow and poor.
 
    ```bash
-   cd ~/
+   cd /workspaces
 
    read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
    read -p "Enter your GitHub email (e.g. 'your-email@blah.com'): " user_email
@@ -33,7 +33,7 @@
 
    git config --global user.name "$user_name"
    git config --global user.email "$user_email"
-   cd spark-sandbox/
+   cd /workspaces/spark-sandbox/
    git pull origin
    git checkout -b "$branch_name"
    code .
