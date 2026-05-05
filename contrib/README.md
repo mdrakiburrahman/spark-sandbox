@@ -35,7 +35,7 @@
    git config --global user.email "$user_email"
    cd spark-sandbox/
    git pull origin
-   git switch "$branch_name"
+   git checkout -b "$branch_name"
    code .
    ```
 
