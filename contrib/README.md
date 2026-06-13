@@ -39,7 +39,7 @@
    git config --global user.email "$user_email"
    cd /workspaces/spark-sandbox/
    git pull origin
-   git checkout -b "$branch_name"
+   git checkout "$branch_name"
    code .
    ```
 
