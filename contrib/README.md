@@ -23,6 +23,10 @@
     > You can technically run the Devcontainer using Windows Docker Desktop, but the I/O experience is slow and poor.
 
    ```bash
+   echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER >/dev/null && sudo chmod 440 /etc/sudoers.d/$USER
+   sudo mkdir -p /workspaces
+   sudo chmod 777 /workspaces
+
    cd /workspaces
 
    read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
