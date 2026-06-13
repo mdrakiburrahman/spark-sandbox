@@ -37,7 +37,7 @@ Orchestrates end-to-end provisioning of a Fabric Workspace — capacity, workspa
 
 ```bash
 # Deploy to dev (default)
-npx nx run fabric:deploy --output-style=stream
+npx nx run fabric:deploy --output-style=stream --skip-nx-cache
 
 # Deploy to a specific environment
 npx nx run fabric:deploy --configuration=stg
