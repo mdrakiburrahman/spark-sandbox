@@ -45,7 +45,7 @@ fi
 
 fabric_deploy_installed=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}' || echo "")
 if [ -z "$fabric_deploy_installed" ]; then
-    retry pip install "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@main"
+    retry pip install "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@eb3c77f"
 fi
 
 fabric_deploy_location=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}')
