@@ -13,3 +13,9 @@ export {
   EmbeddedServer,
   type EmbeddedServerOptions,
 } from "./embedded-server.js";
+
+// API auto-launcher (used by SQL mode in index.ts)
+export {
+  ApiAutoLauncher,
+  type ApiAutoLauncherOptions,
+} from "./api-auto-launcher.js";

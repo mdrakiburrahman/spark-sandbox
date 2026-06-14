@@ -13,26 +13,26 @@ The [Next.js](https://nextjs.org/) based app lives at [`projects/spark-submit/`]
 
 ```bash
 # Start the UI (port 3001)
-nx run spark-submit:run-ui --skip-nx-cache
+npx nx run spark-submit:run-ui --skip-nx-cache
 
 # List all available jobs
-nx run spark-submit:run --list
+npx nx run spark-submit:run --list
 
 # Show execution plan (dry-run)
-nx run spark-submit:run --job=openlineage-silver --dry-run=true
+npx nx run spark-submit:run --job=openlineage-silver --dry-run=true
 
 # Run a job with full DAG (executes all dependencies first)
-nx run spark-submit:run --job=openlineage-silver
+npx nx run spark-submit:run --job=openlineage-silver
 
 # Run a single job without dependencies
-nx run spark-submit:run --job=demo-etl --no-dag
+npx nx run spark-submit:run --job=demo-etl --no-dag
 
 # Run multiple jobs + their full DAGs, fanned out in parallel by level
 # (matches what the UI does when you select multiple jobs)
-nx run spark-submit:run --job=demo-etl,delta-mount,demo-delta-log-monitor
+npx nx run spark-submit:run --job=demo-etl,delta-mount,demo-delta-log-monitor
 
 # Run every job in spark-jobs.yaml as one combined DAG
-nx run spark-submit:run --job=all
+npx nx run spark-submit:run --job=all
 ```
 
 > Comma-separated `--job=a,b,c` resolves the union of each target's DAG, dedupes
@@ -45,7 +45,7 @@ nx run spark-submit:run --job=all
 The old `projects/spark-scala/.scripts/run-spark-jobs.sh` `JOB_ALIASES` map has been
 **fully replaced** by [`config/spark-jobs.yaml`](./config/spark-jobs.yaml). The
 alias names are identical (`demo-etl`, `delta-mount`, `openlineage-silver`, …) — just
-swap `nx run spark-scala:run --JOB=…` for `nx run spark-submit:run --job=…`. The new
+swap `npx nx run spark-scala:run --JOB=…` for `npx nx run spark-submit:run --job=…`. The new
 CLI also tolerates the old upper-case form (`--JOB=…`) so existing muscle memory
 keeps working.
 
@@ -55,14 +55,14 @@ These commands help CI systems and agents map changed driver classes to affected
 
 ```bash
 # Print the full driver class → job name mapping as JSON
-nx run spark-submit:run --class-map
+npx nx run spark-submit:run --class-map
 
 # Look up which job a specific driver class belongs to
-nx run spark-submit:run --class-to-job=me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver
+npx nx run spark-submit:run --class-to-job=me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver
 
 # Find all jobs that would be impacted upstream by a change to a driver class
 # (i.e. all jobs that transitively depend on the job containing this class)
-nx run spark-submit:run --upstream=me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl
+npx nx run spark-submit:run --upstream=me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl
 ```
 
 ### Example Output: `--class-to-job`
@@ -88,8 +88,8 @@ nx run spark-submit:run --upstream=me.rakirahman.sparkdemo.etl.drivers.demos.Dem
 
 ## Configuration
 
-| File                                            | Purpose                                                              |
-| ----------------------------------------------- | -------------------------------------------------------------------- |
+| File                                                 | Purpose                                                              |
+| ---------------------------------------------------- | -------------------------------------------------------------------- |
 | [`config/spark-jobs.yaml`](./config/spark-jobs.yaml) | Job registry with dependencies, modules, configs, and inline configs |
 
 ## DAG-Based Execution
@@ -120,11 +120,11 @@ The file is here: [`projects/spark-submit/config/spark-jobs.yaml`](./config/spar
 
 The `spark-jobs.yaml` file defines:
 
--   **`defaults`** — Base paths for Spark, Ivy, temp directories, plus the sibling `sparkScalaDir` (where JARs / `log4j2.properties` live).
--   **`additionalJars`** — Runtime JAR dependencies (OpenLineage, hadoop-azure, hadoop-azure-datalake).
--   **`modules`** — JAR modules with glob patterns (currently `spark-demo` from `projects/spark-scala/spark-demo/`).
--   **`sparkConfigSets`** — Reusable Spark config groups (`spark-scala-defaults`, `uncacher-rpc-plugins`, `openlineage-http-dumper`).
--   **`jobs`** — Job definitions with class, module, args, dependencies, and inline configs.
+- **`defaults`** — Base paths for Spark, Ivy, temp directories, plus the sibling `sparkScalaDir` (where JARs / `log4j2.properties` live).
+- **`additionalJars`** — Runtime JAR dependencies (OpenLineage, hadoop-azure, hadoop-azure-datalake).
+- **`modules`** — JAR modules with glob patterns (currently `spark-demo` from `projects/spark-scala/spark-demo/`).
+- **`sparkConfigSets`** — Reusable Spark config groups (`spark-scala-defaults`, `uncacher-rpc-plugins`, `openlineage-http-dumper`).
+- **`jobs`** — Job definitions with class, module, args, dependencies, and inline configs.
 
 ### Example Job Definition
 
@@ -151,33 +151,35 @@ jobs:
 
 `spark-jobs.yaml` values (in `defaults`, `sparkConfigSets`, and `args`) resolve the following tokens at runtime:
 
-| Token             | Resolves to                                                                |
-| ----------------- | -------------------------------------------------------------------------- |
-| `{projectRoot}`   | `projects/spark-submit`                                                    |
-| `{sparkScalaDir}` | Sibling `projects/spark-scala` (where JARs + `log4j2.properties` live)     |
-| `{sparkConfDir}`  | `SPARK_CONF_DIR` env exported to spark-submit                              |
-| `{sparkHome}`     | `/opt/spark`                                                               |
-| `{tempDir}`       | `projects/spark-submit/.temp`                                              |
-| `{heapDumpDir}`   | `projects/spark-submit/.temp/dumps`                                        |
-| `{logsDir}`       | `projects/spark-submit/.logs`                                              |
-| `{ivyDir}`        | `~/.ivy2`                                                                  |
-| `{home}`          | `$HOME`                                                                    |
+| Token             | Resolves to                                                            |
+| ----------------- | ---------------------------------------------------------------------- |
+| `{projectRoot}`   | `projects/spark-submit`                                                |
+| `{sparkScalaDir}` | Sibling `projects/spark-scala` (where JARs + `log4j2.properties` live) |
+| `{sparkConfDir}`  | `SPARK_CONF_DIR` env exported to spark-submit                          |
+| `{sparkHome}`     | `/opt/spark`                                                           |
+| `{tempDir}`       | `projects/spark-submit/.temp`                                          |
+| `{heapDumpDir}`   | `projects/spark-submit/.temp/dumps`                                    |
+| `{logsDir}`       | `projects/spark-submit/.logs`                                          |
+| `{ivyDir}`        | `~/.ivy2`                                                              |
+| `{home}`          | `$HOME`                                                                |
 
 ## SQL Mode
 
 Run Spark SQL queries from the UI, CLI, or `curl`. The metastore schema browser uses a direct SQL Server connection (`host.docker.internal:11434` from spark-scala's `docker/Compose.sqlserver.metastore.yaml`) for instant discovery, while queries run through Livy/Spark.
 
+> **Auto-managed API server** — SQL via the CLI auto-starts a background API server (`api/src/server.ts`) if one isn't already up on `--api-url` (default `http://localhost:4000`), and tears it down on exit. You don't need to run `nx run spark-submit:run-api` separately. Livy must be up (use `nx run spark-submit:query` to start Livy automatically, or `nx run spark-submit:livy-up`).
+
 ### CLI
 
 ```bash
-# Run a SQL query (prints a markdown table)
-nx run spark-submit:run --sql="SHOW DATABASES"
+# Run a SQL query (prints a markdown table); auto-starts Livy + API server
+npx nx run spark-submit:query --sql="SHOW DATABASES"
 
 # Query a table
-nx run spark-submit:run --sql="SELECT * FROM data_ops_inventory_db.silver_openlineage LIMIT 5"
+npx nx run spark-submit:query --sql="SELECT * FROM data_ops_inventory_db.silver_openlineage LIMIT 5"
 
-# Point at a different API server
-nx run spark-submit:run --sql="SHOW TABLES IN default" --api-url=http://myhost:4000
+# Point at a different (already-running) API server — skips auto-start
+npx nx run spark-submit:query --sql="SHOW TABLES IN default" --api-url=http://myhost:4000
 
 # Multi-line SQL
 cat > $HOME/q.sql <<'SQL'
@@ -186,8 +188,10 @@ FROM data_ops_inventory_db.silver_openlineage
 WHERE eventType = 'COMPLETE'
 LIMIT 5
 SQL
-nx run spark-submit:run --sql-file=$HOME/q.sql
+npx nx run spark-submit:query --sql-file=$HOME/q.sql
 ```
+
+> The `run` target also accepts `--sql=` / `--sql-file=` and will auto-start the API server, but it does **not** auto-start Livy. Prefer `query` for SQL workflows.
 
 ### curl
 
@@ -227,17 +231,18 @@ curl -s -X DELETE http://localhost:4000/api/sql/query \
 
 ## Nx Targets
 
-| Target                                  | Purpose                                                                 |
-| --------------------------------------- | ----------------------------------------------------------------------- |
-| `nx run spark-submit:install`           | `npm install` at the project root, `api/`, and `ui/`                    |
-| `nx run spark-submit:build`             | Build the UI for static export (also resolves `install`)                |
-| `nx run spark-submit:test`              | Jest — config, parser, DAG resolver, job class mapper, SQL source       |
-| `nx run spark-submit:lint`              | `prettier --write` over TS / YAML / JSON                                |
-| `nx run spark-submit:run --job=<name>`  | Run a job (or `,`-separated set, or `--job=all`) directly via spark-submit |
-| `nx run spark-submit:run-ui`            | Launch the UI on port `3001` (depends on `livy-up`)                      |
-| `nx run spark-submit:run-api`           | Launch the API server on port `4000`                                     |
-| `nx run spark-submit:livy-up` / `…down` | Start/stop Livy via `projects/spark-scala/.scripts/run-livy.sh`         |
-| `nx run spark-submit:clean`             | Remove `.logs/`, `node_modules/`, `.next/`, `dist/`                      |
+| Target                                      | Purpose                                                                    |
+| ------------------------------------------- | -------------------------------------------------------------------------- |
+| `npx nx run spark-submit:install`           | `npm install` at the project root, `api/`, and `ui/`                       |
+| `npx nx run spark-submit:build`             | Build the UI for static export (also resolves `install`)                   |
+| `npx nx run spark-submit:test`              | Jest — config, parser, DAG resolver, job class mapper, SQL source          |
+| `npx nx run spark-submit:lint`              | `prettier --write` over TS / YAML / JSON                                   |
+| `npx nx run spark-submit:run --job=<name>`  | Run a job (or `,`-separated set, or `--job=all`) directly via spark-submit |
+| `npx nx run spark-submit:query --sql=…`     | Run a Spark SQL query via Livy (auto-starts Livy + API server)             |
+| `npx nx run spark-submit:run-ui`            | Launch the UI on port `3001` (depends on `livy-up`)                        |
+| `npx nx run spark-submit:run-api`           | Launch the API server on port `4000`                                       |
+| `npx nx run spark-submit:livy-up` / `…down` | Start/stop Livy via `projects/spark-scala/.scripts/run-livy.sh`            |
+| `npx nx run spark-submit:clean`             | Remove `.logs/`, `node_modules/`, `.next/`, `dist/`                        |
 
 ### Debugging (JDWP)
 
@@ -247,7 +252,7 @@ JDWP. To attach a debugger today, export the env before invoking the CLI — the
 
 ```bash
 SPARK_SUBMIT_OPTS='-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005' \
-    nx run spark-submit:run --job=demo-etl --no-dag
+    npx nx run spark-submit:run --job=demo-etl --no-dag
 ```
 
 Alternatively, add the option to the job's `sparkConfigSets` entry (under

@@ -34,6 +34,7 @@ import {
   JobExecutor,
   JobLister,
   JobClassMapper,
+  ApiAutoLauncher,
 } from "./server/index.js";
 
 /**
@@ -43,6 +44,7 @@ import {
  */
 class AppCoordinator {
   private server: IServer | null = null;
+  private apiLauncher: ApiAutoLauncher | null = null;
 
   /**
    * Run the application.
@@ -50,9 +52,28 @@ class AppCoordinator {
   async run(args: CliArgs): Promise<void> {
     const projectRoot = process.cwd();
 
-    // SQL mode: no embedded server needed — CLI talks to the Express API server directly
+    // SQL mode: auto-start the Express API server (which owns /api/sql/query →
+    // Livy) if it isn't already up on the target URL. Skip if user explicitly
+    // pointed at a remote API with --api-url.
     if (args.sql !== undefined || args.sqlFile !== undefined) {
-      await this.runCLI(args, projectRoot);
+      const apiUrl =
+        args.apiUrl || process.env.SPARK_API_URL || "http://localhost:4000";
+      if (!args.apiUrl) {
+        this.apiLauncher = new ApiAutoLauncher({ apiUrl, projectRoot });
+        try {
+          await this.apiLauncher.ensureReady();
+        } catch (err) {
+          SystemLogger.error(
+            `Failed to start API server: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          throw err;
+        }
+      }
+      try {
+        await this.runCLI(args, projectRoot);
+      } finally {
+        await this.shutdown();
+      }
       return;
     }
 
@@ -134,6 +155,10 @@ class AppCoordinator {
     if (this.server) {
       await this.server.stop();
       this.server = null;
+    }
+    if (this.apiLauncher) {
+      await this.apiLauncher.stop();
+      this.apiLauncher = null;
     }
   }
 }
