@@ -1,6 +1,10 @@
 # 🌐 Spark Submit App
 
-Run Spark jobs locally with DAG-based dependency resolution — with a CLI, a UI, and an HTTP server with full test coverage.
+Run Spark jobs locally with DAG-based dependency resolution — with a CLI, a UI, and an HTTP server with full test coverage:
+
+![Spark Submit UI](.imgs/spark-submit-ui.png)
+
+![Spark Submit SQL](.imgs/spark-submit-sql.png)
 
 The UI's purpose is to make it significantly easier to visualize dependencies and run parallelized local
 dev-loops significantly faster.
@@ -69,10 +73,10 @@ npx nx run spark-submit:run --upstream=me.rakirahman.sparkdemo.etl.drivers.demos
 
 ```json
 {
-    "driverClass": "me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver",
-    "jobName": "openlineage-silver",
-    "category": "silver",
-    "description": "Streams OpenLineage JSONL files into the data_ops_inventory_db silver table"
+  "driverClass": "me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver",
+  "jobName": "openlineage-silver",
+  "category": "silver",
+  "description": "Streams OpenLineage JSONL files into the data_ops_inventory_db silver table"
 }
 ```
 
@@ -80,9 +84,9 @@ npx nx run spark-submit:run --upstream=me.rakirahman.sparkdemo.etl.drivers.demos
 
 ```json
 {
-    "sourceClass": "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl",
-    "sourceJob": "demo-etl",
-    "upstreamDependents": ["openlineage-silver"]
+  "sourceClass": "me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl",
+  "sourceJob": "demo-etl",
+  "upstreamDependents": ["openlineage-silver"]
 }
 ```
 
@@ -102,12 +106,12 @@ Jobs define their dependencies via `dependsOn`. When you run a job, the DAG reso
 
 ```yaml
 jobs:
-    openlineage-silver:
-        dependsOn: [demo-etl]
-        # ...
-    demo-etl:
-        # produces the OpenLineage events the silver streaming job consumes
-        # ...
+  openlineage-silver:
+    dependsOn: [demo-etl]
+    # ...
+  demo-etl:
+    # produces the OpenLineage events the silver streaming job consumes
+    # ...
 ```
 
 Running `--job=openlineage-silver` executes `demo-etl` first (which dumps OpenLineage
@@ -130,19 +134,19 @@ The `spark-jobs.yaml` file defines:
 
 ```yaml
 jobs:
-    openlineage-silver:
-        module: spark-demo
-        class: me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver
-        category: silver
-        description: Streams OpenLineage JSONL files into the data_ops_inventory_db silver table
-        dependsOn:
-            - demo-etl
-        sparkConfigSets:
-            - spark-scala-defaults
-        args:
-            - data_ops_inventory_db
-            - '{sparkScalaDir}/.temp/openlineage'
-            - '{sparkScalaDir}/.temp/openlineage-archive'
+  openlineage-silver:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver
+    category: silver
+    description: Streams OpenLineage JSONL files into the data_ops_inventory_db silver table
+    dependsOn:
+      - demo-etl
+    sparkConfigSets:
+      - spark-scala-defaults
+    args:
+      - data_ops_inventory_db
+      - "{sparkScalaDir}/.temp/openlineage"
+      - "{sparkScalaDir}/.temp/openlineage-archive"
 ```
 
 > Note, it's completely possible that the `dependsOn` drifts and a dependency is missed. If you find this is the case, update the config.
