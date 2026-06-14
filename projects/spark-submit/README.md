@@ -175,8 +175,8 @@ Run Spark SQL queries from the UI, CLI, or `curl`. The metastore schema browser 
 # Run a SQL query (prints a markdown table); auto-starts Livy + API server
 npx nx run spark-submit:query --sql="SHOW DATABASES"
 
-# Query a table
-npx nx run spark-submit:query --sql="SELECT * FROM data_ops_inventory_db.silver_openlineage LIMIT 5"
+# Query a table (this Silver table is populated by `openlineage-silver`)
+npx nx run spark-submit:query --sql="SELECT * FROM data_ops_inventory_db.openlineage LIMIT 5"
 
 # Point at a different (already-running) API server — skips auto-start
 npx nx run spark-submit:query --sql="SHOW TABLES IN default" --api-url=http://myhost:4000
@@ -184,7 +184,7 @@ npx nx run spark-submit:query --sql="SHOW TABLES IN default" --api-url=http://my
 # Multi-line SQL
 cat > $HOME/q.sql <<'SQL'
 SELECT *
-FROM data_ops_inventory_db.silver_openlineage
+FROM data_ops_inventory_db.openlineage
 WHERE eventType = 'COMPLETE'
 LIMIT 5
 SQL
@@ -199,7 +199,7 @@ npx nx run spark-submit:query --sql-file=$HOME/q.sql
 # Execute a SQL query (via Livy/Spark)
 curl -s -X POST http://localhost:4000/api/sql/query \
   -H 'Content-Type: application/json' \
-  -d '{"sql":"SELECT * FROM data_ops_inventory_db.silver_openlineage LIMIT 5"}'
+  -d '{"sql":"SELECT * FROM data_ops_inventory_db.openlineage LIMIT 5"}'
 
 # Get metastore schema tree (direct SQL Server — instant)
 curl -s http://localhost:4000/api/sql/metastore
