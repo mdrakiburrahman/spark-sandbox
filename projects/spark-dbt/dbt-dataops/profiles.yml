@@ -1,6 +1,22 @@
 dataops:
   target: local-local
   outputs:
+    # Lint-only static target (no Spark connection required for sqlfluff dbt templater)
+    lint:
+      authentication: cli
+      method: livy
+      livy_mode: local
+      connect_retries: 0
+      retry_all: false
+      http_timeout: 5
+      statement_timeout: 5
+      lakehouse: dbt_dataops_dwh
+      schema: dbt_dataops_dwh
+      threads: 4
+      type: fabricspark
+      spark_config:
+        name: dbt-dataops
+
     # Local dbt client + Local spark server (default for development)
     local-local:
       authentication: cli

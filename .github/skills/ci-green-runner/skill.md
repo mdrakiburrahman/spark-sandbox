@@ -160,7 +160,7 @@ Classify changes to determine which local validation is needed:
 | Path pattern                  | Affected project | Local validation command                                         |
 | ----------------------------- | ---------------- | ---------------------------------------------------------------- |
 | `projects/spark-scala/**`     | spark-scala      | `cd projects/spark-scala && sbt test`                            |
-| `projects/spark-dbt/**`       | spark-dbt        | `npx nx run spark-dbt:run --PROJECT=<proj> --TARGET=local-local` |
+| `projects/spark-dbt/**`       | dbt-<name>       | `npx nx run dbt-<name>:test --TARGET=local-local`                |
 | `projects/spark-python/**`    | spark-python     | `npx nx run spark-python:test`                                   |
 | `projects/fabric/**`          | fabric           | No local tests available                                         |
 | `*.md`, `tools/**`, `docs/**` | none             | No validation needed                                             |

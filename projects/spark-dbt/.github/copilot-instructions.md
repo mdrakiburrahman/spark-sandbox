@@ -13,20 +13,22 @@ These are the conventions and architecture facts that apply to **every** change 
 projects/spark-dbt/
 ├── README.md                     # devbox bootstrap, hatch shell, nx targets
 ├── pyproject.toml                # hatch venv; pinned dbt-fabricspark==1.9.5 (uv installer)
-├── project.json                  # nx targets: clean, install, init, run, package, compile, test
+├── project.json                  # nx root: clean, install, init, run, package, compile
+├── .sqlfluff                     # sparksql + dbt templater config (shared by all dbt-*/lint)
 ├── .scripts/
 │   ├── run-dbt-local.sh          # one-project loop: debug → deps → seed → build → cleanup → docs
+│   ├── lint-dbt.sh               # one-project lint: black + dbt deps + sqlfluff fix/lint
 │   ├── package-fabric.sh         # packages all dbt projects into a Fabric deploy bundle
 │   ├── compile-erd.sh            # ERD compile (dbterd)
 │   └── compile_erd.py
-├── .venv/                        # hatch-managed; dbt + azure-identity + dbterd + dbt-artifacts-parser
+├── .venv/                        # hatch-managed; dbt + azure-identity + dbterd + sqlfluff
 │
 ├── dbt-jaffle-shop/              # Jaffle Shop demo (smoke test for the toolchain)
 ├── dbt-adventureworks/           # ★ Canonical Kimball STAR schema demo (dim_* / fct_* / obt_*)
 └── dbt-dataops/                  # Delta Lake KPI STAR schema (dim_* / fct_*, includes snapshots)
 ```
 
-All 3 `dbt-*/` directories are managed by the **single** `spark-dbt` Nx project — there is no per-sub-project `project.json`. Sub-projects are selected via the `--PROJECT=` arg to `npx nx run spark-dbt:run`.
+Each `dbt-<name>/` is its **own** Nx project with its **own** `project.json` exposing `test` and `lint` targets, so `nx affected` is precise per dbt sub-project. The root `spark-dbt` project owns the shared lifecycle (`clean`, `install`, `init`, `run`, `package`, `compile`) and the shared hatch venv.
 
 ---
 
@@ -39,7 +41,8 @@ dbt-<name>/
 ├── dbt_project.yml               # name, profile, on-run-start hook, +materialized + +file_format defaults
 ├── packages.yml                  # dbt deps (dbt_utils, dbt_date, etc.)
 ├── package-lock.yml              # pinned dep versions
-├── profiles.yml                  # local-local | local-fabric | fabric-fabric targets (see §6)
+├── profiles.yml                  # lint | local-local | local-fabric | fabric-fabric targets (see §6)
+├── project.json                  # nx targets: test, lint (both depend on spark-dbt:init)
 ├── README.md                     # project-specific connectivity + run instructions
 │
 ├── models/
@@ -125,32 +128,34 @@ dbt-<name>/
 
 ## 4. Nx targets
 
-A single `spark-dbt` Nx project drives all 3 dbt sub-projects via `--PROJECT=` and `--TARGET=`:
+The `spark-dbt` workspace splits responsibilities. The root `spark-dbt` project owns the shared lifecycle (hatch venv, scripts, deploy bundle); each `dbt-<name>/` is its own Nx project that owns its `test` and `lint`:
 
-| Target    | Owns                                                | Notes                                                   |
-| --------- | --------------------------------------------------- | ------------------------------------------------------- |
-| `clean`   | hatch env teardown + `.cleanpaths` rm               | Refuses to run inside a `hatch shell` (errors out)      |
-| `install` | `hatch env create` (depends on `clean`)             | Creates `.venv/` via uv                                 |
-| `init`    | depends on `spark-scala:init` + `install`           | One-time devbox bootstrap                               |
-| `run`     | `.scripts/run-dbt-local.sh {PROJECT} {TARGET}`      | Default `PROJECT=dbt-jaffle-shop`, `TARGET=local-local` |
-| `test`    | runs all 3 sub-projects in parallel via `:run`      | Depends on `init`                                       |
-| `package` | `.scripts/package-fabric.sh`                        | Builds a single Fabric deploy bundle                    |
-| `compile` | `.scripts/compile-erd.sh`                           | Regenerates `dbt-<name>/erd/*.md` via `dbterd`          |
-| `lint`    | `black --line-length 2000 .` (defined at repo root) | No `sqlfluff` here — Python-only lint                   |
+| Nx project           | Owns                                                                 | Targets                                     |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------------- |
+| `spark-dbt`          | shared lifecycle (`.scripts/`, `.sqlfluff`, `pyproject.toml`, hatch) | `clean`, `install`, `init`, `run`, `package`, `compile` |
+| `dbt-jaffle-shop`    | `dbt-jaffle-shop/**`                                                 | `test`, `lint`                              |
+| `dbt-adventureworks` | `dbt-adventureworks/**`                                              | `test`, `lint`                              |
+| `dbt-dataops`        | `dbt-dataops/**`                                                     | `test`, `lint`                              |
+
+Each per-subproject `test` invokes `.scripts/run-dbt-local.sh <project> {args.TARGET}` (default `TARGET=local-local`). Each per-subproject `lint` invokes `.scripts/lint-dbt.sh <project>` (= `black` + `dbt deps` + `sqlfluff fix/lint`). Both depend on `spark-dbt:init` (params `ignore`) so the shared hatch env is set up first.
 
 ```bash
 # One-time devbox setup
 npx nx run spark-dbt:init --skip-nx-cache --verbose
 
 # Run one project end-to-end (default TARGET=local-local)
-npx nx run spark-dbt:run --PROJECT=dbt-adventureworks
-npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-fabric
+npx nx run dbt-adventureworks:test
+npx nx run dbt-adventureworks:test --TARGET=local-fabric
+
+# Lint a single project
+npx nx run dbt-adventureworks:lint
 
 # Full-refresh (drops & rebuilds incremental + snapshot state)
-FULL_REFRESH=1 npx nx run spark-dbt:run --PROJECT=dbt-dataops
+FULL_REFRESH=1 npx nx run dbt-dataops:test
 
-# Run all 3 sub-projects in parallel
-npx nx run spark-dbt:test
+# Affected pattern (CI)
+npx nx affected -t test
+npx nx affected -t lint
 
 # ERD + Fabric bundle
 npx nx run spark-dbt:compile
@@ -167,11 +172,12 @@ Defined per-project in `dbt-<name>/profiles.yml` — all use `type: fabricspark`
 
 | Target          | dbt client runs | Spark runs                                            | `livy_mode` | session-id file                                                  |
 | --------------- | --------------- | ----------------------------------------------------- | ----------- | ---------------------------------------------------------------- |
+| `lint`          | devcontainer    | _none_ (compile-only for sqlfluff dbt templater)      | `local`     | _none_                                                           |
 | `local-local`   | devcontainer    | local Livy (devcontainer, port 8998)                  | `local`     | `projects/spark-dbt/livy-session-id.txt`                         |
 | `local-fabric`  | devcontainer    | Fabric Spark pool (Workspace + Lakehouse IDs in YAML) | `fabric`    | `projects/spark-dbt/livy-session-id.txt`                         |
 | `fabric-fabric` | Fabric notebook | Fabric Spark pool                                     | `fabric`    | `/tmp/dbt-fabric-bundle/projects/dbt-<name>/livy-session-id.txt` |
 
-The local Livy session is cached across runs via the `session_id_file`. Delete that file to force a fresh session.
+The local Livy session is cached across runs via the `session_id_file`. Delete that file to force a fresh session. The `lint` target is a static stub used only by `sqlfluff` (via `[sqlfluff:templater:dbt] target = lint` in `.sqlfluff`) — it never touches Spark.
 
 Fabric targets require `FABRIC_ENVIRONMENT_ID` env var (each `profiles.yml` defaults it to a hard-coded GUID — override per environment).
 
@@ -198,13 +204,25 @@ Use the `using-dbt-for-analytics-engineering` skill ([`skills/using-dbt-for-anal
 
 ## 7. Linting
 
-Lint at this scope is **Python-only** via `black` (intentionally wide at `--line-length 2000` for `compile_erd.py`-style configs). SQL is **not** linted — but `dbt parse` must succeed:
+CI runs `npx nx affected -t lint`, which fans out into per-subproject `lint-dbt.sh <dbt-project>` invocations. The script chain is:
+
+1. `black --line-length 2000 dbt-<name>/` — formats any Python under the subproject (no-op when there isn't any; `compile_erd.py` lives at the parent `.scripts/`).
+2. `dbt deps --project-dir dbt-<name>` — populates `dbt_packages/` so the sqlfluff dbt templater can compile Jinja.
+3. `sqlfluff fix models snapshots --dialect sparksql --ignore parsing` — auto-fix; tolerated if it exits non-zero on unfixable.
+4. `sqlfluff lint models snapshots --dialect sparksql --ignore parsing` — **strict gate**.
+
+Config:
+
+- `projects/spark-dbt/.sqlfluff` — `dialect=sparksql`, `templater=dbt`, `target=lint` (the dedicated `lint` output in each `profiles.yml`), `exclude_rules=LT05,LT09,ST06,AM03,AL09,LT14,AL01,RF02,RF04,ST11`.
+- The `lint` profile target uses `livy_mode: local` with `connect_retries: 0` — it never actually connects to Spark; it only exists so dbt parsing succeeds for compile-only sqlfluff use.
+
+CI runs both `fix` and `lint`; if `fix` mutates anything, the subsequent `nx fail-on-untracked-files` step in GCI fails. **Always run `npx nx run dbt-<name>:lint` locally before pushing** so the auto-fix lands in your commit.
 
 ```bash
-# Repo-root: lint all Python under projects/spark-dbt/
-npx nx run spark-dbt:lint
+# Lint a single project (auto-fix included)
+npx nx run dbt-adventureworks:lint
 
-# Local: validate Jinja+SQL parses cleanly before pushing
+# Validate Jinja+SQL parses cleanly (no lint)
 cd projects/spark-dbt && hatch shell
 cd dbt-adventureworks && DBT_PROFILES_DIR=$(pwd) dbt parse
 ```
@@ -245,6 +263,7 @@ Update the ERD whenever you add / remove / rename a `dim_*` or `fct_*`, or chang
 - [ ] CTEs preferred over subqueries; staging predicates pushed to `stg_*`.
 - [ ] ERD regenerated (`npx nx run spark-dbt:compile`) if the DAG changed.
 - [ ] `dbt parse` succeeds against `local-local`.
+- [ ] `npx nx run dbt-<name>:lint` runs clean locally (sqlfluff fix is auto-applied — commit the diff).
 - [ ] `dbt build --select <model>+` succeeds against `local-local` before opening a PR.
 - [ ] Unit tests added for any model with non-trivial logic — see [`skills/adding-dbt-unit-test/skill.md`](skills/adding-dbt-unit-test/skill.md).
 

@@ -58,7 +58,18 @@ Then browse each `dbt-...` project and follow the READMEs:
 # Initiate dbt and Spark
 npx nx run spark-dbt:init --skip-nx-cache --verbose
 
-# Run model
+# Run one sub-project end-to-end (default TARGET=local-local)
+npx nx run dbt-adventureworks:test
+npx nx run dbt-dataops:test --TARGET=local-fabric
+
+# Lint a single sub-project (black + sqlfluff fix/lint)
+npx nx run dbt-adventureworks:lint
+
+# Affected pattern
+npx nx affected -t test
+npx nx affected -t lint
+
+# Ad-hoc model run (shared root target — uses --PROJECT)
 npx nx run spark-dbt:run --PROJECT="dbt-adventureworks"
 ```
 

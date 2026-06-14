@@ -1,44 +1,44 @@
-with stg_salesorderheader as (
-    select
+WITH stg_salesorderheader AS (
+    SELECT
         salesorderid,
         customerid,
         creditcardid,
         shiptoaddressid,
-        status as order_status,
-        cast(orderdate as date) as orderdate
-    from {{ ref('salesorderheader') }}
+        status AS order_status,
+        cast(orderdate AS date) AS orderdate
+    FROM {{ ref('salesorderheader') }}
 ),
 
-stg_salesorderdetail as (
-    select
+stg_salesorderdetail AS (
+    SELECT
         salesorderid,
         salesorderdetailid,
         productid,
         orderqty,
         unitprice,
-        unitprice * orderqty as revenue
-    from {{ ref('salesorderdetail') }}
+        unitprice * orderqty AS revenue
+    FROM {{ ref('salesorderdetail') }}
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['stg_salesorderdetail.salesorderid', 'salesorderdetailid']) }} as sales_key,
-    {{ dbt_utils.generate_surrogate_key(['productid']) }} as product_key,
-    {{ dbt_utils.generate_surrogate_key(['customerid']) }} as customer_key,
-    case when creditcardid is not null
-        then {{ dbt_utils.generate_surrogate_key(['creditcardid']) }}
-        else null
-    end as creditcard_key,
-    {{ dbt_utils.generate_surrogate_key(['shiptoaddressid']) }} as ship_address_key,
-    {{ dbt_utils.generate_surrogate_key(['order_status']) }} as order_status_key,
-    {{ dbt_utils.generate_surrogate_key(['orderdate']) }} as order_date_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['stg_salesorderdetail.salesorderid', 'salesorderdetailid']) }} AS sales_key,
+    {{ dbt_utils.generate_surrogate_key(['productid']) }} AS product_key,
+    {{ dbt_utils.generate_surrogate_key(['customerid']) }} AS customer_key,
+    CASE
+        WHEN creditcardid IS NOT NULL
+            THEN {{ dbt_utils.generate_surrogate_key(['creditcardid']) }}
+    END AS creditcard_key,
+    {{ dbt_utils.generate_surrogate_key(['shiptoaddressid']) }} AS ship_address_key,
+    {{ dbt_utils.generate_surrogate_key(['order_status']) }} AS order_status_key,
+    {{ dbt_utils.generate_surrogate_key(['orderdate']) }} AS order_date_key,
     stg_salesorderdetail.salesorderid,
     stg_salesorderdetail.salesorderdetailid,
     stg_salesorderdetail.unitprice,
     stg_salesorderdetail.orderqty,
     stg_salesorderdetail.revenue
-from stg_salesorderdetail
-inner join stg_salesorderheader on stg_salesorderdetail.salesorderid = stg_salesorderheader.salesorderid
-where exists (
-    select 1 from {{ ref('dim_address') }} da
-    where da.address_key = {{ dbt_utils.generate_surrogate_key(['stg_salesorderheader.shiptoaddressid']) }}
+FROM stg_salesorderdetail
+INNER JOIN stg_salesorderheader ON stg_salesorderdetail.salesorderid = stg_salesorderheader.salesorderid
+WHERE EXISTS (
+    SELECT 1 FROM {{ ref('dim_address') }} da
+    WHERE da.address_key = {{ dbt_utils.generate_surrogate_key(['stg_salesorderheader.shiptoaddressid']) }}
 )

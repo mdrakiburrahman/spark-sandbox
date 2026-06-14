@@ -100,36 +100,49 @@ npx nx run spark-dbt:install
 ## Step 2: Lint
 
 ```bash
-npx nx run spark-dbt:lint
+# Per-subproject lint (auto-fix included via sqlfluff fix → sqlfluff lint)
+npx nx run dbt-jaffle-shop:lint
+npx nx run dbt-adventureworks:lint
+npx nx run dbt-dataops:lint
+
+# Or only the affected sub-projects
+npx nx affected -t lint
 ```
 
-- Runs `black --line-length 2000 .` to format Python files.
+- Runs `black --line-length 2000 dbt-<name>/` + `dbt deps` + `sqlfluff fix/lint models snapshots --dialect sparksql`.
+- Commit any sqlfluff auto-fix changes — CI's `nx fail-on-untracked-files` step will fail otherwise.
 - Do NOT proceed to Step 3 until this is green.
 
 ---
 
 ## Step 3: Run & Test dbt Projects
 
-The `test` target runs both dbt projects in parallel against the `local-local` target:
+Each dbt sub-project owns its own `test` target. The shared `init` target wires the hatch venv + Spark metastore once:
 
 ```bash
-npx nx run spark-dbt:test
+# Run a single sub-project
+npx nx run dbt-jaffle-shop:test
+npx nx run dbt-adventureworks:test
+npx nx run dbt-dataops:test
+
+# Or only the affected sub-projects
+npx nx affected -t test
 ```
 
 This executes the full dbt pipeline for each project: `dbt debug` → `dbt deps` → `dbt seed` (if applicable) → `dbt run` → `dbt test` → `dbt docs generate`.
 
-**Prerequisites**: The `test` target depends on `init`, which itself depends on `spark-scala:init` (Spark metastore must be running) and `spark-dbt:install`.
+**Prerequisites**: Each `test` target depends on `spark-dbt:init`, which itself depends on `spark-scala:init` (Spark metastore must be running) and `spark-dbt:install`.
 
 ### Running a single dbt project
 
-If only one project changed, run it individually to iterate faster:
+If only one project changed, run it individually to iterate faster (each sub-project is now its own Nx project):
 
 ```bash
 # Jaffle Shop only
-npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local
+npx nx run dbt-jaffle-shop:test --TARGET=local-local
 
 # Adventureworks only
-npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local
+npx nx run dbt-adventureworks:test --TARGET=local-local
 ```
 
 ### Running dbt commands directly

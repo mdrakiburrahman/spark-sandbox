@@ -99,7 +99,10 @@ npx nx run marquito:lint     # ESLint
 ### dbt
 
 ```bash
-npx nx run spark-dbt:install  # Set up Hatch venv
+npx nx run spark-dbt:install      # Set up Hatch venv (shared by all dbt-* sub-projects)
+npx nx run dbt-adventureworks:test   # Run one sub-project end-to-end (default TARGET=local-local)
+npx nx run dbt-adventureworks:lint   # Per-subproject black + sqlfluff fix/lint
+npx nx affected -t test           # Affected sub-projects only
 # MCP server is configured in .vscode/mcp.json for AI-assisted dbt development
 ```
 

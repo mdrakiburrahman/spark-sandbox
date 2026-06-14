@@ -16,13 +16,6 @@
         "parallel": false
       }
     },
-    "lint": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": ["black --line-length 2000 ."],
-        "parallel": false
-      }
-    },
     "install": {
       "executor": "nx:run-commands",
       "dependsOn": ["clean"],
@@ -79,19 +72,6 @@
       "options": {
         "cwd": "projects/spark-dbt",
         "commands": [".scripts/compile-erd.sh"]
-      }
-    },
-    "test": {
-      "dependsOn": ["init"],
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "projects/spark-dbt",
-        "commands": [
-          "npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local --verbose --output-style=stream",
-          "npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local --verbose --output-style=stream",
-          "npx nx run spark-dbt:run --PROJECT=dbt-dataops --TARGET=local-local --verbose --output-style=stream"
-        ],
-        "parallel": true
       }
     }
   }

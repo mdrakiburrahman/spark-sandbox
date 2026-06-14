@@ -6,14 +6,14 @@
     )
 }}
 
-select
-    sha2(status, 256) as health_status_key,
+SELECT
+    sha2(status, 256) AS health_status_key,
     status,
     description,
     severity_rank
-from (
-    values
-        ('Healthy', 'All monitored metrics are within expected bounds.', 1),
-        ('Training', 'Insufficient historical data to determine health status. Minimum thresholds not yet met.', 2),
-        ('Unhealthy', 'One or more monitored metrics are outside expected bounds, indicating potential data quality issues.', 3)
-) as t(status, description, severity_rank)
+FROM (
+    VALUES
+    ('Healthy', 'All monitored metrics are within expected bounds.', 1),
+    ('Training', 'Insufficient historical data to determine health status. Minimum thresholds not yet met.', 2),
+    ('Unhealthy', 'One or more monitored metrics are outside expected bounds, indicating potential data quality issues.', 3)
+)
