@@ -170,10 +170,11 @@ class RedditClientCompanionTest extends AnyFunSpec with Matchers {
       val javaList: java.util.List[Any] = Seq[Any](1, "x").asJava
       val payload = Map[String, Any](
         "javaList" -> javaList,
-        "iterable" -> Iterable(1, 2),
+        "set" -> Set(7),
         "long" -> 7L,
         "bigInt" -> BigInt(42),
         "javaBigInt" -> new java.math.BigInteger("12345"),
+        "double" -> 2.5d,
         "float" -> 1.5f,
         "bigDec" -> BigDecimal("0.25"),
         "javaBigDec" -> new java.math.BigDecimal("0.5"),
@@ -183,10 +184,11 @@ class RedditClientCompanionTest extends AnyFunSpec with Matchers {
       )
       val json = RedditClient.toCompactJson(payload)
       json should include(""""javaList":[1,"x"]""")
-      json should include(""""iterable":[1,2]""")
+      json should include(""""set":[7]""")
       json should include(""""long":7""")
       json should include(""""bigInt":42""")
       json should include(""""javaBigInt":12345""")
+      json should include(""""double":2.5""")
       json should include(""""float":1.5""")
       json should include(""""bigDec":0.25""")
       json should include(""""javaBigDec":0.5""")

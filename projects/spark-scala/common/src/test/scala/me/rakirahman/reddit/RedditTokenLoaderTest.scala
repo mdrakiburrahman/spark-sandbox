@@ -67,6 +67,17 @@ class RedditTokenLoaderTest extends AnyFunSpec with Matchers with BeforeAndAfter
       }
     }
 
+    it("should return Malformed when the file system handler fails to read the path") {
+      val dirPath = Files.createDirectory(tempDir.resolve("not-a-file")).toString
+      val result = RedditTokenLoader(localEnv()).load(dirPath)
+
+      result match {
+        case Left(RedditTokenLoadFailure.Malformed(msg)) =>
+          msg should include("Failed to read token file")
+        case other => fail(s"unexpected: $other")
+      }
+    }
+
     it("should return the envelope when the file is valid and the token is fresh") {
       val path = writeTokenFile("fresh.token", envelopeJson(expiresAtEpochSeconds = 10000L))
       val result = RedditTokenLoader(localEnv()).load(path, nowEpochSeconds = 5000L)

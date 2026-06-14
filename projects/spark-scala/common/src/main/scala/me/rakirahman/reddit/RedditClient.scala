@@ -130,7 +130,6 @@ object RedditClient {
   def getLongOpt(obj: Map[String, Any], field: String): Option[Long] = obj.get(field).flatMap {
     case null      => None
     case n: Number => Some(n.longValue())
-    case d: Double => Some(d.toLong)
     case s: String => Try(s.toLong).toOption.orElse(Try(s.toDouble.toLong).toOption)
     case _         => None
   }
