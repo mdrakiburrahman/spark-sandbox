@@ -1,0 +1,74 @@
+[
+  {
+    "name": "subreddits",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/subreddits",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  },
+  {
+    "name": "posts",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/posts",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  },
+  {
+    "name": "microsoft_employees",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/microsoft_employees",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  },
+  {
+    "name": "fetch_runs",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/fetch_runs",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  },
+  {
+    "name": "comments",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/comments",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  },
+  {
+    "name": "authors",
+    "path": "/Tables/dbo",
+    "target": {
+      "type": "OneLake",
+      "oneLake": {
+        "path": "Tables/authors",
+        "itemId": "940ec0ed-a0d2-471b-8341-4f5766bd0b8f",
+        "workspaceId": "3ea60ae5-e979-4d31-a317-66491ab497fb"
+      }
+    }
+  }
+]
