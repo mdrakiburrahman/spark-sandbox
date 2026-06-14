@@ -116,9 +116,12 @@
         "livy-up"
       ],
       "options": {
-        "cwd": "projects/spark-submit/ui",
-        "commands": ["npm run dev"],
-        "parallel": false
+        "cwd": "projects/spark-submit",
+        "commands": [
+          "bash -c 'cd api && npm run dev'",
+          "bash -c 'cd ui && npm run dev'"
+        ],
+        "parallel": true
       }
     },
     "run-api": {
