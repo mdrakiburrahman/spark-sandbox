@@ -1,0 +1,104 @@
+// ============================================================
+// <project-name> — Kimball STAR Schema Design
+//
+// Authored by the kimball-dbml skill. This is the design spec.
+//
+// Conventions:
+//   - snake_case everywhere
+//   - {{META:NATURAL_KEY}} marks the source-system business identifier
+//   - {{META:SCD2}}        marks attributes tracked over time
+//   - {{META:ROLE_PLAYED}} marks a FK that plays multiple roles for the same dim
+//   - {{META:DEGENERATE}}  marks a degenerate dimension on a fact
+//   - Every dim has an unknown-member row at <entity>_key = -1
+//   - Every SCD2 dim has row_effective_start, row_effective_end, is_row_effective
+//
+// Render: paste into https://dbdiagram.io to see the ERD.
+// Docs:   https://dbml.dbdiagram.io/docs/
+// Companion guidelines: ../../KIMBALL_GUIDELINES.md
+// ============================================================
+
+// ============================================================
+// Conformed Dimensions
+// (shared across multiple facts — keep at top)
+// ============================================================
+
+Table dim_date {
+    Note: 'One row per calendar date. SCD0 (immutable). Unknown member at date_key = -1.'
+    date_key           varchar [primary key, note: '{{META:NATURAL_KEY}} yyyymmdd as a string']
+    date               date
+    day                integer
+    day_of_week        integer
+    day_of_week_name   varchar
+    month              integer
+    month_name         varchar
+    quarter            integer
+    year               integer
+    first_day_of_month date
+    last_day_of_month  date
+    is_weekend         bool
+}
+
+// TODO: Add other conformed dimensions here (e.g. dim_customer, dim_user, dim_product).
+
+// ============================================================
+// Local Dimensions
+// (specific to one or two facts)
+// ============================================================
+
+// TODO: Add local dimensions here.
+// Example:
+//
+// Table dim_<entity> {
+//     Note: 'One row per <entity>. SCD<n>. Unknown member at <entity>_key = -1.'
+//     <entity>_key          varchar [primary key]
+//     <entity>_natural_id   varchar [note: '{{META:NATURAL_KEY}}']
+//     <entity>_name         varchar
+//     <attribute>           varchar [note: '{{META:SCD2}}']
+//     row_effective_start   date
+//     row_effective_end     date
+//     is_row_effective      bool
+// }
+
+// ============================================================
+// Facts
+// (one block per fact table — document grain in the Note)
+// ============================================================
+
+// TODO: Add fact tables here.
+// Example:
+//
+// Table fct_<event> {
+//     Note: 'GRAIN: one row per <event> per <unit>. Type: <transaction|periodic-snapshot|accumulating-snapshot|factless>.'
+//     <event>_key           varchar [primary key]
+//     date_key              varchar [not null]
+//     <entity>_key          varchar [not null]
+//     <degenerate_id>       varchar [note: '{{META:DEGENERATE}} source business identifier']
+//     <measure>             decimal [note: 'Additivity: <fully|semi|non>-additive']
+// }
+
+// ============================================================
+// Bridge Tables
+// (resolve many-to-many between two dims)
+// ============================================================
+
+// TODO: Add bridge tables here.
+// Example:
+//
+// Table <a>_<b>_bridge {
+//     Note: 'Resolves M:N between dim_<a> and dim_<b>. Rebuilt each run from latest effective versions.'
+//     <a>_<b>_bridge_key varchar [primary key]
+//     <a>_key            varchar [not null]
+//     <b>_key            varchar [not null]
+//     is_row_effective   bool
+// }
+
+// ============================================================
+// References
+// (Read "A.col < B.col" as: A is the parent (1) — B is the child (many))
+// ============================================================
+
+// TODO: Add foreign-key references here.
+// Example:
+//
+// Ref: dim_date.date_key       < fct_<event>.date_key
+// Ref: dim_<entity>.<entity>_key < fct_<event>.<entity>_key

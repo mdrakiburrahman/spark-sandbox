@@ -42,6 +42,26 @@ Fix a failing CI run end-to-end — download logs, diagnose failures, apply code
 
 The skill will ask for the PR URL and the failed CI run URL, then orchestrate the full diagnose → fix → validate → push → poll loop.
 
+## 📊 dbt → Power BI
+
+End-to-end workflow to ship a Power BI report from a Delta Lake: Kimball dbt model → matplotlib mockup → TMDL semantic model → PBIR visual JSON — skipping the Power BI UI almost entirely.
+
+```bash
+/fleet @//workspaces/spark-sandbox/.github/skills/dbt-to-power-bi/skill.md
+```
+
+The skill will ask for the warehouse path and the questions the report should answer, then iterate with you on staging → dims → facts → mockup → measures → PBIR JSON.
+
+## 🥈 Spark Bronze → Silver
+
+Generate a Bronze-to-Silver transformation from existing Bronze Delta tables — discovers source data, catalogues existing transformers, validates schema with you, then emits Constants / Loader / Transformer / Driver + unit tests + `spark-jobs.yaml` entry + VACUUM registration.
+
+```bash
+/fleet @//workspaces/spark-sandbox/.github/skills/spark-bronze-to-silver/skill.md
+```
+
+The skill will ask for the source Bronze table(s), then walk Steps 0–11 with `🛑` checkpoints at every design decision.
+
 ## 🔁 Ralph Loop
 
 ![*Chuckles*](.imgs/ralph.gif)

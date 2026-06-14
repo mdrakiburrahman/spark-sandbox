@@ -1,0 +1,56 @@
+/// TMDL Report Measures table template.
+/// Copy into <SemanticModel>/definition/tables/Report Measures.tmdl
+/// and add `ref table 'Report Measures'` to model.tmdl.
+///
+/// Why a separate measures-only table?
+///   - Keeps DAX measures discoverable in one place (not scattered across fact tables).
+///   - Hides the dummy `Measures` column so the field list only shows measures.
+///   - Survives schema refresh from the database without overwriting your measures.
+
+table 'Report Measures'
+	lineageTag: 7f3b1a2c-5d6e-4f8a-9b1c-2d3e4f5a6b7c
+
+	measure 'Total Builds' = DISTINCTCOUNT(Build[build_id])
+		formatString: #,0
+		lineageTag: a1b2c3d4-1111-4f8a-9b1c-2d3e4f5a6b01
+
+	measure 'Tests Run' = SUM('Suite Build Outcome'[total_tests])
+		formatString: #,0
+		lineageTag: a1b2c3d4-2222-4f8a-9b1c-2d3e4f5a6b02
+
+	measure 'Failed Tests' = SUM('Suite Build Outcome'[failed_tests])
+		formatString: #,0
+		lineageTag: a1b2c3d4-3333-4f8a-9b1c-2d3e4f5a6b03
+
+	measure 'Overall Pass Rate' = DIVIDE([Tests Run] - [Failed Tests], [Tests Run])
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: a1b2c3d4-4444-4f8a-9b1c-2d3e4f5a6b04
+
+	measure 'Active Broken Tests' =
+			CALCULATE(
+			    COUNTROWS('Mean Time To Repair - Repair Event'),
+			    'Mean Time To Repair - Repair Event'[is_repaired] = FALSE()
+			)
+		formatString: #,0
+		lineageTag: a1b2c3d4-5555-4f8a-9b1c-2d3e4f5a6b05
+
+	measure 'Failed Test Cases' = COUNTROWS('Failed Test Case')
+		formatString: #,0
+		lineageTag: a1b2c3d4-6666-4f8a-9b1c-2d3e4f5a6b06
+
+	/// Hidden dummy column so the table renders without a backing query.
+	column Measures
+		isHidden
+		formatString: 0
+		lineageTag: a1b2c3d4-ffff-4f8a-9b1c-2d3e4f5a6b0f
+		summarizeBy: sum
+		sourceColumn: [Column]
+
+		annotation SummarizationSetBy = Automatic
+
+	/// Calculated partition so the table compiles in import mode with no source.
+	partition 'Report Measures' = calculated
+		mode: import
+		source = Row("Column", BLANK())
+
+	annotation PBI_Id = b7a83c9f4a5e4f8d9c2b1e3a4d5f6a7b
