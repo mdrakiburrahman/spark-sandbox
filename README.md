@@ -35,4 +35,5 @@ This repository contains POCs/POTs in Apache Spark.
 ## Repo Architecture
 
 ![Diagram](/.imgs/repo-architecture.png)
+
 [![Watch the video](https://img.youtube.com/vi/6HWpTz7VXsE/sddefault.jpg)](https://youtu.be/6HWpTz7VXsE?si=Lku3ebn58D-10z5Y&t=577)
