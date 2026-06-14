@@ -161,6 +161,8 @@ object DemoRedditIngestion extends App with Logging {
   val sqlMetastoreOperations = SqlMetastoreOperations(spark)
   sqlMetastoreOperations.createDatabase(cfg.Destination.Database)
 
+  writeMicrosoftEmployeesSeed()
+
   private val client = new RedditRestClient(
     envelope = envelope,
     baseUrl = cfg.RedditApi.BaseUrl,
@@ -229,6 +231,18 @@ object DemoRedditIngestion extends App with Logging {
     logInfo(s"Polite sleep    : base=${cfg.RedditApi.BaseSleepSeconds}s jitter=${cfg.RedditApi.JitterMaxSeconds}s timeout=${cfg.RedditApi.RequestTimeoutSeconds}s")
     logInfo(s"Retry           : attempts=${cfg.Retry.MaxAttempts} min=${cfg.Retry.WaitMinSeconds}s max=${cfg.Retry.WaitMaxSeconds}s multiplier=${cfg.Retry.WaitMultiplier}")
     logInfo("─" * 80)
+  }
+
+  private def writeMicrosoftEmployeesSeed(): Unit = {
+    val fqn = s"${cfg.Destination.Database}.microsoft_employees"
+    val seed = MicrosoftEmployeesSeedLoader(spark).load()
+    val rowCount = seed.count()
+    logInfo(s"$fqn: overwriting $rowCount rows from bundled classpath seed (${MicrosoftEmployeesSeedLoader.DefaultResourcePath})")
+    seed.write
+      .format("delta")
+      .mode("overwrite")
+      .option("overwriteSchema", "true")
+      .saveAsTable(fqn)
   }
 
   private def writeAll(r: RedditIngestionResult): Unit = {

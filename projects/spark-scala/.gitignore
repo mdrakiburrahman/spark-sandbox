@@ -36,3 +36,6 @@
 .metals/
 **/target/
 **/.bloop/
+.nx/installation
+.nx/cache
+.nx/workspace-data
