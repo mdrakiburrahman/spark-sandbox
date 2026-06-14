@@ -1,0 +1,457 @@
+/* SQL Page Styles — Spark Orchestrator */
+/* Matches the Spark orange / Microsoft Fabric aesthetic */
+
+.sqlPage {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+}
+
+/* ─── Sidebar ──────────────────────────────────────────── */
+
+.sidebar {
+    flex-shrink: 0;
+    overflow-y: auto;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .sidebar {
+    background: #0d0d0d;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(body[data-theme="light"]) .sidebar {
+    background: #f8f8f8;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.sidebarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    user-select: none;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .sidebarHeader {
+    color: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+:global(body[data-theme="light"]) .sidebarHeader {
+    color: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Sidebar resize handle ────────────────────────────── */
+
+.sidebarResizeHandle {
+    width: 4px;
+    cursor: col-resize;
+    flex-shrink: 0;
+    z-index: 10;
+    transition: background-color 0.15s ease;
+}
+
+:global(body[data-theme="dark"]) .sidebarResizeHandle {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body[data-theme="light"]) .sidebarResizeHandle {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.sidebarResizeHandle:hover {
+    background: rgba(249, 115, 22, 0.4);
+}
+
+.sidebarResizeHandleActive {
+    background: #f97316 !important;
+}
+
+/* ─── Main content area ────────────────────────────────── */
+
+.mainContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* ─── Tab bar ──────────────────────────────────────────── */
+
+.tabBar {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .tabBar {
+    background: #111;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(body[data-theme="light"]) .tabBar {
+    background: #ffffff;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.tabBarInner {
+    display: flex;
+    align-items: stretch;
+    min-width: max-content;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    user-select: none;
+}
+
+:global(body[data-theme="dark"]) .tab {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+:global(body[data-theme="light"]) .tab {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+:global(body[data-theme="dark"]) .tab:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body[data-theme="light"]) .tab:hover {
+    color: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.tabActive {
+    border-bottom-color: #f97316;
+}
+
+:global(body[data-theme="dark"]) .tabActive {
+    color: #fb923c;
+}
+
+:global(body[data-theme="light"]) .tabActive {
+    color: #f97316;
+}
+
+.tabClose {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.tab:hover .tabClose {
+    opacity: 0.6;
+}
+
+.tabClose:hover {
+    opacity: 1 !important;
+}
+
+:global(body[data-theme="dark"]) .tabClose {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+:global(body[data-theme="dark"]) .tabClose:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+:global(body[data-theme="light"]) .tabClose {
+    color: rgba(0, 0, 0, 0.5);
+}
+
+:global(body[data-theme="light"]) .tabClose:hover {
+    background: rgba(0, 0, 0, 0.08);
+    color: #000;
+}
+
+.tabAdd {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .tabAdd {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+:global(body[data-theme="dark"]) .tabAdd:hover {
+    color: #fb923c;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body[data-theme="light"]) .tabAdd {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+:global(body[data-theme="light"]) .tabAdd:hover {
+    color: #f97316;
+    background: rgba(0, 0, 0, 0.03);
+}
+
+/* ─── Inline tab rename input ──────────────────────────── */
+
+.tabRenameInput {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #f97316;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 0;
+    width: 100px;
+    color: inherit;
+}
+
+/* ─── Editor container ─────────────────────────────────── */
+
+.editorContainer {
+    flex: 1;
+    min-height: 200px;
+    overflow: hidden;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .editorContainer {
+    background: #0a0a0a;
+}
+
+:global(body[data-theme="light"]) .editorContainer {
+    background: #ffffff;
+}
+
+/* ─── Toolbar ──────────────────────────────────────────── */
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    padding: 0 12px;
+    gap: 8px;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .toolbar {
+    background: #111;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+:global(body[data-theme="light"]) .toolbar {
+    background: #fafafa;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Resize handle ────────────────────────────────────── */
+
+.resizeHandle {
+    height: 4px;
+    cursor: row-resize;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease;
+}
+
+:global(body[data-theme="dark"]) .resizeHandle {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+:global(body[data-theme="light"]) .resizeHandle {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+.resizeHandle:hover {
+    background: rgba(249, 115, 22, 0.4);
+}
+
+.resizeHandle:active {
+    background: #f97316;
+}
+
+/* ─── Results container ────────────────────────────────── */
+
+.resultsContainer {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .resultsContainer {
+    background: #0d0d0d;
+}
+
+:global(body[data-theme="light"]) .resultsContainer {
+    background: #fafafa;
+}
+
+/* ─── Results table ────────────────────────────────────── */
+
+.resultsTableWrap {
+    flex: 1;
+    overflow: auto;
+}
+
+.resultsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+}
+
+.resultsTable th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 6px 12px;
+    text-align: left;
+    font-weight: 600;
+    white-space: nowrap;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+:global(body[data-theme="dark"]) .resultsTable th {
+    background: #141414;
+    color: rgba(255, 255, 255, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:global(body[data-theme="light"]) .resultsTable th {
+    background: #f0f0f0;
+    color: rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.resultsTable td {
+    padding: 4px 12px;
+    white-space: nowrap;
+}
+
+:global(body[data-theme="dark"]) .resultsTable td {
+    color: rgba(255, 255, 255, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+:global(body[data-theme="light"]) .resultsTable td {
+    color: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+:global(body[data-theme="dark"]) .resultsTable tr:hover td {
+    background: rgba(249, 115, 22, 0.04);
+}
+
+:global(body[data-theme="light"]) .resultsTable tr:hover td {
+    background: rgba(249, 115, 22, 0.03);
+}
+
+/* ─── Status bar ───────────────────────────────────────── */
+
+.statusBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+:global(body[data-theme="dark"]) .statusBar {
+    background: #0a0a0a;
+    color: rgba(255, 255, 255, 0.4);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+:global(body[data-theme="light"]) .statusBar {
+    background: #f5f5f5;
+    color: rgba(0, 0, 0, 0.4);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ─── Error display ────────────────────────────────────── */
+
+.errorBanner {
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    word-break: break-word;
+}
+
+:global(body[data-theme="dark"]) .errorBanner {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+:global(body[data-theme="light"]) .errorBanner {
+    background: rgba(239, 68, 68, 0.06);
+    color: #dc2626;
+    border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+/* ─── Empty state ──────────────────────────────────────── */
+
+.emptyResults {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+}
+
+:global(body[data-theme="dark"]) .emptyResults {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+:global(body[data-theme="light"]) .emptyResults {
+    color: rgba(0, 0, 0, 0.25);
+}

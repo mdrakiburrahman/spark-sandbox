@@ -1,0 +1,197 @@
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │                        Spark Jobs Configuration                             │
+# │                                                                             │
+# │  This file defines all available Spark jobs with their dependencies.        │
+# │  Jobs are organized by module (JAR) and category.                           │
+# │                                                                             │
+# │    Each job can specify `dependsOn` - an array of job names that must       │
+# │    complete before this job runs. The DAG is resolved at runtime.           │
+# │                                                                             │
+# │  Supported template variables (resolved at runtime):                        │
+# │    {projectRoot}   = projects/spark-submit                                  │
+# │    {sparkConfDir}  = SPARK_CONF_DIR (typically ../spark-scala)              │
+# │    {sparkScalaDir} = ../spark-scala (sibling project, source of jars)       │
+# │    {tempDir}       = projects/spark-submit/.temp                            │
+# │    {heapDumpDir}   = projects/spark-submit/.temp/dumps                      │
+# │    {logsDir}       = projects/spark-submit/.logs                            │
+# │    {home}          = $HOME                                                  │
+# └─────────────────────────────────────────────────────────────────────────────┘
+
+# ┌───────────┐
+# │ Defaults  │
+# └───────────┘
+defaults:
+  sparkHome: /opt/spark
+  sparkConfDir: "{sparkScalaDir}"
+  sparkScalaDir: "{projectRoot}/../spark-scala"
+  ivyDir: "{home}/.ivy2"
+  tempDir: "{projectRoot}/.temp"
+  heapDumpDir: "{projectRoot}/.temp/dumps"
+  logsDir: "{projectRoot}/.logs"
+
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ Additional Runtime JARs                                                     │
+# │                                                                             │
+# │ Maven coordinates fetched at runtime via --packages.                        │
+# └─────────────────────────────────────────────────────────────────────────────┘
+additionalJars:
+  - "io.openlineage:openlineage-spark_2.12:1.26.0"
+  - "org.apache.hadoop:hadoop-azure-datalake:3.3.4"
+  - "org.apache.hadoop:hadoop-azure:3.3.4"
+
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ Modules (JARs)                                                              │
+# │                                                                             │
+# │ Each module corresponds to an sbt sub-project that produces a JAR.          │
+# └─────────────────────────────────────────────────────────────────────────────┘
+modules:
+  spark-demo:
+    jarPattern: "../spark-scala/spark-demo/target/scala-2.12/sparkDemo-*.jar"
+    configPath: "../spark-scala/spark-demo/src/main/resources/config/config-dev-devcontainer.yaml"
+    useSparkConfigs: true
+    useAdditionalJars: true
+
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ Extra Spark Configs                                                         │
+# │                                                                             │
+# │ Named sets of Spark configurations that can be applied to jobs.             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+sparkConfigSets:
+  # Applied to every spark-demo job (covers the unconditional bits the old
+  # run-spark-jobs.sh used to export). Resource sizing comes from the module's
+  # configPath YAML — this set only carries the bits not in that YAML.
+  spark-scala-defaults:
+    - key: spark.driver.extraJavaOptions
+      value: "-Dlog4j.configurationFile=file://{sparkScalaDir}/log4j2.properties --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.security=ALL-UNNAMED"
+    - key: spark.executor.extraJavaOptions
+      value: "-Dlog4j.configurationFile=file://{sparkScalaDir}/log4j2.properties --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.security=ALL-UNNAMED"
+    - key: spark.local.dir
+      value: "{tempDir}/spark"
+    - key: spark.memory.offHeap.enabled
+      value: "true"
+    - key: spark.memory.offHeap.size
+      value: "24g"
+    - key: spark.sql.shuffle.partitions
+      value: "1"
+    - key: spark.sql.streaming.minBatchesToRetain
+      value: "2"
+    - key: spark.sql.streaming.stateStore.maintenanceInterval
+      value: "10s"
+    - key: spark.sql.streaming.stateStore.minDeltasForSnapshot
+      value: "2"
+    - key: spark.sql.streaming.stateStore.providerClass
+      value: "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider"
+    - key: spark.sql.streaming.stateStore.rocksdb.compactOnCommit
+      value: "true"
+
+  # Loaded only by demo-plugin (UncacherSparkPlugin + RpcSparkPlugin).
+  uncacher-rpc-plugins:
+    - key: spark.plugins
+      value: "me.rakirahman.spark.plugin.uncachingplugin.UncacherSparkPlugin,me.rakirahman.spark.plugin.rpcplugin.RpcSparkPlugin"
+
+  # Loaded only by demo-etl: OpenLineage HTTP listener + HttpDumperPlugin
+  # that catches the events and writes JSONL files for openlineage-silver.
+  openlineage-http-dumper:
+    - key: spark.extraListeners
+      value: "io.openlineage.spark.agent.OpenLineageSparkListener"
+    - key: spark.openlineage.transport.type
+      value: "http"
+    - key: spark.openlineage.transport.url
+      value: "http://localhost:19001"
+    - key: spark.plugins
+      value: "me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin"
+    - key: spark.plugin.conf.driver.port
+      value: "19001"
+    - key: spark.plugin.conf.json.location
+      value: "{sparkScalaDir}/.temp/openlineage"
+
+# ┌─────────────────────────────────────────────────────────────────────────────┐
+# │ Jobs                                                                        │
+# │                                                                             │
+# │ Each job defines:                                                           │
+# │   - module: Which JAR to use                                                │
+# │   - class: Fully qualified Spark driver class                               │
+# │   - category: For organization/filtering (bronze|silver|gold|demo|ops|...)  │
+# │   - description: Human-readable description                                 │
+# │   - args: (optional) Positional args appended after the config-file path    │
+# │   - sparkConfigSets: (optional) Additional named config sets to apply       │
+# │   - dependsOn: (optional) Jobs that must complete before this job runs      │
+# │                                                                             │
+# └─────────────────────────────────────────────────────────────────────────────┘
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Demo - teaching concepts
+  # ═══════════════════════════════════════════════════════════════════════════
+  demo-plugin:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.demos.DemoPluginExploration
+    category: demo
+    description: "Custom Spark plugins exploration (UncacherSparkPlugin + RpcSparkPlugin)"
+    sparkConfigSets:
+      - spark-scala-defaults
+      - uncacher-rpc-plugins
+
+  demo-etl:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.demos.DemoEtl
+    category: demo
+    description: "Demo ETL pipeline emitting OpenLineage events via HttpDumperPlugin"
+    sparkConfigSets:
+      - spark-scala-defaults
+      - openlineage-http-dumper
+
+  demo-lineage:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.demos.DemoLineageExtractor
+    category: demo
+    description: "Demo of LineageExtractor (Mermaid + location map)"
+    dependsOn:
+      - openlineage-silver
+    sparkConfigSets:
+      - spark-scala-defaults
+
+  demo-delta-log-monitor:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.demos.DemoDeltaLogMonitor
+    category: demo
+    description: "Demo Delta-log commit history + KPI pipeline"
+    dependsOn:
+      - openlineage-silver
+    sparkConfigSets:
+      - spark-scala-defaults
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Silver - structured ingestion
+  # ═══════════════════════════════════════════════════════════════════════════
+  openlineage-silver:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.silver.openlineage.OpenLineageSilverDriver
+    category: silver
+    description: "Streams OpenLineage JSONL files into the data_ops_inventory_db silver table"
+    dependsOn:
+      - demo-etl
+    sparkConfigSets:
+      - spark-scala-defaults
+    args:
+      - "data_ops_inventory_db"
+      - "{sparkScalaDir}/.temp/openlineage"
+      - "{sparkScalaDir}/.temp/openlineage-archive"
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Ops - infrastructure & maintenance
+  # ═══════════════════════════════════════════════════════════════════════════
+  delta-mount:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.general.management.DeltaMountDriver
+    category: ops
+    description: "Mount external Delta tables defined in DeltaMountDriver.Mounts"
+    sparkConfigSets:
+      - spark-scala-defaults
+
+  maintenance-vacuum:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.general.maintenance.MaintenanceDeltaVacuumDriver
+    category: ops
+    description: "Vacuum Delta tables per MaintenanceDeltaVacuumDriver config"
+    sparkConfigSets:
+      - spark-scala-defaults

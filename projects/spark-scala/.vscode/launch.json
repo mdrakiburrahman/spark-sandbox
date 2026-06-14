@@ -5,7 +5,8 @@
   "configurations": [
     // This allows you to attach the debbugger to a suspended Scala job, when running with
     // `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:5005`
-    // see run-spark-jobs.sh
+    // see ../../projects/spark-submit/README.md (JDWP section) for how to launch
+    // a spark-submit job with this flag.
     {
       "type": "scala",
       "request": "attach",

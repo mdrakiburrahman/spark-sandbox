@@ -144,7 +144,14 @@ If no driver/loader/transformer changes were found, skip to Step 5.
 
 ### 4a: Identify affected jobs
 
-Map changed driver classes to their job aliases. The aliases are defined in `projects/spark-scala/.scripts/run-spark-jobs.sh` in the `JOB_ALIASES` map:
+Map changed driver classes to their job aliases. The aliases are defined in
+[`projects/spark-submit/config/spark-jobs.yaml`](../../../projects/spark-submit/config/spark-jobs.yaml)
+under the `jobs:` map. You can also derive the alias programmatically (recommended in
+CI) via:
+
+```bash
+npx nx run spark-submit:run --class-to-job=<fully.qualified.DriverClass>
+```
 
 | Alias                    | Class                                                                                  |
 | ------------------------ | -------------------------------------------------------------------------------------- |
@@ -162,19 +169,19 @@ If shared library code (`common/src/*`) changed, run `all` to validate the full 
 
 ```bash
 cd /workspaces/spark-sandbox
-npx nx run spark-scala:run --JOB=<alias>
+npx nx run spark-submit:run --JOB=<alias>
 ```
 
 For example:
 
 ```bash
-npx nx run spark-scala:run --JOB=demo-etl
+npx nx run spark-submit:run --JOB=demo-etl
 ```
 
-To run all jobs sequentially:
+To run every job in `spark-jobs.yaml` as one combined DAG:
 
 ```bash
-npx nx run spark-scala:run --JOB=all
+npx nx run spark-submit:run --JOB=all
 ```
 
 If the job fails:

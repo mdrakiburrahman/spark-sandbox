@@ -1,0 +1,126 @@
+/* DBML ERD Viewer styles */
+
+.dbml-viewer-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Reset React Flow node defaults so our table node controls appearance */
+.dbml-viewer-container .react-flow__node {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 3px !important;
+}
+
+/* Selected table highlight matching dbdiagram: blue glow */
+.dbml-viewer-container .react-flow__node.selected .dbml-table-node {
+    outline: 2px solid #619bcc;
+    box-shadow: 0 0 15px rgba(13, 90, 168, 0.4) !important;
+}
+
+/* Edge styling */
+.dbml-viewer-container .react-flow__edge-path {
+    stroke-width: 1.5;
+}
+
+.dbml-viewer-container .react-flow__edge.selected .react-flow__edge-path {
+    stroke: #619bcc !important;
+    stroke-width: 2.5;
+}
+
+/* Hide handles by default, show on hover */
+.dbml-handle {
+    width: 8px !important;
+    height: 8px !important;
+    background: #9b9ca4 !important;
+    border: 2px solid transparent !important;
+    opacity: 0 !important;
+    transition: opacity 0.15s !important;
+}
+
+.dbml-table-node:hover .dbml-handle {
+    opacity: 1 !important;
+}
+
+/* Controls styling */
+.dbml-viewer-container .react-flow__controls {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dbml-viewer-container .react-flow__controls-button {
+    width: 28px;
+    height: 28px;
+}
+
+/* MiniMap */
+.dbml-viewer-container .react-flow__minimap {
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Field row hover effect */
+.dbml-field-row {
+    transition: background-color 0.1s ease;
+}
+
+/* Input bar */
+.dbml-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 24px;
+    z-index: 10;
+}
+
+.dbml-input-bar input {
+    flex: 1;
+    font-family: 'JetBrains Mono', 'Consolas', monospace;
+    font-size: 15px;
+    padding: 10px 12px;
+}
+
+/* Stats badges */
+.dbml-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    padding: 0 8px;
+    opacity: 0.7;
+}
+
+.dbml-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Empty state */
+.dbml-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 20px;
+    user-select: none;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.dbml-empty-state .dbml-empty-title {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.35;
+    opacity: 0.85;
+}
+
+.dbml-empty-state .dbml-empty-subtitle {
+    font-size: 14px;
+    opacity: 0.5;
+}

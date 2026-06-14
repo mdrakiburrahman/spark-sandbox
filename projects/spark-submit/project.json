@@ -1,0 +1,172 @@
+{
+  "name": "spark-submit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "projects/spark-submit",
+  "targets": {
+    "install": {
+      "cache": true,
+      "executor": "nx:run-commands",
+      "inputs": [
+        "{projectRoot}/package.json",
+        "{projectRoot}/api/package.json",
+        "{projectRoot}/ui/package.json"
+      ],
+      "outputs": [
+        "{projectRoot}/node_modules",
+        "{projectRoot}/api/node_modules",
+        "{projectRoot}/ui/node_modules"
+      ],
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "npm install --no-audit --no-fund", "forwardAllArgs": false },
+          { "command": "cd api && npm install --no-audit --no-fund", "forwardAllArgs": false },
+          { "command": "cd ui && npm install --no-audit --no-fund", "forwardAllArgs": false }
+        ],
+        "parallel": false
+      }
+    },
+    "init": {
+      "cache": false,
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [{ "command": "echo 'spark-submit initialization completed.'", "forwardAllArgs": false }]
+      }
+    },
+    "build": {
+      "cache": true,
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [{ "command": "echo 'spark-submit ready (no compile step for tsx-driven CLI)'", "forwardAllArgs": false }]
+      }
+    },
+    "lint": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": ["install"],
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "npx prettier --write 'config/**/*.yaml' '__tests__/**/*.ts' 'interface/**/*.ts' 'client/**/*.ts' 'server/**/*.ts' 'logging/**/*.ts' 'index.ts'", "forwardAllArgs": false }
+        ],
+        "parallel": false
+      }
+    },
+    "test": {
+      "cache": false,
+      "dependsOn": ["install"],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "npm test", "forwardAllArgs": false },
+          { "command": "cd api && npm test", "forwardAllArgs": false },
+          { "command": "cd ui && npm test", "forwardAllArgs": false }
+        ],
+        "parallel": false
+      }
+    },
+    "run": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "install",
+        { "target": "build-jar", "projects": ["spark-scala"] },
+        { "target": "metastore-up", "projects": ["spark-scala"] }
+      ],
+      "defaultConfiguration": "dev",
+      "configurations": {
+        "dev": {}
+      },
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "npx tsx index.ts", "forwardAllArgs": true }
+        ]
+      }
+    },
+    "query": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "install",
+        { "target": "build-jar", "projects": ["spark-scala"] },
+        { "target": "metastore-up", "projects": ["spark-scala"] },
+        "livy-up"
+      ],
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "npx tsx index.ts", "forwardAllArgs": true }
+        ]
+      }
+    },
+    "run-ui": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "install",
+        { "target": "build-jar", "projects": ["spark-scala"] },
+        { "target": "metastore-up", "projects": ["spark-scala"] },
+        "livy-up"
+      ],
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          "bash -c 'cd api && npm run dev'",
+          "bash -c 'cd ui && npm run dev'"
+        ],
+        "parallel": true
+      }
+    },
+    "run-api": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "install",
+        { "target": "build-jar", "projects": ["spark-scala"] },
+        { "target": "metastore-up", "projects": ["spark-scala"] },
+        "livy-up"
+      ],
+      "options": {
+        "cwd": "projects/spark-submit/api",
+        "commands": ["npm run dev"],
+        "parallel": false
+      }
+    },
+    "livy-up": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": ["bash -c 'source ../spark-scala/.scripts/run-livy.sh && start_livy'"],
+        "parallel": false
+      }
+    },
+    "livy-down": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": ["bash -c 'source ../spark-scala/.scripts/run-livy.sh && stop_livy'"],
+        "parallel": false
+      }
+    },
+    "clean": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/spark-submit",
+        "commands": [
+          { "command": "rm -rf .logs .temp .next dist node_modules api/node_modules ui/node_modules ui/.next api/dist", "forwardAllArgs": false }
+        ],
+        "parallel": false
+      }
+    }
+  }
+}

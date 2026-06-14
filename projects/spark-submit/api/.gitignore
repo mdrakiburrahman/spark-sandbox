@@ -1,0 +1,3 @@
+.cache/*
+.api-server.log
+.api-server.pid

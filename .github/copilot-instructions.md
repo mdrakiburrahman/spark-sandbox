@@ -7,6 +7,7 @@ This is an **Nx monorepo** for Apache Spark development, targeting **Microsoft F
 | Project        | Stack                                        | Purpose                                                            |
 | -------------- | -------------------------------------------- | ------------------------------------------------------------------ |
 | `spark-scala`  | Scala 2.12 / SBT / Spark 3.5.1 / Delta 3.2.0 | Core ETL framework, custom Spark plugins, demo drivers             |
+| `spark-submit` | TypeScript / Next.js 15 / Express / tsx      | DAG-resolving spark-submit CLI + UI + API (Livy / SQL / DBML)      |
 | `spark-dbt`    | Python / dbt / Hatch                         | dbt transformations for Spark/Fabric (jaffle-shop, adventureworks) |
 | `spark-python` | Python / PySpark / Marimo                    | Interactive PySpark notebooks and tooling                          |
 | `marquito`     | TypeScript / Next.js 15 / React 18           | Static OpenLineage data lineage visualization website              |
@@ -20,7 +21,18 @@ The Scala project has **3 SBT submodules** with strict dependency order:
 2. **common** — Shared traits, utilities, ETL framework, lineage extraction, Delta Log monitoring. Depends on commonExecutor.
 3. **sparkDemo** — Concrete driver applications and transformers. Depends on common.
 
-Driver classes extend `App with Logging` and are registered as aliases in `.scripts/run-spark-jobs.sh` (the `JOB_ALIASES` map). To add a new driver, create the class and add its alias entry to that script.
+Driver classes extend `App with Logging` and are registered as jobs in
+[`projects/spark-submit/config/spark-jobs.yaml`](../projects/spark-submit/config/spark-jobs.yaml).
+To add a new driver, create the class and add a job entry (with `module`, `class`,
+`category`, `description`, optional `dependsOn` and `sparkConfigSets`) to that YAML.
+
+### spark-submit internals
+
+`spark-submit` is the orchestration layer for spark-scala jobs — a DAG-resolving
+CLI plus a Next.js UI plus an Express API server. It depends on `spark-scala`'s
+JAR (the `run` target invokes `spark-scala:build-jar`), but `spark-scala` only
+depends on `spark-submit:install` so its Jest tests can use the CLI. The full
+contract lives in [`projects/spark-submit/README.md`](../projects/spark-submit/README.md).
 
 ### Key abstractions (spark-scala common)
 
@@ -57,7 +69,9 @@ sbt scalafmtAll
 npx nx run spark-scala:lint
 
 # Run a specific spark-submit job
-npx nx run spark-scala:run -- --JOB demo-etl
+npx nx run spark-submit:run --JOB=demo-etl
+# — or via the legacy spark-scala entry which now delegates to spark-submit:
+npx nx run spark-scala:run --JOB=demo-etl
 ```
 
 ### Integration tests (Jest, root level)

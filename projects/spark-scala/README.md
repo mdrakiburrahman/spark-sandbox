@@ -33,7 +33,7 @@ Open this folder you're currently in using the [spark.code-workspace](spark.code
 
 ![Import build](.imgs/metals-import-small.png)
 
-To build and run the spark jobs, run: `npx nx run run` - see [run-spark-jobs.sh](.scripts/run-spark-jobs.sh) to pick and choose what you'd like to run.
+To build and run the spark jobs, use the [`spark-submit`](../spark-submit/README.md) CLI/UI — e.g. `npx nx run spark-submit:run --JOB=demo-etl` for a single job, `npx nx run spark-submit:run --JOB=all` for the full DAG, or `npx nx run spark-submit:run-ui` for the visual DAG explorer. Aliases are defined in [`projects/spark-submit/config/spark-jobs.yaml`](../spark-submit/config/spark-jobs.yaml).
 
 ## 📚 Documentation
 
