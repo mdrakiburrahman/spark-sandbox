@@ -168,9 +168,12 @@ export class SparkSubmitCommandBuilder {
       cmd.push(...processedArgs);
     }
 
-    // Inline config (base64 encoded) - passed after other args
+    // Inline config (base64 encoded) - passed after other args.
+    // Variable substitution is applied so `{sparkScalaDir}` etc. resolve
+    // the same way they do inside `args[]`.
     if (job.inlineConfig) {
-      const base64Config = Buffer.from(job.inlineConfig).toString("base64");
+      const resolvedConfig = this.substituteVariables(job.inlineConfig);
+      const base64Config = Buffer.from(resolvedConfig).toString("base64");
       cmd.push(base64Config);
     }
 

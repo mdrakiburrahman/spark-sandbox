@@ -160,6 +160,45 @@ jobs:
     sparkConfigSets:
       - spark-scala-defaults
 
+  demo-reddit-ingestion:
+    module: spark-demo
+    class: me.rakirahman.sparkdemo.etl.drivers.demos.DemoRedditIngestion
+    category: demo
+    description: "Scrape posts + comment trees from a subreddit into reddit_db Delta tables"
+    sparkConfigSets:
+      - spark-scala-defaults
+    inlineConfig: |
+      DemoRedditIngestion:
+        Source:
+          Subreddit: "MicrosoftFabric"
+          ListingType: "top"
+          TimeWindow: "month"
+          Limit: 100
+          SkipComments: false
+        RedditApi:
+          BaseUrl: "https://oauth.reddit.com"
+          ListingPageSize: 100
+          ListingHardCap: 1000
+          CommentsLimit: 500
+          CommentsDepth: 10
+          CommentsSort: "top"
+          MoreChildrenBatch: 100
+          MaxRecursionDepth: 50
+          RequestTimeoutSeconds: 30
+          BaseSleepSeconds: 1.0
+          JitterMaxSeconds: 0.2
+        Retry:
+          MaxAttempts: 30
+          WaitMinSeconds: 2.0
+          WaitMaxSeconds: 60.0
+          WaitMultiplier: 2.0
+        Token:
+          FilePath: "{sparkScalaDir}/.temp/reddit.token"
+          ExitGracefulOnTokenExpiry: true
+        Destination:
+          Database: "reddit_db"
+          MergeSchema: true
+
   # ═══════════════════════════════════════════════════════════════════════════
   # Silver - structured ingestion
   # ═══════════════════════════════════════════════════════════════════════════
