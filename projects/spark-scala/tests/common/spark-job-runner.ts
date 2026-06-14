@@ -11,11 +11,11 @@ const SPARK_SUBMIT_DIR = resolve(SPARK_SCALA_DIR, "../spark-submit");
  * Replaces the legacy `.scripts/run-spark-jobs.sh` bash wrapper:
  *   - alias resolution lives in `projects/spark-submit/config/spark-jobs.yaml`
  *   - resource/configs are derived from `spark-demo/.../config-dev-devcontainer.yaml`
- *   - logs land under `projects/spark-submit/.logs/session-*/`
+ *   - logs land under `projects/spark-submit/.logs/session-<id>/`
  */
 export class SparkJobRunner {
   static runJob(alias: string, timeoutMs = 600_000): void {
-    console.log(`[SparkJobRunner] ▶ ${alias}`);
+    console.log(`[SparkJobRunner] > ${alias}`);
     const start = performance.now();
     execSync(`npx tsx index.ts --job=${alias} --no-dag`, {
       cwd: SPARK_SUBMIT_DIR,
