@@ -19,23 +19,27 @@
 
 1. Clone the repo, and open VSCode in it:
 
-    > ⚠️ Important: We use WSL in `~/` because Linux > Windows drive commits via `/mnt/c` is extremely slow for Spark I/O.
-    > You can technically run the Devcontainer using Windows Docker Desktop, but the I/O experience is slow and poor.
+   > ⚠️ Important: We use WSL in `~/` because Linux > Windows drive commits via `/mnt/c` is extremely slow for Spark I/O.
+   > You can technically run the Devcontainer using Windows Docker Desktop, but the I/O experience is slow and poor.
 
    ```bash
+   echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/$USER >/dev/null && sudo chmod 440 /etc/sudoers.d/$USER
+   sudo mkdir -p /workspaces
+   sudo chmod 777 /workspaces
+
    cd /workspaces
 
    read -p "Enter your name (e.g. 'FirstName LastName'): " user_name
    read -p "Enter your GitHub email (e.g. 'your-email@blah.com'): " user_email
    read -p "Enter the branch to switch to: (e.g. 'main') " branch_name
-    
+
    git clone https://github.com/mdrakiburrahman/spark-sandbox.git
 
    git config --global user.name "$user_name"
    git config --global user.email "$user_email"
    cd /workspaces/spark-sandbox/
    git pull origin
-   git checkout -b "$branch_name"
+   git checkout "$branch_name"
    code .
    ```
 
@@ -52,4 +56,11 @@
    cd /workspaces/spark-sandbox
    HEX=$(printf '%s' "$(wslpath -w .)" | xxd -ps -c 256)
    code --folder-uri "vscode-remote://dev-container+${HEX}/workspaces/spark-sandbox"
+   ```
+
+1. Install recommended developer tooling (optional):
+
+   ```bash
+   curl -fsSL https://gh.io/copilot-install | bash
+   $HOME/.local/bin/copilot --yolo
    ```

@@ -17,7 +17,7 @@ env:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: [self-hosted, spark-sandbox-azure]
     container:
       image: rakirahman.azurecr.io/devcontainer/spark:2d6281b13738c8576a232df9a708f5c083820105d8d3f6d4696c28aa99bb091e
       options: >-

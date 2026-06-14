@@ -15,7 +15,7 @@ authors = [
 dependencies = [
   "click>=8.1.0",
   "fabric-cicd==1.0.0",
-  "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@main",
+  "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@eb3c77f",
 ]
 
 [project.scripts]

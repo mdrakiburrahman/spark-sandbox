@@ -1,0 +1,33 @@
+{
+  "name": "github-runner",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "init": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "projects/infra/github-runner",
+        "commands": [".scripts/get-pkgs.sh"],
+        "parallel": false
+      }
+    },
+    "apply": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["init"],
+      "options": {
+        "cwd": "projects/infra/github-runner",
+        "commands": [".scripts/deploy-gh-runner.sh apply"],
+        "parallel": false
+      }
+    },
+    "destroy": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["init"],
+      "options": {
+        "cwd": "projects/infra/github-runner",
+        "commands": [".scripts/deploy-gh-runner.sh destroy"],
+        "parallel": false
+      }
+    }
+  }
+}

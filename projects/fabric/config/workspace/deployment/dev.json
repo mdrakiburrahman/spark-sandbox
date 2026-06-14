@@ -146,8 +146,7 @@
             ],
             "generator": {
               "monitoring": []
-            },
-            "restartPipelinesPostDeployment": false
+            }
           },
           "capacity": {
             "name": "sandbox{unique-env-id}",
@@ -169,7 +168,8 @@
             "purgeUnmatchedRoleAssignments": true,
             "universalSecurity": {
               "sqlEndpoint": {
-                "enabled": false
+                "enabled": false,
+                "skipReconcile": []
               }
             },
             "workspace": [
