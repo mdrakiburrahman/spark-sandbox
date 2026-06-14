@@ -1,0 +1,35 @@
+{
+  "properties": {
+    "concurrency": 1,
+    "activities": [
+      {
+        "name": "Reddit Ingestion",
+        "description": "Ingests data from Reddit API and stores it in the lakehouse.",
+        "type": "FabricSparkJobDefinition",
+        "typeProperties": {
+          "sparkJobDefinitionId": "c6d24dcf-ff26-4f48-b89a-16c2919d4c48",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "mainClass": "me.rakirahman.sparkdemo.etl.drivers.demos.DemoRedditIngestion",
+          "commandLineArguments": "Files/onelake/configs/sparkDemo-fabric.yaml RGVtb1JlZGRpdEluZ2VzdGlvbjoKICBTb3VyY2U6CiAgICBTdWJyZWRkaXQ6ICJNaWNyb3NvZnRGYWJyaWMiCiAgICBMaXN0aW5nVHlwZTogInRvcCIKICAgIFRpbWVXaW5kb3c6ICJtb250aCIKICAgIExpbWl0OiAxMDAKICAgIFNraXBDb21tZW50czogZmFsc2UKICBSZWRkaXRBcGk6CiAgICBCYXNlVXJsOiAiaHR0cHM6Ly9vYXV0aC5yZWRkaXQuY29tIgogICAgTGlzdGluZ1BhZ2VTaXplOiAxMDAKICAgIExpc3RpbmdIYXJkQ2FwOiAxMDAwCiAgICBDb21tZW50c0xpbWl0OiA1MDAKICAgIENvbW1lbnRzRGVwdGg6IDEwCiAgICBDb21tZW50c1NvcnQ6ICJ0b3AiCiAgICBNb3JlQ2hpbGRyZW5CYXRjaDogMTAwCiAgICBNYXhSZWN1cnNpb25EZXB0aDogNTAKICAgIFJlcXVlc3RUaW1lb3V0U2Vjb25kczogMzAKICAgIEJhc2VTbGVlcFNlY29uZHM6IDEuMAogICAgSml0dGVyTWF4U2Vjb25kczogMC4yCiAgUmV0cnk6CiAgICBNYXhBdHRlbXB0czogMzAKICAgIFdhaXRNaW5TZWNvbmRzOiAyLjAKICAgIFdhaXRNYXhTZWNvbmRzOiA2MC4wCiAgICBXYWl0TXVsdGlwbGllcjogMi4wCiAgVG9rZW46CiAgICBGaWxlUGF0aDogIkZpbGVzL29uZWxha2Uvc2VjcmV0L3JlZGRpdC50b2tlbiIKICAgIEV4aXRHcmFjZWZ1bE9uVG9rZW5FeHBpcnk6IHRydWUKICBEZXN0aW5hdGlvbjoKICAgIERhdGFiYXNlOiAicmVkZGl0X2RiIgogICAgTWVyZ2VTY2hlbWE6IHRydWU=",
+          "environment": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "f704ad90-bc71-447f-abb7-69a0716a00d2"
+          },
+          "defaultLakehouse": {
+            "workspaceId": "00000000-0000-0000-0000-000000000000",
+            "artifactId": "31f07b32-aae8-45fc-ac1b-cfad163182f5"
+          },
+          "additionalLakehouses": []
+        },
+        "policy": {
+          "timeout": "0.12:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "dependsOn": []
+      }
+    ]
+  }
+}
