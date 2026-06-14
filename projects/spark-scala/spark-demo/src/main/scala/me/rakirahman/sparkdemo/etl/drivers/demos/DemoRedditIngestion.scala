@@ -142,77 +142,25 @@ object DemoRedditIngestion extends App with Logging {
 
   logHeader()
 
-  private val tokenLoader = RedditTokenLoader(envConfig)
-  private val envelope: RedditTokenEnvelope = tokenLoader.load(cfg.Token.FilePath) match {
-    case Right(env) =>
-      logInfo(s"Reddit token loaded. Expires in ${env.secondsRemaining()}s (epoch=${env.expiresAtEpochSeconds}).")
-      env
-    case Left(failure) =>
-      if (cfg.Token.ExitGracefulOnTokenExpiry) {
-        logWarning(s"Reddit token unavailable (${failure.message}); ExitGracefulOnTokenExpiry=true — exiting cleanly without any HTTP traffic.")
-        sys.exit(0)
-      } else {
-        logError(s"Reddit token unavailable (${failure.message}); ExitGracefulOnTokenExpiry=false — failing the driver.")
-        sys.exit(1)
-      }
-  }
-
   val spark = SparkSessionManager(envConfig).session
   val sqlMetastoreOperations = SqlMetastoreOperations(spark)
   sqlMetastoreOperations.createDatabase(cfg.Destination.Database)
 
-  writeMicrosoftEmployeesSeed()
+  private val tokenLoader = RedditTokenLoader(envConfig)
+  tokenLoader.load(cfg.Token.FilePath) match {
+    case Right(env) =>
+      logInfo(s"Reddit token loaded. Expires in ${env.secondsRemaining()}s (epoch=${env.expiresAtEpochSeconds}).")
+      writeMicrosoftEmployeesSeed()
+      runRedditIngestion(env)
+    case Left(failure) =>
+      if (cfg.Token.ExitGracefulOnTokenExpiry) {
+        logWarning(s"Reddit token unavailable (${failure.message}); ExitGracefulOnTokenExpiry=true — skipping Reddit work without any HTTP traffic.")
+      } else {
+        logError(s"Reddit token unavailable (${failure.message}); ExitGracefulOnTokenExpiry=false — failing the driver.")
+        throw new RuntimeException(s"Reddit token unavailable: ${failure.message}")
+      }
+  }
 
-  private val client = new RedditRestClient(
-    envelope = envelope,
-    baseUrl = cfg.RedditApi.BaseUrl,
-    listingPageSize = cfg.RedditApi.ListingPageSize,
-    listingHardCap = cfg.RedditApi.ListingHardCap,
-    commentsLimit = cfg.RedditApi.CommentsLimit,
-    commentsDepth = cfg.RedditApi.CommentsDepth,
-    commentsSort = cfg.RedditApi.CommentsSort,
-    moreChildrenBatch = cfg.RedditApi.MoreChildrenBatch,
-    requestTimeoutSeconds = cfg.RedditApi.RequestTimeoutSeconds,
-    baseSleepSeconds = cfg.RedditApi.BaseSleepSeconds,
-    jitterMaxSeconds = cfg.RedditApi.JitterMaxSeconds,
-    retryMaxAttempts = cfg.Retry.MaxAttempts,
-    retryWaitMinSeconds = cfg.Retry.WaitMinSeconds,
-    retryWaitMaxSeconds = cfg.Retry.WaitMaxSeconds,
-    retryWaitMultiplier = cfg.Retry.WaitMultiplier
-  )
-
-  private val fetchRunId = System.currentTimeMillis()
-
-  private val loader = RedditIngestionLoader(
-    spark = spark,
-    client = client,
-    subreddit = cfg.Source.Subreddit,
-    listingType = listingType,
-    timeWindow = timeWindow,
-    limit = cfg.Source.Limit,
-    skipComments = cfg.Source.SkipComments,
-    maxRecursionDepth = cfg.RedditApi.MaxRecursionDepth,
-    fetchRunId = fetchRunId
-  )
-
-  private val parsedRaw: DataFrame = loader.load()
-  parsedRaw.persist()
-  val rawCount = parsedRaw.count()
-  logInfo(s"Materialized $rawCount raw Reddit rows in fetchRunId=$fetchRunId")
-
-  private val transformer = loader.transformer
-  private val result = RedditIngestionResult(
-    posts = transformer.extractPosts(parsedRaw),
-    comments = transformer.extractComments(parsedRaw),
-    authors = transformer.extractAuthors(parsedRaw),
-    subreddits = transformer.extractSubreddits(parsedRaw),
-    fetchRuns = transformer.extractFetchRuns(spark, loader.reader.bookkeeping)
-  )
-
-  writeAll(result)
-  parsedRaw.unpersist()
-
-  logInfo(s"DemoRedditIngestion complete: subreddit=${cfg.Source.Subreddit} listing=$listingType posts=${loader.reader.bookkeeping.postsIngested} comments=${loader.reader.bookkeeping.commentsIngested} moreCalls=${client.moreCallCount}")
   spark.stop()
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -243,6 +191,59 @@ object DemoRedditIngestion extends App with Logging {
       .mode("overwrite")
       .option("overwriteSchema", "true")
       .saveAsTable(fqn)
+  }
+
+  private def runRedditIngestion(envelope: RedditTokenEnvelope): Unit = {
+    val client = new RedditRestClient(
+      envelope = envelope,
+      baseUrl = cfg.RedditApi.BaseUrl,
+      listingPageSize = cfg.RedditApi.ListingPageSize,
+      listingHardCap = cfg.RedditApi.ListingHardCap,
+      commentsLimit = cfg.RedditApi.CommentsLimit,
+      commentsDepth = cfg.RedditApi.CommentsDepth,
+      commentsSort = cfg.RedditApi.CommentsSort,
+      moreChildrenBatch = cfg.RedditApi.MoreChildrenBatch,
+      requestTimeoutSeconds = cfg.RedditApi.RequestTimeoutSeconds,
+      baseSleepSeconds = cfg.RedditApi.BaseSleepSeconds,
+      jitterMaxSeconds = cfg.RedditApi.JitterMaxSeconds,
+      retryMaxAttempts = cfg.Retry.MaxAttempts,
+      retryWaitMinSeconds = cfg.Retry.WaitMinSeconds,
+      retryWaitMaxSeconds = cfg.Retry.WaitMaxSeconds,
+      retryWaitMultiplier = cfg.Retry.WaitMultiplier
+    )
+
+    val fetchRunId = System.currentTimeMillis()
+
+    val loader = RedditIngestionLoader(
+      spark = spark,
+      client = client,
+      subreddit = cfg.Source.Subreddit,
+      listingType = listingType,
+      timeWindow = timeWindow,
+      limit = cfg.Source.Limit,
+      skipComments = cfg.Source.SkipComments,
+      maxRecursionDepth = cfg.RedditApi.MaxRecursionDepth,
+      fetchRunId = fetchRunId
+    )
+
+    val parsedRaw: DataFrame = loader.load()
+    parsedRaw.persist()
+    val rawCount = parsedRaw.count()
+    logInfo(s"Materialized $rawCount raw Reddit rows in fetchRunId=$fetchRunId")
+
+    val transformer = loader.transformer
+    val result = RedditIngestionResult(
+      posts = transformer.extractPosts(parsedRaw),
+      comments = transformer.extractComments(parsedRaw),
+      authors = transformer.extractAuthors(parsedRaw),
+      subreddits = transformer.extractSubreddits(parsedRaw),
+      fetchRuns = transformer.extractFetchRuns(spark, loader.reader.bookkeeping)
+    )
+
+    writeAll(result)
+    parsedRaw.unpersist()
+
+    logInfo(s"DemoRedditIngestion complete: subreddit=${cfg.Source.Subreddit} listing=$listingType posts=${loader.reader.bookkeeping.postsIngested} comments=${loader.reader.bookkeeping.commentsIngested} moreCalls=${client.moreCallCount}")
   }
 
   private def writeAll(r: RedditIngestionResult): Unit = {
