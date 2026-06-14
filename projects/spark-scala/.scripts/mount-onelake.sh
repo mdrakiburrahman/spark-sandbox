@@ -79,7 +79,7 @@ process_lakehouses() {
     exit 1
   fi
 
-  tail -n +2 "${CSV_FILE}" | while IFS=',' read -r lakehouse_name lakehouse_guid folder_to_mount; do
+  tail -n +2 "${CSV_FILE}" | while IFS=',' read -r lakehouse_name lakehouse_guid folder_to_mount || [[ -n "$lakehouse_name" ]]; do
     lakehouse_name=$(echo "$lakehouse_name" | xargs)
     lakehouse_guid=$(echo "$lakehouse_guid" | xargs)
     folder_to_mount=$(echo "$folder_to_mount" | xargs)
@@ -114,7 +114,7 @@ case "$ACTION" in
     process_lakehouses "mount"
     echo ""
     echo "Displaying mounted lakehouses..."
-    tail -n +2 "${CSV_FILE}" | while IFS=',' read -r lakehouse_name lakehouse_guid folder_to_mount; do
+    tail -n +2 "${CSV_FILE}" | while IFS=',' read -r lakehouse_name lakehouse_guid folder_to_mount || [[ -n "$lakehouse_name" ]]; do
       lakehouse_name=$(echo "$lakehouse_name" | xargs)
       [[ -n "$lakehouse_name" ]] && show_tree "$lakehouse_name"
     done

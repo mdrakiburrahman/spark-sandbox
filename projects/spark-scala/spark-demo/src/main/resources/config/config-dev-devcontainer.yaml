@@ -38,6 +38,9 @@ DeltaMountDriver:
     - Database: data_ops_inventory_db_prod
       RootPath: "file:///tmp/.mnt/onelake/data_ops_inventory_db"
 
+    - Database: reddit_db_prod
+      RootPath: "file:///tmp/.mnt/onelake/reddit_db"
+
 # Local secret store
 #
 secret:
