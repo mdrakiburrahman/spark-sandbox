@@ -1,0 +1,18 @@
+# Node
+node_modules/
+
+# Build outputs
+dist/
+.next/
+*.tsbuildinfo
+.cache/
+
+# Logs
+.logs/
+*.log
+
+# Spark working dirs
+.temp/
+spark-warehouse/
+metastore_db/
+derby.log

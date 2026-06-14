@@ -127,17 +127,21 @@
     "run": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["build-jar", "metastore-up", "pre-cache-ivy"],
+      "dependsOn": [
+        "build-jar",
+        "metastore-up",
+        { "target": "install", "projects": ["spark-submit"] }
+      ],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
       },
       "options": {
-        "cwd": "projects/spark-scala",
+        "cwd": "projects/spark-submit",
         "JOB": "all",
         "commands": [
           {
-            "command": ".scripts/run-spark-jobs.sh {args.JOB}",
+            "command": "npx tsx index.ts --job={args.JOB}",
             "forwardAllArgs": false
           }
         ]
@@ -156,7 +160,7 @@
         "build-jar",
         "metastore-up",
         "mount-onelake",
-        "pre-cache-ivy"
+        { "target": "install", "projects": ["spark-submit"] }
       ],
       "executor": "nx:run-commands",
       "options": {
@@ -248,7 +252,10 @@
     "init": {
       "cache": false,
       "executor": "nx:run-commands",
-      "dependsOn": ["metastore-up", "pre-cache-ivy"],
+      "dependsOn": [
+        "metastore-up",
+        { "target": "install", "projects": ["spark-submit"] }
+      ],
       "defaultConfiguration": "dev",
       "configurations": {
         "dev": {}
@@ -257,7 +264,7 @@
         "cwd": "projects/spark-scala",
         "commands": [
           "npx nx run spark-scala:mount-onelake --verbose --output-style=stream",
-          "npx nx run spark-scala:run --JOB='delta-mount' --verbose --output-style=stream"
+          "npx nx run spark-submit:run --JOB='delta-mount' --verbose --output-style=stream"
         ],
         "parallel": false
       }
@@ -279,15 +286,6 @@
         "commands": [
           "docker compose -f ../../docker/Compose.sqlserver.metastore.yaml down --volumes --remove-orphans"
         ]
-      }
-    },
-    "pre-cache-ivy": {
-      "cache": false,
-      "executor": "nx:run-commands",
-      "options": {
-        "cwd": "projects/spark-scala",
-        "commands": [".scripts/pre-cache-ivy.sh"],
-        "parallel": false
       }
     }
   }
