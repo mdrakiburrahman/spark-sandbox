@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Lakehouse",
+    "displayName": "reddit_db",
+    "description": ""
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "31f07b32-aae8-45fc-ac1b-cfad163182f5"
+  }
+}

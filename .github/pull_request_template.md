@@ -23,3 +23,10 @@ Describe how the change works.
 # Test
 
 - What tests have been run? Please describe any verification steps you used.
+
+# Checklist
+
+Applies to all PRs:
+
+- [ ] Pull Request Title follows [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/): '<type>(optional scope): <verb> <noun> <why>' (for example `feat(opentelemetry): Add support for user-assigned managed identity to support Azure VMs`)
+- [ ] Linting - ran `npx nx affected --base=origin/main -t lint --configuration=ci --verbose` locally to ensure GCI does not fail on untracked files

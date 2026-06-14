@@ -16,9 +16,6 @@
       "path": "fabric",
     },
     {
-      "path": "marquito",
-    },
-    {
       "path": "spark-dbt",
     },
     {
@@ -26,6 +23,9 @@
     },
     {
       "path": "spark-python",
+    },
+    {
+      "path": "spark-submit",
     },
   ],
   "settings": {

@@ -1,2 +1,3 @@
 lakehouse_name,lakehouse_guid,folder_to_mount
 data_ops_inventory_db,4d8783be-e822-46d0-82e4-9b77c7f33992,Tables
+reddit_db,940ec0ed-a0d2-471b-8341-4f5766bd0b8f,Tables

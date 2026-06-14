@@ -19,6 +19,7 @@ path = ".venv"
 skip-install = true
 installer = "uv"
 dependencies = [
+  "dbt-core>=1.9,<2",
   "dbt-fabricspark @ https://rakirahman.blob.core.windows.net/public/whls/dbt_fabricspark-1.9.5-py3-none-any.whl",
   "azure-identity>=1.21.0",
   "azure-core>=1.33.0",

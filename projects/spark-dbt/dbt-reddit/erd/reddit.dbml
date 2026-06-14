@@ -1,0 +1,220 @@
+// ============================================================
+// dbt-reddit — Kimball STAR Schema Design
+//
+// Authored by the kimball-dbml skill. This is the design spec.
+//
+// Source: reddit_db (6 Delta tables — authors, comments,
+//   fetch_runs, microsoft_employees, posts, subreddits). Snapshot of
+//   r/MicrosoftFabric, 'top'-of-month listing, fetched 2026-06-14.
+//
+// Business questions answered:
+//   Q1: Which Fabric workloads and features get the most traffic?
+//       → fct_post + fct_comment, grouped by dim_post_flair.flair_text
+//   Q2: Which Product Managers respond to which feature areas?
+//       → fct_comment + dim_author (filter is_product_manager) × dim_post_flair
+//   Q3: Which non-Microsoft employees talk most about what feature areas?
+//       → fct_comment + dim_author (filter NOT is_microsoft_employee) × dim_post_flair
+//   Q4: What is the mean-time-to-respond?
+//       → fct_post + fct_comment on post_key; AVG(MIN(comment.created)-post.created)
+//
+// Bonus use cases ("for free" on this STAR):
+//   B1: MSFT vs Community engagement share (66.5% / 33.5% on this snapshot)
+//   B2: Which MSFT departments drive Reddit engagement (Power BI CAT ≈ 50%)
+//   B3: Day-of-week / hour-of-day posting rhythm
+//   B4: Unanswered posts surfaced by flair
+//   B5: Top viral posts drill-through (title + flair + score + num_comments)
+//
+// Conventions (see ../../.github/skills/kimball-dbml/KIMBALL_GUIDELINES.md):
+//   - snake_case everywhere
+//   - {{META:NATURAL_KEY}} marks the source-system business identifier
+//   - {{META:SCD2}}        marks attributes tracked over time (none in this design — all dims SCD0/SCD1)
+//   - {{META:ROLE_PLAYED}} marks a FK that plays multiple roles for the same dim
+//   - {{META:DEGENERATE}}  marks a degenerate dimension on a fact
+//   - Every dim has an unknown-member row at <entity>_key = -1
+//
+// Render: paste into https://dbdiagram.io to see the ERD.
+// Docs:   https://dbml.dbdiagram.io/docs/
+// ============================================================
+
+// ============================================================
+// Conformed Dimensions
+// (shared across multiple facts — keep at top)
+// ============================================================
+
+Table dim_date {
+    Note: 'One row per calendar date. SCD0 (immutable). Unknown member at date_key = -1. Seeded via dbt_date.get_date_dimension covering the fetch_run date range (>= 2026-05-16). Drives B3 (day-of-week rhythm) and all temporal slicing.'
+    date_key           varchar [primary key, note: '{{META:NATURAL_KEY}} yyyymmdd as a string']
+    date               date
+    day                integer
+    day_of_week        integer
+    day_of_week_name   varchar
+    day_of_month       integer
+    day_of_year        integer
+    week_of_year       integer
+    iso_week_of_year   integer
+    month              integer
+    month_name         varchar
+    quarter            integer
+    quarter_name       varchar
+    year               integer
+    first_day_of_month date
+    last_day_of_month  date
+    first_day_of_year  date
+    last_day_of_year   date
+    is_weekend         bool
+}
+
+Table dim_author {
+    Note: 'One row per Reddit author. SCD1 (no observed descriptive drift in the source snapshot — author name/MSFT-status treated as current-state). Joined to microsoft_employees via LOWER(authors.name) = LOWER(microsoft_employees.username) — case-insensitive match yields 42 active MSFT authors (vs 25 case-sensitive). Unknown member at author_key = -1 captures `[deleted]` ghost rows. Drives Q2, Q3, B1 (MSFT vs Community share), B2 (MSFT department breakdown).'
+    author_key             varchar [primary key]
+    author_natural_id      varchar [not null, note: '{{META:NATURAL_KEY}} Reddit t2_* id from authors.id']
+    author_name            varchar [note: 'Reddit username (case-preserved). Use for display.']
+    is_deleted             bool    [note: 'True iff the source author row is `[deleted]`. Unknown-member row sets this true with author_key=-1.']
+    is_microsoft_employee  bool    [note: 'Derived: TRUE iff LOWER(author_name) matches LOWER(microsoft_employees.username). Drives Q3 and B1.']
+    msft_username          varchar [note: 'Source-of-truth Microsoft username from microsoft_employees lookup. NULL for non-MSFT.']
+    msft_job_title         varchar [note: 'Microsoft job title (e.g. PRINCIPAL PRODUCT MANAGER). NULL for non-MSFT.']
+    msft_department        varchar [note: 'Microsoft department (e.g. Power BI CAT_c). NULL for non-MSFT. Drives B2.']
+    is_product_manager     bool    [note: 'Derived: LOWER(msft_job_title) LIKE %product manager%. Drives Q2.']
+    fetched_at             timestamp [note: 'Most-recent observation timestamp from authors.fetched_at.']
+}
+
+Table dim_subreddit {
+    Note: 'One row per subreddit. SCD1. Single-row today (r/MicrosoftFabric) but designed for extensibility — future fetch_runs can target additional subreddits. Unknown member at subreddit_key = -1.'
+    subreddit_key         varchar [primary key]
+    subreddit_natural_id  varchar [not null, note: '{{META:NATURAL_KEY}} Reddit t5_* id from subreddits.id']
+    display_name          varchar [note: 'Human-readable subreddit name (e.g. MicrosoftFabric).']
+    subscribers           integer [note: 'Subscriber count at last fetch. Non-additive snapshot value — use the latest dim row.']
+    fetched_at            timestamp
+}
+
+Table dim_post_flair {
+    Note: 'One row per Reddit post flair (the "feature area" facet). SCD0 lookup with ~15 known values + (Uncategorized) for null. Drives Q1, Q2, Q3, and Q4-by-area slicing. Unknown member at post_flair_key = -1.'
+    post_flair_key  varchar [primary key]
+    flair_text      varchar [not null, note: '{{META:NATURAL_KEY}} The raw flair label (e.g. Data Engineering, Community Share, Discussion). NULL flairs are normalized to (Uncategorized).']
+    flair_category  varchar [note: 'Optional grouping of flair_text into broader buckets (e.g. Community Share + Discussion + Community Request -> Community; Data Engineering + Data Factory + Data Warehouse -> Data Workloads). Populated by a stg-layer CASE expression.']
+}
+
+// ============================================================
+// Local Dimensions
+// (specific to one or two facts)
+// ============================================================
+
+Table dim_post {
+    Note: 'One row per Reddit post. SCD1 (descriptive attributes treated as current-state — engagement metrics like score/num_comments live on fct_post as snapshot measures). The post is BOTH an entity (referenced by every comment) and an event (created_utc). dim_post holds the descriptive attributes; fct_post holds the per-fetch snapshot measures. Unknown member at post_key = -1.'
+    post_key             varchar [primary key]
+    post_natural_id      varchar [not null, note: '{{META:NATURAL_KEY}} Reddit t3_* id from posts.id']
+    short_id             varchar [note: 'Short permalink id (e.g. 1u19ar3).']
+    title                varchar [note: 'Post title. Drives B5 (top viral posts drill-through).']
+    selftext             varchar [note: 'Body text of a self-post. NULL/empty for link-posts.']
+    url                  varchar [note: 'Link URL (for link-posts) or permalink (for self-posts).']
+    permalink            varchar [note: 'Canonical /r/<sub>/comments/<id>/<slug>/ path.']
+    is_self              bool    [note: 'True iff is_self=True in source (text post vs link post). 79% of snapshot rows are self-posts.']
+    over_18              bool
+    posted_at            timestamp [note: 'Post creation timestamp (created_utc from source).']
+    posted_date_key      varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — date the post was created.']
+    author_key           varchar [not null, note: 'FK to dim_author — original post author. Use INNER JOIN; unknown maps to -1.']
+    subreddit_key        varchar [not null, note: 'FK to dim_subreddit.']
+    post_flair_key       varchar [not null, note: 'FK to dim_post_flair — null flair resolves to the (Uncategorized) member.']
+}
+
+Table dim_fetch_run {
+    Note: 'One row per Reddit ingestion run (the operational context of when/how data was pulled from the Reddit API). SCD0 — runs are immutable after they finish. Required so fct_post can carry the periodic-snapshot grain (post, fetch_run). Unknown member at fetch_run_key = -1.'
+    fetch_run_key      varchar [primary key]
+    run_natural_id     bigint  [not null, note: '{{META:NATURAL_KEY}} fetch_runs.run_id (epoch-millis-based bigint).']
+    subreddit          varchar [note: 'Target subreddit for this run (display_name).']
+    listing_type       varchar [note: 'Reddit listing (top, hot, new, rising, controversial).']
+    time_window        varchar [note: 'Reddit time window (hour, day, week, month, year, all).']
+    limit_requested    integer
+    skip_comments      bool
+    started_at         timestamp
+    finished_at        timestamp
+    posts_ingested     integer
+    comments_ingested  integer
+    more_calls         bigint   [note: 'Number of /api/morechildren calls issued to expand truncated comment trees.']
+    subreddits_seen    integer
+    authors_seen       integer
+}
+
+// ============================================================
+// Facts
+// (one block per fact table — document grain in the Note)
+// ============================================================
+
+Table fct_post {
+    Note: 'GRAIN: one row per (post, fetch_run). Type: PERIODIC SNAPSHOT. The current source has 1 fetch_run, so today it materializes as 1 row per post (100 rows). Subsequent re-fetches will append snapshots so score / upvote_ratio / num_comments can be tracked over time without violating grain. Additivity: post_count is fully additive across any dim combination ("posts created in period"); score, upvote_ratio, num_comments are NON-ADDITIVE across the fetch_run dim — filter to a specific fetch_run (or use latest via fetch_run_key = (SELECT MAX(...))) before aggregating.'
+    fct_post_key       varchar [primary key]
+    post_key           varchar [not null, note: 'FK to dim_post.']
+    author_key         varchar [not null, note: 'FK to dim_author — original post author (denormalized from dim_post for query convenience).']
+    subreddit_key      varchar [not null, note: 'FK to dim_subreddit.']
+    post_flair_key     varchar [not null, note: 'FK to dim_post_flair — drives Q1 (traffic by feature area).']
+    posted_date_key    varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — when the post was authored on Reddit.']
+    fetched_date_key   varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — when this snapshot was ingested.']
+    fetch_run_key      varchar [not null, note: 'FK to dim_fetch_run — part of the grain. Filter to one fetch_run before aggregating non-additive measures.']
+    post_natural_id    varchar [note: '{{META:DEGENERATE}} Reddit t3_* id; kept on the fact for ad-hoc joins / debugging.']
+    score              integer [note: 'Reddit upvotes - downvotes at snapshot time. Additivity: NON-ADDITIVE across fetch_run; use latest snapshot per post.']
+    upvote_ratio       decimal [note: 'Fraction of upvotes (0.0-1.0) at snapshot time. Additivity: NON-ADDITIVE (ratio) — use AVG within a single fetch_run.']
+    num_comments       integer [note: 'Comment count reported by Reddit at snapshot time. Additivity: NON-ADDITIVE across fetch_run; use latest snapshot. (For exact volume use COUNT(*) on fct_comment.)']
+    post_count         integer [note: 'Constant 1. Additivity: FULLY ADDITIVE. SUM(post_count) gives "posts created" totals across any dim filter.']
+}
+
+Table fct_comment {
+    Note: 'GRAIN: one row per Reddit comment. Type: TRANSACTION. Source has 1,738 comments. Additivity: comment_count is fully additive; score is semi-additive (snapshot of net karma at fetch time); duration measures (e.g. time_to_first_response) are non-additive — use AVG / MEDIAN. Drives Q2 (PM responses by feature area), Q3 (non-MSFT voice), Q4 (MTTR), and B1/B2/B3.'
+    fct_comment_key            varchar [primary key]
+    post_key                   varchar [not null, note: 'FK to dim_post — the post this comment is on (resolved from comments.post_id, always t3_*).']
+    author_key                 varchar [not null, note: 'FK to dim_author — comment author. Drives Q2 (PMs) and Q3 (community).']
+    subreddit_key              varchar [not null, note: 'FK to dim_subreddit (denormalized from dim_post for query convenience).']
+    post_flair_key             varchar [not null, note: 'FK to dim_post_flair (denormalized from dim_post — every comment inherits its parent post flair for direct feature-area filtering).']
+    commented_date_key         varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — when the comment was created (created_utc).']
+    edited_date_key            varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — when the comment was last edited (edited_utc; resolves to -1 for the ~94% of comments that were never edited).']
+    fetched_date_key           varchar [not null, note: '{{META:ROLE_PLAYED}} FK to dim_date — when this comment row was ingested.']
+    fetch_run_key              varchar [not null, note: 'FK to dim_fetch_run — operational context.']
+    comment_natural_id         varchar [note: '{{META:DEGENERATE}} Reddit t1_* id from comments.id.']
+    parent_id                  varchar [note: '{{META:DEGENERATE}} Raw Reddit parent reference. t3_* prefix = direct reply to a post (99% of cases); t1_* prefix = reply to another comment (16 rows). Self-references to fct_comment are sparse enough that a recursive dim is not warranted.']
+    is_reply_to_post           bool    [note: 'Derived: parent_id LIKE \'t3_%\'. True for top-level comments.']
+    is_reply_to_comment        bool    [note: 'Derived: parent_id LIKE \'t1_%\'. True for nested replies.']
+    depth                      integer [note: 'Reddit thread depth (0 = top-level). Max observed = 9.']
+    is_submitter               bool    [note: 'True iff the comment author is the post author (OP).']
+    stickied                   bool
+    commented_at               timestamp [note: 'Comment creation timestamp; used to compute time_to_first_response per post in Q4.']
+    edited_at                  timestamp [note: 'NULL for un-edited comments.']
+    score                      integer [note: 'Net karma at snapshot time. Additivity: SEMI-ADDITIVE — safe to SUM as "total karma earned" but value is snapshotted; non-additive across re-fetches.']
+    comment_count              integer [note: 'Constant 1. Additivity: FULLY ADDITIVE. SUM(comment_count) = volume.']
+}
+
+// ============================================================
+// Bridge Tables
+// (resolve many-to-many between two dims)
+// ============================================================
+
+// No bridges. All entity relationships in this source are 1:N
+// (post→author, comment→post, comment→author, post→subreddit).
+
+// ============================================================
+// References
+// (Read "A.col < B.col" as: A is the parent (1) — B is the child (many))
+// ============================================================
+
+// dim_post FKs (within the dim layer)
+Ref: dim_date.date_key      < dim_post.posted_date_key
+Ref: dim_author.author_key  < dim_post.author_key
+Ref: dim_subreddit.subreddit_key < dim_post.subreddit_key
+Ref: dim_post_flair.post_flair_key < dim_post.post_flair_key
+
+// fct_post FKs
+Ref: dim_post.post_key             < fct_post.post_key
+Ref: dim_author.author_key         < fct_post.author_key
+Ref: dim_subreddit.subreddit_key   < fct_post.subreddit_key
+Ref: dim_post_flair.post_flair_key < fct_post.post_flair_key
+Ref: dim_date.date_key             < fct_post.posted_date_key
+Ref: dim_date.date_key             < fct_post.fetched_date_key
+Ref: dim_fetch_run.fetch_run_key   < fct_post.fetch_run_key
+
+// fct_comment FKs
+Ref: dim_post.post_key             < fct_comment.post_key
+Ref: dim_author.author_key         < fct_comment.author_key
+Ref: dim_subreddit.subreddit_key   < fct_comment.subreddit_key
+Ref: dim_post_flair.post_flair_key < fct_comment.post_flair_key
+Ref: dim_date.date_key             < fct_comment.commented_date_key
+Ref: dim_date.date_key             < fct_comment.edited_date_key
+Ref: dim_date.date_key             < fct_comment.fetched_date_key
+Ref: dim_fetch_run.fetch_run_key   < fct_comment.fetch_run_key
