@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Notebook",
+    "displayName": "_reddit_db_gold_validate"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "b91efcc6-b12b-be4d-4d82-113b29c6e45d"
+  }
+}
