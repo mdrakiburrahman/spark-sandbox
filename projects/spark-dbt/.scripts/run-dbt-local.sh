@@ -38,7 +38,16 @@ cd "${DBT_PROJECT}"
 
 export DBT_PROFILES_DIR=$(pwd)
 export DBT_DEBUG="${DBT_DEBUG:-false}"
-FULL_REFRESH="${FULL_REFRESH:-0}"
+
+# In CI (self-hosted runners share a persisted Hive metastore but the workspace
+# is ephemeral), default to a full refresh so incrementals + snapshots rebuild
+# from scratch and we don't trip over stale catalog entries that point to
+# already-cleaned-up Delta paths. Locally, default remains incremental.
+if [[ "${IS_GH_ACTION:-0}" == "1" ]]; then
+    FULL_REFRESH="${FULL_REFRESH:-1}"
+else
+    FULL_REFRESH="${FULL_REFRESH:-0}"
+fi
 
 FULL_REFRESH_FLAG=""
 if [[ "${FULL_REFRESH}" == "1" ]]; then
