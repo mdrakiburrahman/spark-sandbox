@@ -13,7 +13,7 @@ These are the conventions and architecture facts that apply to **every** change 
 projects/spark-dbt/
 ├── README.md                     # devbox bootstrap, hatch shell, nx targets
 ├── pyproject.toml                # hatch venv; pinned dbt-fabricspark==1.9.5 (uv installer)
-├── project.json                  # nx targets: clean, install, init, run, package, compile, test
+├── project.json                  # nx root: clean, install, init, run, package, compile, lint
 ├── .scripts/
 │   ├── run-dbt-local.sh          # one-project loop: debug → deps → seed → build → cleanup → docs
 │   ├── package-fabric.sh         # packages all dbt projects into a Fabric deploy bundle
@@ -26,7 +26,7 @@ projects/spark-dbt/
 └── dbt-dataops/                  # Delta Lake KPI STAR schema (dim_* / fct_*, includes snapshots)
 ```
 
-All 3 `dbt-*/` directories are managed by the **single** `spark-dbt` Nx project — there is no per-sub-project `project.json`. Sub-projects are selected via the `--PROJECT=` arg to `npx nx run spark-dbt:run`.
+All 3 `dbt-*/` directories are first-class Nx projects with their **own** `project.json` exposing a `test` target, so `nx affected -t test` only runs the sub-project whose files actually changed. The root `spark-dbt` Nx project owns the shared lifecycle (`clean`, `install`, `init`, `run`, `package`, `compile`, `lint`) and the shared hatch venv; `dbt-<name>/project.json::test` declares `dependsOn: [{ target: "init", projects: ["spark-dbt"], params: "ignore" }]` so the venv is provisioned once before the per-sub-project run.
 
 ---
 
@@ -40,6 +40,7 @@ dbt-<name>/
 ├── packages.yml                  # dbt deps (dbt_utils, dbt_date, etc.)
 ├── package-lock.yml              # pinned dep versions
 ├── profiles.yml                  # local-local | local-fabric | fabric-fabric targets (see §6)
+├── project.json                  # nx targets: test (depends on spark-dbt:init, params="ignore")
 ├── README.md                     # project-specific connectivity + run instructions
 │
 ├── models/
@@ -125,32 +126,37 @@ dbt-<name>/
 
 ## 4. Nx targets
 
-A single `spark-dbt` Nx project drives all 3 dbt sub-projects via `--PROJECT=` and `--TARGET=`:
+The `spark-dbt` workspace splits responsibilities. The root `spark-dbt` project owns the shared lifecycle (hatch venv, scripts, deploy bundle); each `dbt-<name>/` is its own Nx project that owns its `test` target:
 
-| Target    | Owns                                                | Notes                                                   |
-| --------- | --------------------------------------------------- | ------------------------------------------------------- |
-| `clean`   | hatch env teardown + `.cleanpaths` rm               | Refuses to run inside a `hatch shell` (errors out)      |
-| `install` | `hatch env create` (depends on `clean`)             | Creates `.venv/` via uv                                 |
-| `init`    | depends on `spark-scala:init` + `install`           | One-time devbox bootstrap                               |
-| `run`     | `.scripts/run-dbt-local.sh {PROJECT} {TARGET}`      | Default `PROJECT=dbt-jaffle-shop`, `TARGET=local-local` |
-| `test`    | runs all 3 sub-projects in parallel via `:run`      | Depends on `init`                                       |
-| `package` | `.scripts/package-fabric.sh`                        | Builds a single Fabric deploy bundle                    |
-| `compile` | `.scripts/compile-erd.sh`                           | Regenerates `dbt-<name>/erd/*.md` via `dbterd`          |
-| `lint`    | `black --line-length 2000 .` (defined at repo root) | No `sqlfluff` here — Python-only lint                   |
+| Nx project           | Owns                                                                 | Targets                                                       |
+| -------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `spark-dbt`          | shared lifecycle (`.scripts/`, `pyproject.toml`, hatch, `lint`)      | `clean`, `install`, `init`, `run`, `package`, `compile`, `lint` |
+| `dbt-jaffle-shop`    | `dbt-jaffle-shop/**`                                                 | `test`                                                        |
+| `dbt-adventureworks` | `dbt-adventureworks/**`                                              | `test`                                                        |
+| `dbt-dataops`        | `dbt-dataops/**`                                                     | `test`                                                        |
+
+Each per-sub-project `test` invokes `.scripts/run-dbt-local.sh <project> {args.TARGET}` (default `TARGET=local-local`) and depends on `spark-dbt:init` (`params: "ignore"`) so the shared hatch venv is set up first. Lint (`black --line-length 2000 .`) lives at root `spark-dbt:lint` for now — there is no per-sub-project `lint`/`sqlfluff` here.
 
 ```bash
 # One-time devbox setup
 npx nx run spark-dbt:init --skip-nx-cache --verbose
 
 # Run one project end-to-end (default TARGET=local-local)
+npx nx run dbt-adventureworks:test
+npx nx run dbt-adventureworks:test --TARGET=local-fabric
+
+# Or via the root run target (ad-hoc, bypasses per-sub-project nx caching)
 npx nx run spark-dbt:run --PROJECT=dbt-adventureworks
 npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-fabric
 
 # Full-refresh (drops & rebuilds incremental + snapshot state)
-FULL_REFRESH=1 npx nx run spark-dbt:run --PROJECT=dbt-dataops
+FULL_REFRESH=1 npx nx run dbt-dataops:test
 
-# Run all 3 sub-projects in parallel
-npx nx run spark-dbt:test
+# Run all 3 sub-projects (CI uses `nx affected -t test`)
+npx nx run-many -t test --projects=dbt-jaffle-shop,dbt-adventureworks,dbt-dataops
+
+# Affected pattern (CI)
+npx nx affected -t test
 
 # ERD + Fabric bundle
 npx nx run spark-dbt:compile

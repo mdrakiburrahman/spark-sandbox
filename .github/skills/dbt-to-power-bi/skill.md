@@ -185,10 +185,10 @@ Add to the colocated `<model>.yml` (or `schema.yml`):
 
 ```bash
 # Run one sub-project end-to-end (default TARGET=local-local)
-npx nx run spark-dbt:run --PROJECT=dbt-<name>
+npx nx run dbt-<name>:test
 
 # All 3 sub-projects in parallel
-npx nx run spark-dbt:test
+npx nx run-many -t test --projects=dbt-jaffle-shop,dbt-adventureworks,dbt-dataops
 
 # Targeted partial-build (drop into hatch first)
 cd projects/spark-dbt && hatch shell && cd dbt-<name>
