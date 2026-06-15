@@ -110,15 +110,19 @@ npx nx run spark-dbt:lint
 
 ## Step 3: Run & Test dbt Projects
 
-The `test` target runs both dbt projects in parallel against the `local-local` target:
+Each dbt sub-project is its own Nx project with its own `test` target. Use `nx affected` (CI default) or `nx run-many` to run the relevant set in parallel against the `local-local` target:
 
 ```bash
-npx nx run spark-dbt:test
+# All 3 sub-projects
+npx nx run-many -t test --projects=dbt-jaffle-shop,dbt-adventureworks,dbt-dataops
+
+# Only the projects whose files changed since main
+npx nx affected -t test
 ```
 
 This executes the full dbt pipeline for each project: `dbt debug` → `dbt deps` → `dbt seed` (if applicable) → `dbt run` → `dbt test` → `dbt docs generate`.
 
-**Prerequisites**: The `test` target depends on `init`, which itself depends on `spark-scala:init` (Spark metastore must be running) and `spark-dbt:install`.
+**Prerequisites**: each per-sub-project `test` target depends on `spark-dbt:init`, which itself depends on `spark-scala:init` (Spark metastore must be running) and `spark-dbt:install`.
 
 ### Running a single dbt project
 
@@ -126,9 +130,13 @@ If only one project changed, run it individually to iterate faster:
 
 ```bash
 # Jaffle Shop only
-npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local
+npx nx run dbt-jaffle-shop:test
 
 # Adventureworks only
+npx nx run dbt-adventureworks:test
+
+# Or via the root run target (ad-hoc, bypasses per-sub-project nx caching)
+npx nx run spark-dbt:run --PROJECT=dbt-jaffle-shop --TARGET=local-local
 npx nx run spark-dbt:run --PROJECT=dbt-adventureworks --TARGET=local-local
 ```
 

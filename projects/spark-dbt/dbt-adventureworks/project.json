@@ -1,0 +1,32 @@
+{
+  "name": "dbt-adventureworks",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        {
+          "target": "init",
+          "projects": ["spark-dbt"],
+          "params": "ignore"
+        }
+      ],
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/projects/spark-dbt/.scripts/run-dbt-local.sh",
+        "{workspaceRoot}/projects/spark-dbt/pyproject.toml"
+      ],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "TARGET": "local-local",
+        "commands": [
+          {
+            "command": ".scripts/run-dbt-local.sh dbt-adventureworks {args.TARGET}",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    }
+  }
+}

@@ -58,8 +58,16 @@ Then browse each `dbt-...` project and follow the READMEs:
 # Initiate dbt and Spark
 npx nx run spark-dbt:init --skip-nx-cache --verbose
 
-# Run model
+# Run a single dbt sub-project end-to-end (default TARGET=local-local)
+npx nx run dbt-adventureworks:test
+npx nx run dbt-adventureworks:test --TARGET=local-fabric
+
+# Or via the root run target (ad-hoc)
 npx nx run spark-dbt:run --PROJECT="dbt-adventureworks"
+
+# Run all 3 sub-projects (CI fan-out)
+npx nx run-many -t test --projects=dbt-jaffle-shop,dbt-adventureworks,dbt-dataops
+npx nx affected -t test
 ```
 
 ## 🤖 Using MCP

@@ -157,13 +157,14 @@ Make all fixes before any commit:
 
 Classify changes to determine which local validation is needed:
 
-| Path pattern                  | Affected project | Local validation command                                         |
-| ----------------------------- | ---------------- | ---------------------------------------------------------------- |
-| `projects/spark-scala/**`     | spark-scala      | `cd projects/spark-scala && sbt test`                            |
-| `projects/spark-dbt/**`       | spark-dbt        | `npx nx run spark-dbt:run --PROJECT=<proj> --TARGET=local-local` |
-| `projects/spark-python/**`    | spark-python     | `npx nx run spark-python:test`                                   |
-| `projects/fabric/**`          | fabric           | No local tests available                                         |
-| `*.md`, `tools/**`, `docs/**` | none             | No validation needed                                             |
+| Path pattern                  | Affected project              | Local validation command                                         |
+| ----------------------------- | ----------------------------- | ---------------------------------------------------------------- |
+| `projects/spark-scala/**`     | spark-scala                   | `cd projects/spark-scala && sbt test`                            |
+| `projects/spark-dbt/dbt-*/**` | dbt-jaffle-shop / dbt-adventureworks / dbt-dataops | `npx nx run dbt-<name>:test --TARGET=local-local`   |
+| `projects/spark-dbt/**`       | spark-dbt (shared lifecycle)  | `npx nx affected -t test` (fans out to the affected dbt-* projects) |
+| `projects/spark-python/**`    | spark-python                  | `npx nx run spark-python:test`                                   |
+| `projects/fabric/**`          | fabric                        | No local tests available                                         |
+| `*.md`, `tools/**`, `docs/**` | none                          | No validation needed                                             |
 
 ---
 
