@@ -58,6 +58,10 @@ echo "Running dbt project '${DBT_PROJECT}' with target '${DBT_TARGET}' (full_ref
 
 dbt debug --target "${DBT_TARGET}"
 dbt deps
+if [[ "${IS_GH_ACTION:-0}" == "1" ]]; then
+    echo "IS_GH_ACTION=1: dropping stale catalog entries before seed/build"
+    dbt run-operation _ci_reset_state --target "${DBT_TARGET}"
+fi
 dbt seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
 dbt build --exclude resource_type:seed --target "${DBT_TARGET}" ${FULL_REFRESH_FLAG}
 if grep -rql 'macro cleanup_dbt_tmp_relations' macros/ 2>/dev/null; then
