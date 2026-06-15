@@ -76,7 +76,7 @@ jobs:
         run: /tmp/overlay/post-attach-commands.sh
 
       - name: "🧹 Clean Projects"
-        run: npx nx affected --base=origin/main -t clean --parallel=3 --output-style=stream
+        run: npx nx run-many -t clean --all --parallel=3 --output-style=stream
 
       - name: "🔧 Init Projects"
         run: npx nx affected --base=origin/main -t init --parallel=3 --output-style=stream
