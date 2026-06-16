@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: fct_comment
+    description: >-
+      GRAIN: one row per Reddit comment — transaction fact. comment_count is
+      fully additive; score is semi-additive (snapshot of net karma at fetch
+      time). subreddit_key and post_flair_key are denormalized from dim_post so
+      every comment can be sliced by feature area directly.
+    tests:
+      - has_rows
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - comment_natural_id
+      - dbt_utils.equal_rowcount:
+          arguments:
+            compare_model: source('reddit_raw', 'comments')
+    columns:
+      - name: fct_comment_key
+        description: "Surrogate primary key (md5 of comment_natural_id)."
+        tests:
+          - unique
+          - not_null
+      - name: post_key
+        description: "FK to dim_post — the post this comment is on."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_post')
+                field: post_key
+      - name: author_key
+        description: "FK to dim_author — comment author."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_author')
+                field: author_key
+      - name: subreddit_key
+        description: "FK to dim_subreddit (denormalized from dim_post)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_subreddit')
+                field: subreddit_key
+      - name: post_flair_key
+        description: "FK to dim_post_flair (denormalized from dim_post)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_post_flair')
+                field: post_flair_key
+      - name: commented_date_key
+        description: "Role-played FK to dim_date — when the comment was created."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: edited_date_key
+        description: "Role-played FK to dim_date — when the comment was last edited ('-1' if never edited)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: fetched_date_key
+        description: "Role-played FK to dim_date — when this comment row was ingested."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: fetch_run_key
+        description: "FK to dim_fetch_run — operational context."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_fetch_run')
+                field: fetch_run_key
+      - name: comment_natural_id
+        description: "Degenerate dimension — Reddit t1_* comment id (grain)."
+        tests:
+          - not_null
+      - name: parent_id
+        description: "Degenerate dimension — raw Reddit parent fullname (t3_* = post, t1_* = comment)."
+      - name: is_reply_to_post
+        description: "Derived: parent_id starts with 't3_'. True for top-level comments."
+      - name: is_reply_to_comment
+        description: "Derived: parent_id starts with 't1_'. True for nested replies."
+      - name: depth
+        description: "Reddit thread depth (0 = top-level)."
+      - name: is_submitter
+        description: "True iff the comment author is the post author (OP)."
+      - name: stickied
+        description: "True iff the comment is pinned."
+      - name: commented_at
+        description: "Comment creation timestamp."
+      - name: edited_at
+        description: "Edit timestamp. NULL for un-edited comments."
+      - name: score
+        description: "Net karma at snapshot time. SEMI-ADDITIVE."
+      - name: comment_count
+        description: "Constant 1. FULLY ADDITIVE — SUM(comment_count) = volume."
+        tests:
+          - not_null

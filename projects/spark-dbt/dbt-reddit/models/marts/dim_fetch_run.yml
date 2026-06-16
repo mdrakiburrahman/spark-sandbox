@@ -1,0 +1,47 @@
+version: 2
+
+models:
+  - name: dim_fetch_run
+    description: >-
+      One row per Reddit ingestion run (operational context of each pull) plus an
+      unknown member at fetch_run_key = '-1'. SCD0 — runs are immutable once
+      finished. Enables the periodic-snapshot grain on fct_post.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: fetch_run_key
+    columns:
+      - name: fetch_run_key
+        description: "Surrogate key (md5 of run_natural_id). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: run_natural_id
+        description: "fetch_runs.run_id (epoch-millis-based bigint). Natural key."
+        tests:
+          - not_null
+      - name: subreddit
+        description: "Target subreddit for this run (display_name)."
+      - name: listing_type
+        description: "Reddit listing (top, hot, new, rising, controversial)."
+      - name: time_window
+        description: "Reddit time window (hour, day, week, month, year, all)."
+      - name: limit_requested
+        description: "Requested post limit for the run."
+      - name: skip_comments
+        description: "True iff comment-tree expansion was skipped."
+      - name: started_at
+        description: "Run start timestamp."
+      - name: finished_at
+        description: "Run finish timestamp."
+      - name: posts_ingested
+        description: "Count of posts ingested by the run."
+      - name: comments_ingested
+        description: "Count of comments ingested by the run."
+      - name: more_calls
+        description: "Number of /api/morechildren calls issued to expand truncated comment trees."
+      - name: subreddits_seen
+        description: "Distinct subreddits observed during the run."
+      - name: authors_seen
+        description: "Distinct authors observed during the run."

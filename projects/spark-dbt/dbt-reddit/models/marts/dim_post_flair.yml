@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: dim_post_flair
+    description: >-
+      One row per Reddit post flair (the "feature area" facet) plus an unknown
+      member at post_flair_key = '-1'. SCD0 lookup. NULL/empty source flairs are
+      normalized to '(Uncategorized)' in staging.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: post_flair_key
+    columns:
+      - name: post_flair_key
+        description: "Surrogate key (md5 of flair_text). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: flair_text
+        description: "The flair label (natural key). NULL flairs normalized to '(Uncategorized)'."
+        tests:
+          - unique
+          - not_null
+      - name: flair_category
+        description: "Broader grouping of flair_text (Power BI, Data Workloads, Community, Support, Other)."

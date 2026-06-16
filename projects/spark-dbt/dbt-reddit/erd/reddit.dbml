@@ -1,7 +1,9 @@
 // ============================================================
 // dbt-reddit — Kimball STAR Schema Design
 //
-// Authored by the kimball-dbml skill. This is the design spec.
+// Authored by the kimball-dbml skill, then reconciled to mirror the implemented
+// dbt models under projects/spark-dbt/dbt-reddit/models/. This file is the
+// single source of truth for the ERD (there is no generated full_model.dbml).
 //
 // Source: reddit_db (6 Delta tables — authors, comments,
 //   fetch_runs, microsoft_employees, posts, subreddits). Snapshot of
@@ -152,7 +154,7 @@ Table fct_post {
     fetch_run_key      varchar [not null, note: 'FK to dim_fetch_run — part of the grain. Filter to one fetch_run before aggregating non-additive measures.']
     post_natural_id    varchar [note: '{{META:DEGENERATE}} Reddit t3_* id; kept on the fact for ad-hoc joins / debugging.']
     score              integer [note: 'Reddit upvotes - downvotes at snapshot time. Additivity: NON-ADDITIVE across fetch_run; use latest snapshot per post.']
-    upvote_ratio       decimal [note: 'Fraction of upvotes (0.0-1.0) at snapshot time. Additivity: NON-ADDITIVE (ratio) — use AVG within a single fetch_run.']
+    upvote_ratio       double  [note: 'Fraction of upvotes (0.0-1.0) at snapshot time. Additivity: NON-ADDITIVE (ratio) — use AVG within a single fetch_run.']
     num_comments       integer [note: 'Comment count reported by Reddit at snapshot time. Additivity: NON-ADDITIVE across fetch_run; use latest snapshot. (For exact volume use COUNT(*) on fct_comment.)']
     post_count         integer [note: 'Constant 1. Additivity: FULLY ADDITIVE. SUM(post_count) gives "posts created" totals across any dim filter.']
 }

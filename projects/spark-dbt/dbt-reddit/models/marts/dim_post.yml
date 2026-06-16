@@ -1,0 +1,72 @@
+version: 2
+
+models:
+  - name: dim_post
+    description: >-
+      One row per Reddit post (latest snapshot) plus an unknown member at
+      post_key = '-1'. SCD1 — descriptive attributes only; per-fetch engagement
+      measures live on fct_post. Carries conformed FK surrogate keys for the
+      post's date, author, subreddit and flair.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: post_key
+    columns:
+      - name: post_key
+        description: "Surrogate key (md5 of post_natural_id). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: post_natural_id
+        description: "Reddit t3_* post id (natural key)."
+        tests:
+          - not_null
+      - name: short_id
+        description: "Short permalink id (e.g. 1u19ar3)."
+      - name: title
+        description: "Post title."
+      - name: selftext
+        description: "Body text of a self-post. NULL/empty for link-posts."
+      - name: url
+        description: "Link URL (link-posts) or permalink (self-posts)."
+      - name: permalink
+        description: "Canonical /r/<sub>/comments/<id>/<slug>/ path."
+      - name: is_self
+        description: "True iff a text post (vs link post)."
+      - name: over_18
+        description: "True iff flagged NSFW in source."
+      - name: posted_at
+        description: "Post creation timestamp (created_utc)."
+      - name: posted_date_key
+        description: "FK to dim_date — date the post was created."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: author_key
+        description: "FK to dim_author — original post author."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_author')
+                field: author_key
+      - name: subreddit_key
+        description: "FK to dim_subreddit."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_subreddit')
+                field: subreddit_key
+      - name: post_flair_key
+        description: "FK to dim_post_flair — null flair resolves to the '(Uncategorized)' member."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_post_flair')
+                field: post_flair_key

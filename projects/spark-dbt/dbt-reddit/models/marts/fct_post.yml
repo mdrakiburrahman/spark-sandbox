@@ -1,0 +1,95 @@
+version: 2
+
+models:
+  - name: fct_post
+    description: >-
+      GRAIN: one row per (post, fetch_run) — periodic snapshot. post_count is
+      fully additive; score / upvote_ratio / num_comments are NON-ADDITIVE across
+      the fetch_run dimension (filter to one fetch_run, or use the latest
+      snapshot per post, before aggregating).
+    tests:
+      - has_rows
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - post_key
+              - fetch_run_key
+      - dbt_utils.equal_rowcount:
+          arguments:
+            compare_model: source('reddit_raw', 'posts')
+    columns:
+      - name: fct_post_key
+        description: "Surrogate primary key (md5 of post_natural_id + run_natural_id)."
+        tests:
+          - unique
+          - not_null
+      - name: post_key
+        description: "FK to dim_post."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_post')
+                field: post_key
+      - name: author_key
+        description: "FK to dim_author — original post author."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_author')
+                field: author_key
+      - name: subreddit_key
+        description: "FK to dim_subreddit."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_subreddit')
+                field: subreddit_key
+      - name: post_flair_key
+        description: "FK to dim_post_flair — drives traffic-by-feature-area analysis."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_post_flair')
+                field: post_flair_key
+      - name: posted_date_key
+        description: "Role-played FK to dim_date — when the post was authored."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: fetched_date_key
+        description: "Role-played FK to dim_date — when this snapshot was ingested."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: fetch_run_key
+        description: "FK to dim_fetch_run — part of the grain."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_fetch_run')
+                field: fetch_run_key
+      - name: post_natural_id
+        description: "Degenerate dimension — Reddit t3_* id kept for ad-hoc joins / debugging."
+        tests:
+          - not_null
+      - name: score
+        description: "Reddit upvotes - downvotes at snapshot time. NON-ADDITIVE across fetch_run."
+      - name: upvote_ratio
+        description: "Fraction of upvotes (0.0-1.0) at snapshot time. NON-ADDITIVE (ratio)."
+      - name: num_comments
+        description: "Comment count reported by Reddit at snapshot time. NON-ADDITIVE across fetch_run."
+      - name: post_count
+        description: "Constant 1. FULLY ADDITIVE — SUM(post_count) gives posts-created totals."
+        tests:
+          - not_null
