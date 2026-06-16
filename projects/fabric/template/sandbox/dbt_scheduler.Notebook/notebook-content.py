@@ -70,7 +70,7 @@ metrics_buffer = []
 INVOCATION_STARTED_AT = datetime.now(timezone.utc).replace(tzinfo=None)
 DBT_METRICS_DELTA_PATH = os.environ.get(
     "DBT_METRICS_DELTA_PATH",
-    "/lakehouse/default/Files/onelake/raw/dbt/node_executions",
+    "/lakehouse/default/Files/onelake/raw/dbt/dbt_node_executions",
 )
 DBT_METRICS_RAW_PATH = os.environ.get(
     "DBT_METRICS_RAW_PATH",
@@ -151,7 +151,7 @@ PA_SCHEMA = pa.schema(
         ("command", pa.string()),
         ("invocation_id", pa.string()),
         ("dbt_version", pa.string()),
-        ("generated_at", pa.timestamp("us")),
+        ("generated_at", pa.timestamp("us", tz="UTC")),
         ("unique_id", pa.string()),
         ("resource_type", pa.string()),
         ("package_name", pa.string()),
@@ -163,11 +163,11 @@ PA_SCHEMA = pa.schema(
         ("original_file_path", pa.string()),
         ("materialized", pa.string()),
         ("execution_time", pa.float64()),
-        ("compile_started_at", pa.timestamp("us")),
-        ("compile_completed_at", pa.timestamp("us")),
+        ("compile_started_at", pa.timestamp("us", tz="UTC")),
+        ("compile_completed_at", pa.timestamp("us", tz="UTC")),
         ("compile_time", pa.float64()),
-        ("execute_started_at", pa.timestamp("us")),
-        ("execute_completed_at", pa.timestamp("us")),
+        ("execute_started_at", pa.timestamp("us", tz="UTC")),
+        ("execute_completed_at", pa.timestamp("us", tz="UTC")),
         ("execute_time", pa.float64()),
         ("thread_id", pa.string()),
         ("status", pa.string()),
