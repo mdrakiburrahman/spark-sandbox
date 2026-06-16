@@ -27,7 +27,7 @@ reddit:
       connect_timeout: 10
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
-      lakehouseid: b3f83566-39ef-453d-9735-7e6fb790cf32
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
       threads: 12
@@ -49,7 +49,7 @@ reddit:
       connect_timeout: 60
       endpoint: https://api.fabric.microsoft.com/v1
       workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
-      lakehouseid: b3f83566-39ef-453d-9735-7e6fb790cf32
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
       threads: 12
