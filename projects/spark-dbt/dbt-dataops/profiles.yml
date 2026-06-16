@@ -12,7 +12,7 @@ dataops:
       statement_timeout: 5
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
-      threads: 4
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       spark_config:
         name: dbt-dataops
@@ -27,7 +27,7 @@ dataops:
       connect_timeout: 10
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -46,7 +46,7 @@ dataops:
       lakehouseid: 091ca1a7-9243-4453-8199-8d0663598107
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -67,7 +67,7 @@ dataops:
       lakehouseid: 091ca1a7-9243-4453-8199-8d0663598107
       lakehouse: dbt_dataops_dwh
       schema: dbt_dataops_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:

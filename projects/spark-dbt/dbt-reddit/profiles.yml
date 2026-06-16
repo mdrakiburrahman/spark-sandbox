@@ -12,7 +12,7 @@ reddit:
       statement_timeout: 5
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
-      threads: 4
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       spark_config:
         name: dbt-reddit
@@ -27,7 +27,7 @@ reddit:
       connect_timeout: 10
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -46,7 +46,7 @@ reddit:
       lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -68,7 +68,7 @@ reddit:
       lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
       lakehouse: dbt_reddit_dwh
       schema: dbt_reddit_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:

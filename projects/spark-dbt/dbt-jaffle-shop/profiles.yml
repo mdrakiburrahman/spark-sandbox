@@ -12,7 +12,7 @@ jaffle_shop:
       statement_timeout: 5
       lakehouse: dbt_jaffle_shop_dwh
       schema: dbt_jaffle_shop_dwh
-      threads: 4
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       spark_config:
         name: dbt-jaffle-shop
@@ -27,7 +27,7 @@ jaffle_shop:
       connect_timeout: 10
       lakehouse: dbt_jaffle_shop_dwh
       schema: dbt_jaffle_shop_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -46,7 +46,7 @@ jaffle_shop:
       lakehouseid: a1340f32-34c8-494a-9628-8c5d5f03f284
       lakehouse: dbt_jaffle_shop_dwh
       schema: dbt_jaffle_shop_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:
@@ -68,7 +68,7 @@ jaffle_shop:
       lakehouseid: a1340f32-34c8-494a-9628-8c5d5f03f284
       lakehouse: dbt_jaffle_shop_dwh
       schema: dbt_jaffle_shop_dwh
-      threads: 12
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
       type: fabricspark
       retry_all: true
       spark_config:

@@ -1,5 +1,17 @@
 [
   {
+    "name": "dbt_node_executions",
+    "path": "/Tables",
+    "target": {
+      "type": "AdlsGen2",
+      "adlsGen2": {
+        "connectionId": "01aed3b3-b988-4e3e-916b-a5e5dba1efe7",
+        "location": "https://fabricdevmdrrahman.dfs.core.windows.net",
+        "subpath": "/onelake/raw/dbt/dbt_node_executions"
+      }
+    }
+  },
+  {
     "name": "onelake",
     "path": "/Files",
     "target": {
