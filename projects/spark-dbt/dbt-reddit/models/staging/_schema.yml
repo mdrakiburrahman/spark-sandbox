@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: stg_authors
+    description: "Renamed Reddit authors source — one row per author per fetch run."
+    columns:
+      - name: author_natural_id
+        description: "Reddit t2_* author id."
+        tests:
+          - not_null
+
+  - name: stg_microsoft_employees
+    description: "Deduplicated Microsoft employee lookup, keyed by lower-cased username."
+    columns:
+      - name: username_lc
+        description: "Lower-cased Microsoft username (join key against authors.name)."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_subreddits
+    description: "Renamed Reddit subreddits source — one row per subreddit per fetch run."
+    columns:
+      - name: subreddit_natural_id
+        description: "Reddit t5_* subreddit id."
+        tests:
+          - not_null
+
+  - name: stg_posts
+    description: "Renamed Reddit posts source with normalized flair — one row per post per fetch run."
+    columns:
+      - name: post_natural_id
+        description: "Reddit t3_* post id."
+        tests:
+          - not_null
+      - name: flair_text
+        description: "Normalized flair label; NULL/empty collapses to '(Uncategorized)'."
+        tests:
+          - not_null
+
+  - name: stg_comments
+    description: "Renamed Reddit comments source with derived reply flags — one row per comment."
+    columns:
+      - name: comment_natural_id
+        description: "Reddit t1_* comment id."
+        tests:
+          - not_null
+
+  - name: stg_fetch_runs
+    description: "Renamed Reddit ingestion runs — one row per run."
+    columns:
+      - name: run_natural_id
+        description: "Epoch-millis-based run identifier."
+        tests:
+          - unique
+          - not_null

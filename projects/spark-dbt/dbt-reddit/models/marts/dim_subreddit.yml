@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: dim_subreddit
+    description: >-
+      One row per subreddit (latest snapshot) plus an unknown member at
+      subreddit_key = '-1'. SCD1. Single-row today (r/MicrosoftFabric) but
+      designed for additional subreddits in future fetch runs.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: subreddit_key
+    columns:
+      - name: subreddit_key
+        description: "Surrogate key (md5 of subreddit_natural_id). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: subreddit_natural_id
+        description: "Reddit t5_* subreddit id (natural key)."
+        tests:
+          - not_null
+      - name: display_name
+        description: "Human-readable subreddit name (e.g. MicrosoftFabric)."
+      - name: subscribers
+        description: "Subscriber count at last fetch. Non-additive snapshot value."
+      - name: fetched_at
+        description: "Most-recent observation timestamp."

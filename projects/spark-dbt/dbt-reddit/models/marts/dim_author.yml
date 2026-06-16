@@ -1,0 +1,40 @@
+version: 2
+
+models:
+  - name: dim_author
+    description: >-
+      One row per Reddit author (latest snapshot per author) plus an unknown
+      member at author_key = '-1' (captures `[deleted]` ghost rows). SCD1.
+      Microsoft employees are flagged via a case-insensitive
+      LOWER(author_name) = LOWER(microsoft_employees.username) match.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: author_key
+    columns:
+      - name: author_key
+        description: "Surrogate key (md5 of author_natural_id). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: author_natural_id
+        description: "Reddit t2_* author id (natural / business key)."
+        tests:
+          - not_null
+      - name: author_name
+        description: "Reddit username (case-preserved). Use for display."
+      - name: is_deleted
+        description: "True iff the source author row is `[deleted]` (and for the unknown member)."
+      - name: is_microsoft_employee
+        description: "Derived: TRUE iff author_name matches a microsoft_employees.username (case-insensitive)."
+      - name: msft_username
+        description: "Source-of-truth Microsoft username. NULL for non-MSFT authors."
+      - name: msft_job_title
+        description: "Microsoft job title (e.g. PRINCIPAL PRODUCT MANAGER). NULL for non-MSFT."
+      - name: msft_department
+        description: "Microsoft department (e.g. Power BI CAT_c). NULL for non-MSFT."
+      - name: is_product_manager
+        description: "Derived: LOWER(msft_job_title) LIKE '%product manager%'."
+      - name: fetched_at
+        description: "Most-recent observation timestamp from authors.fetched_at."

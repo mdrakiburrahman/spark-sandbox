@@ -1,0 +1,252 @@
+//Tables (based on the selection criteria)
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_author {
+  "author_key" "string" [pk, note: "Surrogate key (md5 of author_natural_id). Unknown member at '-1'."]
+  "author_natural_id" "string" [note: "Reddit t2_* author id (natural / business key)."]
+  "author_name" "string" [note: "Reddit username (case-preserved). Use for display."]
+  "is_deleted" "boolean" [note: "True iff the source author row is `[deleted]` (and for the unknown member)."]
+  "is_microsoft_employee" "boolean" [note: "Derived: TRUE iff author_name matches a microsoft_employees.username (case-insensitive)."]
+  "msft_username" "string" [note: "Source-of-truth Microsoft username. NULL for non-MSFT authors."]
+  "msft_job_title" "string" [note: "Microsoft job title (e.g. PRINCIPAL PRODUCT MANAGER). NULL for non-MSFT."]
+  "msft_department" "string" [note: "Microsoft department (e.g. Power BI CAT_c). NULL for non-MSFT."]
+  "is_product_manager" "boolean" [note: "Derived: LOWER(msft_job_title) LIKE '%product manager%'."]
+  "fetched_at" "timestamp" [note: "Most-recent observation timestamp from authors.fetched_at."]
+
+  Note: "One row per Reddit author (latest snapshot per author) plus an unknown member at author_key = '-1' (captures `[deleted]` ghost rows). SCD1. Microsoft employees are flagged via a case-insensitive LOWER(author_name) = LOWER(microsoft_employees.username) match."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_date {
+  "date_key" "string" [pk, note: "yyyymmdd string. Natural key + surrogate. Unknown member at '-1'."]
+  "date" "date" [note: "Calendar date (DATE). NULL for the unknown member."]
+  "day" "int" [note: "Day of month (1-31)."]
+  "day_of_week" "int" [note: "Spark day-of-week (1=Sunday .. 7=Saturday)."]
+  "day_of_week_name" "string" [note: "Full weekday name (e.g. Monday)."]
+  "day_of_month" "int" [note: "Day of month (1-31)."]
+  "day_of_year" "int" [note: "Day of year (1-366)."]
+  "week_of_year" "int" [note: "ISO-8601 week of year."]
+  "iso_week_of_year" "int" [note: "ISO-8601 week of year."]
+  "month" "int" [note: "Month number (1-12)."]
+  "month_name" "string" [note: "Full month name (e.g. June)."]
+  "quarter" "int" [note: "Calendar quarter (1-4)."]
+  "quarter_name" "string" [note: "Quarter label (e.g. Q2)."]
+  "year" "int" [note: "Calendar year."]
+  "first_day_of_month" "date" [note: "First date of the month."]
+  "last_day_of_month" "date" [note: "Last date of the month."]
+  "first_day_of_year" "date" [note: "First date of the year."]
+  "last_day_of_year" "date" [note: "Last date of the year."]
+  "is_weekend" "boolean" [note: "True for Saturday/Sunday."]
+
+  Note: "One row per calendar date (2024-01-01 .. 2027-12-31) plus an unknown member at date_key = '-1'. SCD0 (immutable). Drives all temporal slicing and the role-played date FKs on the facts."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_fetch_run {
+  "fetch_run_key" "string" [pk, note: "Surrogate key (md5 of run_natural_id). Unknown member at '-1'."]
+  "run_natural_id" "bigint" [note: "fetch_runs.run_id (epoch-millis-based bigint). Natural key."]
+  "subreddit" "string" [note: "Target subreddit for this run (display_name)."]
+  "listing_type" "string" [note: "Reddit listing (top, hot, new, rising, controversial)."]
+  "time_window" "string" [note: "Reddit time window (hour, day, week, month, year, all)."]
+  "limit_requested" "int" [note: "Requested post limit for the run."]
+  "skip_comments" "boolean" [note: "True iff comment-tree expansion was skipped."]
+  "started_at" "timestamp" [note: "Run start timestamp."]
+  "finished_at" "timestamp" [note: "Run finish timestamp."]
+  "posts_ingested" "int" [note: "Count of posts ingested by the run."]
+  "comments_ingested" "int" [note: "Count of comments ingested by the run."]
+  "more_calls" "bigint" [note: "Number of /api/morechildren calls issued to expand truncated comment trees."]
+  "subreddits_seen" "int" [note: "Distinct subreddits observed during the run."]
+  "authors_seen" "int" [note: "Distinct authors observed during the run."]
+
+  Note: "One row per Reddit ingestion run (operational context of each pull) plus an unknown member at fetch_run_key = '-1'. SCD0 \u2014 runs are immutable once finished. Enables the periodic-snapshot grain on fct_post."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_post {
+  "post_key" "string" [pk, note: "Surrogate key (md5 of post_natural_id). Unknown member at '-1'."]
+  "post_natural_id" "string" [note: "Reddit t3_* post id (natural key)."]
+  "short_id" "string" [note: "Short permalink id (e.g. 1u19ar3)."]
+  "title" "string" [note: "Post title."]
+  "selftext" "string" [note: "Body text of a self-post. NULL/empty for link-posts."]
+  "url" "string" [note: "Link URL (link-posts) or permalink (self-posts)."]
+  "permalink" "string" [note: "Canonical /r/<sub>/comments/<id>/<slug>/ path."]
+  "is_self" "boolean" [note: "True iff a text post (vs link post)."]
+  "over_18" "boolean" [note: "True iff flagged NSFW in source."]
+  "posted_at" "timestamp" [note: "Post creation timestamp (created_utc)."]
+  "posted_date_key" "string" [note: "FK to dim_date \u2014 date the post was created."]
+  "author_key" "string" [note: "FK to dim_author \u2014 original post author."]
+  "subreddit_key" "string" [note: "FK to dim_subreddit."]
+  "post_flair_key" "string" [note: "FK to dim_post_flair \u2014 null flair resolves to the '(Uncategorized)' member."]
+
+  Note: "One row per Reddit post (latest snapshot) plus an unknown member at post_key = '-1'. SCD1 \u2014 descriptive attributes only; per-fetch engagement measures live on fct_post. Carries conformed FK surrogate keys for the post's date, author, subreddit and flair."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_post_flair {
+  "post_flair_key" "string" [pk, note: "Surrogate key (md5 of flair_text). Unknown member at '-1'."]
+  "flair_text" "string" [pk, note: "The flair label (natural key). NULL flairs normalized to '(Uncategorized)'."]
+  "flair_category" "string" [note: "Broader grouping of flair_text (Power BI, Data Workloads, Community, Support, Other)."]
+
+  Note: "One row per Reddit post flair (the \"feature area\" facet) plus an unknown member at post_flair_key = '-1'. SCD0 lookup. NULL/empty source flairs are normalized to '(Uncategorized)' in staging."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table dim_subreddit {
+  "subreddit_key" "string" [pk, note: "Surrogate key (md5 of subreddit_natural_id). Unknown member at '-1'."]
+  "subreddit_natural_id" "string" [note: "Reddit t5_* subreddit id (natural key)."]
+  "display_name" "string" [note: "Human-readable subreddit name (e.g. MicrosoftFabric)."]
+  "subscribers" "int" [note: "Subscriber count at last fetch. Non-additive snapshot value."]
+  "fetched_at" "timestamp" [note: "Most-recent observation timestamp."]
+
+  Note: "One row per subreddit (latest snapshot) plus an unknown member at subreddit_key = '-1'. SCD1. Single-row today (r/MicrosoftFabric) but designed for additional subreddits in future fetch runs."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table fct_comment {
+  "fct_comment_key" "string" [pk, note: "Surrogate primary key (md5 of comment_natural_id)."]
+  "post_key" "string" [note: "FK to dim_post \u2014 the post this comment is on."]
+  "author_key" "string" [note: "FK to dim_author \u2014 comment author."]
+  "subreddit_key" "string" [note: "FK to dim_subreddit (denormalized from dim_post)."]
+  "post_flair_key" "string" [note: "FK to dim_post_flair (denormalized from dim_post)."]
+  "commented_date_key" "string" [note: "Role-played FK to dim_date \u2014 when the comment was created."]
+  "edited_date_key" "string" [note: "Role-played FK to dim_date \u2014 when the comment was last edited ('-1' if never edited)."]
+  "fetched_date_key" "string" [note: "Role-played FK to dim_date \u2014 when this comment row was ingested."]
+  "fetch_run_key" "string" [note: "FK to dim_fetch_run \u2014 operational context."]
+  "comment_natural_id" "string" [note: "Degenerate dimension \u2014 Reddit t1_* comment id (grain)."]
+  "parent_id" "string" [note: "Degenerate dimension \u2014 raw Reddit parent fullname (t3_* = post, t1_* = comment)."]
+  "is_reply_to_post" "boolean" [note: "Derived: parent_id starts with 't3_'. True for top-level comments."]
+  "is_reply_to_comment" "boolean" [note: "Derived: parent_id starts with 't1_'. True for nested replies."]
+  "depth" "int" [note: "Reddit thread depth (0 = top-level)."]
+  "is_submitter" "boolean" [note: "True iff the comment author is the post author (OP)."]
+  "stickied" "boolean" [note: "True iff the comment is pinned."]
+  "commented_at" "timestamp" [note: "Comment creation timestamp."]
+  "edited_at" "timestamp" [note: "Edit timestamp. NULL for un-edited comments."]
+  "score" "int" [note: "Net karma at snapshot time. SEMI-ADDITIVE."]
+  "comment_count" "int" [note: "Constant 1. FULLY ADDITIVE \u2014 SUM(comment_count) = volume."]
+
+  Note: "GRAIN: one row per Reddit comment \u2014 transaction fact. comment_count is fully additive; score is semi-additive (snapshot of net karma at fetch time). subreddit_key and post_flair_key are denormalized from dim_post so every comment can be sliced by feature area directly."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table fct_post {
+  "fct_post_key" "string" [pk, note: "Surrogate primary key (md5 of post_natural_id + run_natural_id)."]
+  "post_key" "string" [note: "FK to dim_post."]
+  "author_key" "string" [note: "FK to dim_author \u2014 original post author."]
+  "subreddit_key" "string" [note: "FK to dim_subreddit."]
+  "post_flair_key" "string" [note: "FK to dim_post_flair \u2014 drives traffic-by-feature-area analysis."]
+  "posted_date_key" "string" [note: "Role-played FK to dim_date \u2014 when the post was authored."]
+  "fetched_date_key" "string" [note: "Role-played FK to dim_date \u2014 when this snapshot was ingested."]
+  "fetch_run_key" "string" [note: "FK to dim_fetch_run \u2014 part of the grain."]
+  "post_natural_id" "string" [note: "Degenerate dimension \u2014 Reddit t3_* id kept for ad-hoc joins / debugging."]
+  "score" "int" [note: "Reddit upvotes - downvotes at snapshot time. NON-ADDITIVE across fetch_run."]
+  "upvote_ratio" "double" [note: "Fraction of upvotes (0.0-1.0) at snapshot time. NON-ADDITIVE (ratio)."]
+  "num_comments" "int" [note: "Comment count reported by Reddit at snapshot time. NON-ADDITIVE across fetch_run."]
+  "post_count" "int" [note: "Constant 1. FULLY ADDITIVE \u2014 SUM(post_count) gives posts-created totals."]
+
+  Note: "GRAIN: one row per (post, fetch_run) \u2014 periodic snapshot. post_count is fully additive; score / upvote_ratio / num_comments are NON-ADDITIVE across the fetch_run dimension (filter to one fetch_run, or use the latest snapshot per post, before aggregating)."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_authors {
+  "author_natural_id" "string" [pk, note: "Reddit t2_* author id."]
+  "author_name" "string"
+  "is_deleted" "boolean"
+  "fetched_at" "timestamp"
+  "run_natural_id" "bigint"
+
+  Note: "Renamed Reddit authors source \u2014 one row per author per fetch run."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_comments {
+  "comment_natural_id" "string" [pk, note: "Reddit t1_* comment id."]
+  "post_natural_id" "string"
+  "author_natural_id" "string"
+  "parent_id" "string"
+  "body" "string"
+  "score" "int"
+  "depth" "int"
+  "is_submitter" "boolean"
+  "stickied" "boolean"
+  "commented_at" "timestamp"
+  "edited_at" "timestamp"
+  "run_natural_id" "bigint"
+  "fetched_at" "timestamp"
+  "is_reply_to_post" "boolean"
+  "is_reply_to_comment" "boolean"
+
+  Note: "Renamed Reddit comments source with derived reply flags \u2014 one row per comment."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_fetch_runs {
+  "run_natural_id" "bigint" [pk, note: "Epoch-millis-based run identifier."]
+  "subreddit" "string"
+  "listing_type" "string"
+  "time_window" "string"
+  "limit_requested" "int"
+  "skip_comments" "boolean"
+  "started_at" "timestamp"
+  "finished_at" "timestamp"
+  "posts_ingested" "int"
+  "comments_ingested" "int"
+  "more_calls" "bigint"
+  "subreddits_seen" "int"
+  "authors_seen" "int"
+
+  Note: "Renamed Reddit ingestion runs \u2014 one row per run."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_microsoft_employees {
+  "username_lc" "string" [pk, note: "Lower-cased Microsoft username (join key against authors.name)."]
+  "msft_username" "string"
+  "msft_job_title" "string"
+  "msft_department" "string"
+
+  Note: "Deduplicated Microsoft employee lookup, keyed by lower-cased username."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_posts {
+  "post_natural_id" "string" [pk, note: "Reddit t3_* post id."]
+  "short_id" "string"
+  "title" "string"
+  "selftext" "string"
+  "url" "string"
+  "permalink" "string"
+  "is_self" "boolean"
+  "over_18" "boolean"
+  "stickied" "boolean"
+  "locked" "boolean"
+  "posted_at" "timestamp"
+  "author_natural_id" "string"
+  "subreddit_natural_id" "string"
+  "run_natural_id" "bigint"
+  "fetched_at" "timestamp"
+  "score" "int"
+  "upvote_ratio" "double"
+  "num_comments" "int"
+  "flair_text" "string" [note: "Normalized flair label; NULL/empty collapses to '(Uncategorized)'."]
+  "flair_category" "string"
+
+  Note: "Renamed Reddit posts source with normalized flair \u2014 one row per post per fetch run."
+}
+//--configured at schema: dbt_reddit_dwh.dbt_reddit_dwh
+Table stg_subreddits {
+  "subreddit_natural_id" "string" [pk, note: "Reddit t5_* subreddit id."]
+  "display_name" "string"
+  "subscribers" "int"
+  "created_utc" "timestamp"
+  "fetched_at" "timestamp"
+  "run_natural_id" "bigint"
+
+  Note: "Renamed Reddit subreddits source \u2014 one row per subreddit per fetch run."
+}
+//Refs (based on the DBT Relationship Tests)
+Ref: dim_post."author_key" > dim_author."author_key"
+Ref: dim_post."post_flair_key" > dim_post_flair."post_flair_key"
+Ref: dim_post."posted_date_key" > dim_date."date_key"
+Ref: dim_post."subreddit_key" > dim_subreddit."subreddit_key"
+Ref: fct_comment."author_key" > dim_author."author_key"
+Ref: fct_comment."commented_date_key" > dim_date."date_key"
+Ref: fct_comment."edited_date_key" > dim_date."date_key"
+Ref: fct_comment."fetch_run_key" > dim_fetch_run."fetch_run_key"
+Ref: fct_comment."fetched_date_key" > dim_date."date_key"
+Ref: fct_comment."post_flair_key" > dim_post_flair."post_flair_key"
+Ref: fct_comment."post_key" > dim_post."post_key"
+Ref: fct_comment."subreddit_key" > dim_subreddit."subreddit_key"
+Ref: fct_post."author_key" > dim_author."author_key"
+Ref: fct_post."fetch_run_key" > dim_fetch_run."fetch_run_key"
+Ref: fct_post."fetched_date_key" > dim_date."date_key"
+Ref: fct_post."post_flair_key" > dim_post_flair."post_flair_key"
+Ref: fct_post."post_key" > dim_post."post_key"
+Ref: fct_post."posted_date_key" > dim_date."date_key"
+Ref: fct_post."subreddit_key" > dim_subreddit."subreddit_key"

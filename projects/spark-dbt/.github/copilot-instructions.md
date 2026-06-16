@@ -12,7 +12,7 @@ These are the conventions and architecture facts that apply to **every** change 
 ```
 projects/spark-dbt/
 ├── README.md                     # devbox bootstrap, hatch shell, nx targets
-├── pyproject.toml                # hatch venv; pinned dbt-fabricspark==1.9.5 (uv installer)
+├── pyproject.toml                # hatch venv; pinned dbt-fabricspark==1.12.5 (uv installer)
 ├── project.json                  # nx root: clean, install, init, run, package, compile, lint
 ├── .scripts/
 │   ├── run-dbt-local.sh          # one-project loop: debug → deps → seed → build → cleanup → docs

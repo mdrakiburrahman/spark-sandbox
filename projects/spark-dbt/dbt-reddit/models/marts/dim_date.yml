@@ -1,0 +1,55 @@
+version: 2
+
+models:
+  - name: dim_date
+    description: >-
+      One row per calendar date (2024-01-01 .. 2027-12-31) plus an unknown member
+      at date_key = '-1'. SCD0 (immutable). Drives all temporal slicing and the
+      role-played date FKs on the facts.
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: date_key
+    columns:
+      - name: date_key
+        description: "yyyymmdd string. Natural key + surrogate. Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: date
+        description: "Calendar date (DATE). NULL for the unknown member."
+      - name: day
+        description: "Day of month (1-31)."
+      - name: day_of_week
+        description: "Spark day-of-week (1=Sunday .. 7=Saturday)."
+      - name: day_of_week_name
+        description: "Full weekday name (e.g. Monday)."
+      - name: day_of_month
+        description: "Day of month (1-31)."
+      - name: day_of_year
+        description: "Day of year (1-366)."
+      - name: week_of_year
+        description: "ISO-8601 week of year."
+      - name: iso_week_of_year
+        description: "ISO-8601 week of year."
+      - name: month
+        description: "Month number (1-12)."
+      - name: month_name
+        description: "Full month name (e.g. June)."
+      - name: quarter
+        description: "Calendar quarter (1-4)."
+      - name: quarter_name
+        description: "Quarter label (e.g. Q2)."
+      - name: year
+        description: "Calendar year."
+      - name: first_day_of_month
+        description: "First date of the month."
+      - name: last_day_of_month
+        description: "Last date of the month."
+      - name: first_day_of_year
+        description: "First date of the year."
+      - name: last_day_of_year
+        description: "Last date of the year."
+      - name: is_weekend
+        description: "True for Saturday/Sunday."

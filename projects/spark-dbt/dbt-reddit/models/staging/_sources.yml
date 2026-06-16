@@ -1,0 +1,75 @@
+version: 2
+
+sources:
+  - name: reddit_raw
+    description: >-
+      Mounted Reddit Delta tables produced by the `demo-reddit-ingestion` driver
+      (snapshot of r/MicrosoftFabric, 'top'-of-month listing). On `local-local`
+      these are mounted into the Hive metastore as `reddit_db_prod`; on Fabric
+      targets they live in the `reddit_db` lakehouse schema.
+    schema: >-
+      {%- if target.name == 'local-local' -%}
+        reddit_db_prod
+      {%- else -%}
+        reddit_db
+      {%- endif -%}
+    tables:
+      - name: posts
+        description: "One row per post per fetch run. Reddit t3_* submissions to the subreddit."
+        columns:
+          - name: id
+            description: "Reddit t3_* fullname id (natural key)."
+          - name: author_id
+            description: "Reddit t2_* author id (FK to authors.id)."
+          - name: subreddit_id
+            description: "Reddit t5_* subreddit id (FK to subreddits.id)."
+          - name: flair_text
+            description: "Raw post flair label; NULL/empty for unflaired posts."
+          - name: created_utc
+            description: "Post creation timestamp."
+          - name: fetch_run_id
+            description: "FK to fetch_runs.run_id — the ingestion run that captured this snapshot."
+
+      - name: comments
+        description: "One row per comment. Reddit t1_* comments under the captured posts."
+        columns:
+          - name: id
+            description: "Reddit t1_* comment id (natural key)."
+          - name: post_id
+            description: "Reddit t3_* id of the parent post (FK to posts.id)."
+          - name: author_id
+            description: "Reddit t2_* author id (FK to authors.id)."
+          - name: parent_id
+            description: "Raw Reddit parent fullname (t3_* = reply to post, t1_* = reply to comment)."
+          - name: fetch_run_id
+            description: "FK to fetch_runs.run_id."
+
+      - name: authors
+        description: "One row per author per fetch run. Reddit t2_* accounts seen during ingestion."
+        columns:
+          - name: id
+            description: "Reddit t2_* author id (natural key)."
+          - name: name
+            description: "Reddit username (case-preserved)."
+
+      - name: subreddits
+        description: "One row per subreddit per fetch run. Reddit t5_* communities."
+        columns:
+          - name: id
+            description: "Reddit t5_* subreddit id (natural key)."
+
+      - name: fetch_runs
+        description: "One row per ingestion run — operational context of each Reddit pull."
+        columns:
+          - name: run_id
+            description: "Epoch-millis-based run identifier (natural key)."
+
+      - name: microsoft_employees
+        description: "Seed lookup of known Microsoft employees, used to flag authors."
+        columns:
+          - name: username
+            description: "Microsoft username matched case-insensitively against authors.name."
+          - name: job_title
+            description: "Microsoft job title (e.g. PRINCIPAL PRODUCT MANAGER)."
+          - name: department
+            description: "Microsoft department (e.g. Power BI CAT_c)."

@@ -1,0 +1,62 @@
+reddit:
+  target: local-local
+  outputs:
+    # Local dbt client + Local spark server (default for development)
+    local-local:
+      authentication: cli
+      method: livy
+      livy_mode: local
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      lakehouse: dbt_reddit_dwh
+      schema: dbt_reddit_dwh
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-reddit
+
+    # Local dbt client + Fabric spark server
+    local-fabric:
+      authentication: cli
+      method: livy
+      livy_mode: fabric
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
+      lakehouse: dbt_reddit_dwh
+      schema: dbt_reddit_dwh
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-reddit
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''f704ad90-bc71-447f-abb7-69a0716a00d2'') }}"}'
+
+    # Fabric dbt client + Fabric spark server
+    fabric-fabric:
+      authentication: fabric_notebook
+      method: livy
+      livy_mode: fabric
+      session_id_file: /tmp/dbt-fabric-bundle/projects/dbt-reddit/livy-session-id.txt
+      connect_retries: 1
+      connect_timeout: 60
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
+      lakehouse: dbt_reddit_dwh
+      schema: dbt_reddit_dwh
+      threads: 12
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-reddit
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''f704ad90-bc71-447f-abb7-69a0716a00d2'') }}"}'
