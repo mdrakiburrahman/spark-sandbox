@@ -230,12 +230,6 @@ def main():
     skipped = 0
 
     for project_dir in projects:
-        # dbt-reddit's ERD is hand-maintained as erd/reddit.dbml (single source
-        # of truth) — skip it so no competing erd/full_model.dbml is generated.
-        if project_dir.name == "dbt-reddit":
-            print(f"SKIP: {project_dir.name} (ERD hand-maintained at erd/reddit.dbml)")
-            skipped += 1
-            continue
         if compile_project(project_dir):
             compiled += 1
         else:

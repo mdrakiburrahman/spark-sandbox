@@ -18,14 +18,6 @@ PROJECTS=()
 
 for PROJECT_DIR in dbt-*/; do
     PROJECT_NAME=$(basename "$PROJECT_DIR")
-
-    # dbt-reddit's ERD is hand-maintained as erd/reddit.dbml (single source of
-    # truth) — skip it so no competing erd/full_model.dbml is generated.
-    if [[ "$PROJECT_NAME" == "dbt-reddit" ]]; then
-        echo "=== Skipping ${PROJECT_NAME} (ERD hand-maintained at erd/reddit.dbml) ==="
-        continue
-    fi
-
     PROJECT_ABS=$(cd "$PROJECT_DIR" && pwd)
     echo "=== Preparing ${PROJECT_NAME} (background) ==="
 
