@@ -226,7 +226,7 @@ npx nx affected -t lint
 Notes:
 
 - The `lint` output in each `dbt-<name>/profiles.yml` is a static Livy-local target (`connect_retries: 0`, short timeouts) so sqlfluff's dbt templater compiles **without** a live Spark session.
-- Introspective models that need a live relation at compile time (e.g. `obt_sales.sql` via `dbt_utils.star`) can't be templated statically; sqlfluff skips them with a warning under `--ignore templating,parsing` (not a lint failure).
+- Introspective models that need a live relation at compile time (e.g. `obt_*.sql` via `dbt_utils.star`) compile non-deterministically (only when the upstream tables already exist), so they are excluded from sqlfluff via a `.sqlfluffignore` in the owning project (e.g. `dbt-adventureworks/.sqlfluffignore`). Add any new introspective model to that ignore file.
 - `dbt parse` must still succeed: `cd dbt-adventureworks && DBT_PROFILES_DIR=$(pwd) dbt parse`.
 
 ---
