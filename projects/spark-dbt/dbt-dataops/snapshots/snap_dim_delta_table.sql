@@ -12,33 +12,33 @@
     )
 }}
 
-select
+    SELECT
     -- Business key
-    table_fqn,
-    database_name,
-    table_name,
+        table_fqn,
+        database_name,
+        table_name,
 
-    -- SCD1 columns
-    table_id,
-    location,
-    format,
-    partition_columns,
+        -- SCD1 columns
+        table_id,
+        location,
+        format,
+        partition_columns,
 
-    -- SCD2 columns
-    clustering_columns,
-    table_properties,
-    min_reader_version,
-    min_writer_version,
+        -- SCD2 columns
+        clustering_columns,
+        table_properties,
+        min_reader_version,
+        min_writer_version,
 
-    -- Hash columns
-    __scd2_hash,
-    __scd1_hash,
-    __merge_effective_date,
+        -- Hash columns
+        __scd2_hash,
+        __scd1_hash,
+        __merge_effective_date,
 
-    -- Partition and audit columns
-    current_timestamp() as dbt_loaded_at,
-    date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
+        -- Partition and audit columns
+        current_timestamp() AS dbt_loaded_at,
+        date_format(current_timestamp(), 'yyyyMMdd') AS event_year_date
 
-from {{ ref('stg_delta_table_snapshots') }}
+    FROM {{ ref('stg_delta_table_snapshots') }}
 
 {% endsnapshot %}

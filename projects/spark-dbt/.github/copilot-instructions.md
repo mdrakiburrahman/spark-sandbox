@@ -16,17 +16,19 @@ projects/spark-dbt/
 ├── project.json                  # nx root: clean, install, init, run, package, compile, lint
 ├── .scripts/
 │   ├── run-dbt-local.sh          # one-project loop: debug → deps → seed → build → cleanup → docs
+│   ├── lint-dbt.sh               # per-project lint: black (Python) + sqlfluff fix/lint (SQL)
 │   ├── package-fabric.sh         # packages all dbt projects into a Fabric deploy bundle
 │   ├── compile-erd.sh            # ERD compile (dbterd)
 │   └── compile_erd.py
-├── .venv/                        # hatch-managed; dbt + azure-identity + dbterd + dbt-artifacts-parser
+├── .sqlfluff                     # shared sqlfluff config (dbt templater, sparksql, formatting-only)
+├── .venv/                        # hatch-managed; dbt + azure-identity + dbterd + dbt-artifacts-parser + sqlfluff
 │
 ├── dbt-jaffle-shop/              # Jaffle Shop demo (smoke test for the toolchain)
 ├── dbt-adventureworks/           # ★ Canonical Kimball STAR schema demo (dim_* / fct_* / obt_*)
 └── dbt-dataops/                  # Delta Lake KPI STAR schema (dim_* / fct_*, includes snapshots)
 ```
 
-All 3 `dbt-*/` directories are first-class Nx projects with their **own** `project.json` exposing a `test` target, so `nx affected -t test` only runs the sub-project whose files actually changed. The root `spark-dbt` Nx project owns the shared lifecycle (`clean`, `install`, `init`, `run`, `package`, `compile`, `lint`) and the shared hatch venv; `dbt-<name>/project.json::test` declares `dependsOn: [{ target: "init", projects: ["spark-dbt"], params: "ignore" }]` so the venv is provisioned once before the per-sub-project run.
+All `dbt-*/` directories are first-class Nx projects with their **own** `project.json` exposing `test` and `lint` targets, so `nx affected -t test`/`-t lint` only runs the sub-project whose files actually changed. The root `spark-dbt` Nx project owns the shared lifecycle (`clean`, `install`, `init`, `run`, `package`, `compile`) plus a slim root `lint` (black over `.scripts`/`.github`) and the shared hatch venv; `dbt-<name>/project.json::test` and `::lint` declare `dependsOn: [{ target: "init", projects: ["spark-dbt"], params: "ignore" }]` so the venv is provisioned once before the per-sub-project run.
 
 ---
 
@@ -130,12 +132,13 @@ The `spark-dbt` workspace splits responsibilities. The root `spark-dbt` project 
 
 | Nx project           | Owns                                                                 | Targets                                                       |
 | -------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `spark-dbt`          | shared lifecycle (`.scripts/`, `pyproject.toml`, hatch, `lint`)      | `clean`, `install`, `init`, `run`, `package`, `compile`, `lint` |
-| `dbt-jaffle-shop`    | `dbt-jaffle-shop/**`                                                 | `test`                                                        |
-| `dbt-adventureworks` | `dbt-adventureworks/**`                                              | `test`                                                        |
-| `dbt-dataops`        | `dbt-dataops/**`                                                     | `test`                                                        |
+| `spark-dbt`          | shared lifecycle (`.scripts/`, `pyproject.toml`, hatch, `.sqlfluff`) | `clean`, `install`, `init`, `run`, `package`, `compile`, `lint` |
+| `dbt-jaffle-shop`    | `dbt-jaffle-shop/**`                                                 | `test`, `lint`                                               |
+| `dbt-adventureworks` | `dbt-adventureworks/**`                                              | `test`, `lint`                                               |
+| `dbt-dataops`        | `dbt-dataops/**`                                                     | `test`, `lint`                                               |
+| `dbt-reddit`         | `dbt-reddit/**`                                                      | `test`, `lint`                                               |
 
-Each per-sub-project `test` invokes `.scripts/run-dbt-local.sh <project> {args.TARGET}` (default `TARGET=local-local`) and depends on `spark-dbt:init` (`params: "ignore"`) so the shared hatch venv is set up first. Lint (`black --line-length 2000 .`) lives at root `spark-dbt:lint` for now — there is no per-sub-project `lint`/`sqlfluff` here.
+Each per-sub-project `test` invokes `.scripts/run-dbt-local.sh <project> {args.TARGET}` (default `TARGET=local-local`) and `lint` invokes `.scripts/lint-dbt.sh <project>`; both depend on `spark-dbt:init` (`params: "ignore"`) so the shared hatch venv is set up first. The root `spark-dbt:lint` is a slim `black --line-length 2000 .scripts .github` for the shared Python not owned by any dbt sub-project; the per-project `lint` adds `sqlfluff` (see §7).
 
 ```bash
 # One-time devbox setup
@@ -204,16 +207,27 @@ Use the `using-dbt-for-analytics-engineering` skill ([`skills/using-dbt-for-anal
 
 ## 7. Linting
 
-Lint at this scope is **Python-only** via `black` (intentionally wide at `--line-length 2000` for `compile_erd.py`-style configs). SQL is **not** linted — but `dbt parse` must succeed:
+Two layers, both picked up by `nx affected -t lint`:
+
+- **Per-dbt-project (SQL + Python)** — `dbt-<name>:lint` runs `.scripts/lint-dbt.sh <project>`: `black --line-length 2000 <project>` then `sqlfluff fix` + `sqlfluff lint` over the project's `models`/`snapshots` (snapshots only if present). sqlfluff uses the shared `projects/spark-dbt/.sqlfluff` (dbt templater, `dialect=sparksql`, `target=lint`). The rule set is an **allowlist of `capitalisation` + `layout`** — i.e. formatting-only (casing, whitespace, indentation). Structural rewrites (CASE→COALESCE, alias/column-list removal, join-condition reordering, reference re-qualification) are intentionally **off** so lint never changes query semantics.
+- **Root shared Python** — `spark-dbt:lint` is a slim `black --line-length 2000 .scripts .github` for the root scripts/skills not owned by any sub-project.
 
 ```bash
-# Repo-root: lint all Python under projects/spark-dbt/
+# Lint one dbt project (black + sqlfluff fix/lint)
+npx nx run dbt-adventureworks:lint
+
+# Lint root shared Python
 npx nx run spark-dbt:lint
 
-# Local: validate Jinja+SQL parses cleanly before pushing
-cd projects/spark-dbt && hatch shell
-cd dbt-adventureworks && DBT_PROFILES_DIR=$(pwd) dbt parse
+# All affected (CI pattern)
+npx nx affected -t lint
 ```
+
+Notes:
+
+- The `lint` output in each `dbt-<name>/profiles.yml` is a static Livy-local target (`connect_retries: 0`, short timeouts) so sqlfluff's dbt templater compiles **without** a live Spark session.
+- Introspective models that need a live relation at compile time (e.g. `obt_sales.sql` via `dbt_utils.star`) can't be templated statically; sqlfluff skips them with a warning under `--ignore templating,parsing` (not a lint failure).
+- `dbt parse` must still succeed: `cd dbt-adventureworks && DBT_PROFILES_DIR=$(pwd) dbt parse`.
 
 ---
 
@@ -251,6 +265,7 @@ Update the ERD whenever you add / remove / rename a `dim_*` or `fct_*`, or chang
 - [ ] CTEs preferred over subqueries; staging predicates pushed to `stg_*`.
 - [ ] ERD regenerated (`npx nx run spark-dbt:compile`) if the DAG changed.
 - [ ] `dbt parse` succeeds against `local-local`.
+- [ ] `npx nx run dbt-<name>:lint` is clean (`sqlfluff` formatting + `black`) before opening a PR.
 - [ ] `dbt build --select <model>+` succeeds against `local-local` before opening a PR.
 - [ ] Unit tests added for any model with non-trivial logic — see [`skills/adding-dbt-unit-test/skill.md`](skills/adding-dbt-unit-test/skill.md).
 

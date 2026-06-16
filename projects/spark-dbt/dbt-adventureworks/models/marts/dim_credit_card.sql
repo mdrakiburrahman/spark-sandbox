@@ -1,17 +1,17 @@
-with stg_salesorderheader as (
-    select distinct creditcardid
-    from {{ ref('salesorderheader') }}
-    where creditcardid is not null
+WITH stg_salesorderheader AS (
+    SELECT DISTINCT creditcardid
+    FROM {{ ref('salesorderheader') }}
+    WHERE creditcardid IS NOT NULL
 ),
 
-stg_creditcard as (
-    select *
-    from {{ ref('creditcard') }}
+stg_creditcard AS (
+    SELECT *
+    FROM {{ ref('creditcard') }}
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['stg_salesorderheader.creditcardid']) }} as creditcard_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['stg_salesorderheader.creditcardid']) }} AS creditcard_key,
     stg_salesorderheader.creditcardid,
     stg_creditcard.cardtype
-from stg_salesorderheader
-left join stg_creditcard on stg_salesorderheader.creditcardid = stg_creditcard.creditcardid
+FROM stg_salesorderheader
+LEFT JOIN stg_creditcard ON stg_salesorderheader.creditcardid = stg_creditcard.creditcardid

@@ -1,14 +1,14 @@
-with source as (
+WITH source AS (
 
-    select * from {{ source('reddit_raw', 'microsoft_employees') }}
+    SELECT * FROM {{ source('reddit_raw', 'microsoft_employees') }}
 
 )
 
-select
-    lower(username)  as username_lc,
-    max(username)    as msft_username,
-    max(job_title)   as msft_job_title,
-    max(department)  as msft_department
-from source
-where username is not null
-group by lower(username)
+SELECT
+    lower(username) AS username_lc,
+    max(username) AS msft_username,
+    max(job_title) AS msft_job_title,
+    max(department) AS msft_department
+FROM source
+WHERE username IS NOT NULL
+GROUP BY lower(username)

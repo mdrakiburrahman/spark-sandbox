@@ -27,6 +27,21 @@
           }
         ]
       }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "cache": false,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/projects/spark-dbt/.scripts/lint-dbt.sh",
+        "{workspaceRoot}/projects/spark-dbt/.sqlfluff",
+        "{workspaceRoot}/projects/spark-dbt/pyproject.toml"
+      ],
+      "options": {
+        "cwd": "projects/spark-dbt",
+        "commands": [".scripts/lint-dbt.sh dbt-reddit"],
+        "parallel": false
+      }
     }
   }
 }

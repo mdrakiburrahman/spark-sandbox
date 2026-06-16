@@ -1,11 +1,11 @@
-with source as (
+WITH source AS (
 
-    select * from {{ source('reddit_raw', 'fetch_runs') }}
+    SELECT * FROM {{ source('reddit_raw', 'fetch_runs') }}
 
 )
 
-select
-    run_id        as run_natural_id,
+SELECT
+    run_id AS run_natural_id,
     subreddit,
     listing_type,
     time_window,
@@ -18,5 +18,5 @@ select
     more_calls,
     subreddits_seen,
     authors_seen
-from source
-where run_id is not null
+FROM source
+WHERE run_id IS NOT NULL

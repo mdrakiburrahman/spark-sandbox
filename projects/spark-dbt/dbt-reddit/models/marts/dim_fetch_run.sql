@@ -1,11 +1,11 @@
-with stg as (
+WITH stg AS (
 
-    select * from {{ ref('stg_fetch_runs') }}
+    SELECT * FROM {{ ref('stg_fetch_runs') }}
 
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['run_natural_id']) }} as fetch_run_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['run_natural_id']) }} AS fetch_run_key,
     run_natural_id,
     subreddit,
     listing_type,
@@ -19,22 +19,22 @@ select
     more_calls,
     subreddits_seen,
     authors_seen
-from stg
+FROM stg
 
-union all
+UNION ALL
 
-select
-    '-1'                     as fetch_run_key,
-    cast(-1 as bigint)       as run_natural_id,
-    'Unknown'                as subreddit,
-    'Unknown'                as listing_type,
-    cast(null as string)     as time_window,
-    cast(null as int)        as limit_requested,
-    cast(null as boolean)    as skip_comments,
-    cast(null as timestamp)  as started_at,
-    cast(null as timestamp)  as finished_at,
-    cast(null as int)        as posts_ingested,
-    cast(null as int)        as comments_ingested,
-    cast(null as bigint)     as more_calls,
-    cast(null as int)        as subreddits_seen,
-    cast(null as int)        as authors_seen
+SELECT
+    '-1' AS fetch_run_key,
+    cast(-1 AS bigint) AS run_natural_id,
+    'Unknown' AS subreddit,
+    'Unknown' AS listing_type,
+    cast(NULL AS string) AS time_window,
+    cast(NULL AS int) AS limit_requested,
+    cast(NULL AS boolean) AS skip_comments,
+    cast(NULL AS timestamp) AS started_at,
+    cast(NULL AS timestamp) AS finished_at,
+    cast(NULL AS int) AS posts_ingested,
+    cast(NULL AS int) AS comments_ingested,
+    cast(NULL AS bigint) AS more_calls,
+    cast(NULL AS int) AS subreddits_seen,
+    cast(NULL AS int) AS authors_seen

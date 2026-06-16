@@ -9,14 +9,14 @@
     )
 }}
 
-with src as (
-    select
+WITH src AS (
+    SELECT
         *,
-        row_number() over (
-            partition by table_fqn, version
-            order by ingested_at desc
-        ) as _row_num
-    from {{ ref('stg_delta_commit_history') }}
+        row_number() OVER (
+            PARTITION BY table_fqn, version
+            ORDER BY ingested_at DESC
+        ) AS _row_num
+    FROM {{ ref('stg_delta_commit_history') }}
     {% if is_incremental() %}
     where
         snapshot_date >= (select date_format(max(commit_timestamp), 'yyyyMMdd') from {{ this }})
@@ -24,23 +24,23 @@ with src as (
     {% endif %}
 ),
 
-deduped as (
-    select * from src where _row_num = 1
+deduped AS (
+    SELECT * FROM src WHERE _row_num = 1
 ),
 
-dim_tbl as (
-    select __pk as table_key, table_fqn, row_effective_start, row_effective_end
-    from {{ ref('dim_delta_table') }}
+dim_tbl AS (
+    SELECT __pk AS table_key, table_fqn, row_effective_start, row_effective_end
+    FROM {{ ref('dim_delta_table') }}
 ),
 
-dim_op as (
-    select operation_type_key, operation
-    from {{ ref('dim_delta_table_operation_type') }}
+dim_op AS (
+    SELECT operation_type_key, operation
+    FROM {{ ref('dim_delta_table_operation_type') }}
 ),
 
-fact as (
-    select
-        sha2(concat_ws('|', deduped.table_fqn, cast(deduped.version as string)), 256) as commit_key,
+fact AS (
+    SELECT
+        sha2(concat_ws('|', deduped.table_fqn, cast(deduped.version AS string)), 256) AS commit_key,
         dim_tbl.table_key,
         dim_op.operation_type_key,
         deduped.date_key,
@@ -53,16 +53,17 @@ fact as (
         deduped.execution_time_ms,
         deduped.is_blind_append,
         deduped.ingested_at,
-        current_timestamp() as dbt_loaded_at,
-        date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
+        current_timestamp() AS dbt_loaded_at,
+        date_format(current_timestamp(), 'yyyyMMdd') AS event_year_date
 
-    from deduped
-    inner join dim_tbl
-        on deduped.table_fqn = dim_tbl.table_fqn
-        and deduped.commit_timestamp >= dim_tbl.row_effective_start
-        and deduped.commit_timestamp < coalesce(dim_tbl.row_effective_end, cast('9999-12-31' as timestamp))
-    left join dim_op on deduped.operation = dim_op.operation
+    FROM deduped
+    INNER JOIN dim_tbl
+        ON
+            deduped.table_fqn = dim_tbl.table_fqn
+            AND deduped.commit_timestamp >= dim_tbl.row_effective_start
+            AND deduped.commit_timestamp < coalesce(dim_tbl.row_effective_end, cast('9999-12-31' AS timestamp))
+    LEFT JOIN dim_op ON deduped.operation = dim_op.operation
 )
 
-select * from fact
+SELECT * FROM fact
 {{ fact_not_exists('commit_key', 'fact') }}

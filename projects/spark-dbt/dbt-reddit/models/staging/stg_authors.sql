@@ -1,14 +1,14 @@
-with source as (
+WITH source AS (
 
-    select * from {{ source('reddit_raw', 'authors') }}
+    SELECT * FROM {{ source('reddit_raw', 'authors') }}
 
 )
 
-select
-    id            as author_natural_id,
-    name          as author_name,
-    coalesce(is_deleted, false) as is_deleted,
+SELECT
+    id AS author_natural_id,
+    name AS author_name,
+    coalesce(is_deleted, FALSE) AS is_deleted,
     fetched_at,
-    fetch_run_id  as run_natural_id
-from source
-where id is not null
+    fetch_run_id AS run_natural_id
+FROM source
+WHERE id IS NOT NULL

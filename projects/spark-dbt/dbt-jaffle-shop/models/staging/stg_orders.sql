@@ -1,33 +1,33 @@
-with source as (
+WITH source AS (
 
-    select * from {{ ref('raw_orders') }}
+    SELECT * FROM {{ ref('raw_orders') }}
 
 ),
 
-renamed as (
+renamed AS (
 
-    select
-        id as order_id,
-        user_id as customer_id,
+    SELECT
+        id AS order_id,
+        user_id AS customer_id,
         order_date,
         status
 
-    from source
+    FROM source
 
 ),
 
 -- Deduplicate on natural key
-deduped as (
-    select
+deduped AS (
+    SELECT
         *,
-        row_number() over (partition by order_id order by order_id) as _row_num
-    from renamed
+        row_number() OVER (PARTITION BY order_id ORDER BY order_id) AS _row_num
+    FROM renamed
 )
 
-select
+SELECT
     order_id,
     customer_id,
     order_date,
     status
-from deduped
-where _row_num = 1
+FROM deduped
+WHERE _row_num = 1
