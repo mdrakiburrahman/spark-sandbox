@@ -19,7 +19,8 @@
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["black --line-length 2000 ."],
+        "cwd": "projects/spark-dbt",
+        "commands": ["black --line-length 2000 .scripts .github"],
         "parallel": false
       }
     },

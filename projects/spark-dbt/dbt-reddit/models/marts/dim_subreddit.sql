@@ -1,35 +1,35 @@
-with stg as (
+WITH stg AS (
 
-    select * from {{ ref('stg_subreddits') }}
+    SELECT * FROM {{ ref('stg_subreddits') }}
 
 ),
 
-deduped as (
+deduped AS (
 
-    select
+    SELECT
         *,
-        row_number() over (
-            partition by subreddit_natural_id
-            order by fetched_at desc nulls last, run_natural_id desc nulls last
-        ) as _row_num
-    from stg
+        row_number() OVER (
+            PARTITION BY subreddit_natural_id
+            ORDER BY fetched_at DESC NULLS LAST, run_natural_id DESC NULLS LAST
+        ) AS _row_num
+    FROM stg
 
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['subreddit_natural_id']) }} as subreddit_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['subreddit_natural_id']) }} AS subreddit_key,
     subreddit_natural_id,
     display_name,
     subscribers,
     fetched_at
-from deduped
-where _row_num = 1
+FROM deduped
+WHERE _row_num = 1
 
-union all
+UNION ALL
 
-select
-    '-1'                     as subreddit_key,
-    'UNKNOWN'                as subreddit_natural_id,
-    'Unknown'                as display_name,
-    cast(null as int)        as subscribers,
-    cast(null as timestamp)  as fetched_at
+SELECT
+    '-1' AS subreddit_key,
+    'UNKNOWN' AS subreddit_natural_id,
+    'Unknown' AS display_name,
+    cast(NULL AS int) AS subscribers,
+    cast(NULL AS timestamp) AS fetched_at

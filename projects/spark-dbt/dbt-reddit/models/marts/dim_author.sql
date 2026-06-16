@@ -1,52 +1,52 @@
-with stg_authors as (
+WITH stg_authors AS (
 
-    select * from {{ ref('stg_authors') }}
+    SELECT * FROM {{ ref('stg_authors') }}
 
 ),
 
-deduped as (
+deduped AS (
 
-    select
+    SELECT
         *,
-        row_number() over (
-            partition by author_natural_id
-            order by fetched_at desc nulls last, run_natural_id desc nulls last
-        ) as _row_num
-    from stg_authors
+        row_number() OVER (
+            PARTITION BY author_natural_id
+            ORDER BY fetched_at DESC NULLS LAST, run_natural_id DESC NULLS LAST
+        ) AS _row_num
+    FROM stg_authors
 
 ),
 
-employees as (
+employees AS (
 
-    select * from {{ ref('stg_microsoft_employees') }}
+    SELECT * FROM {{ ref('stg_microsoft_employees') }}
 
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['a.author_natural_id']) }} as author_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['a.author_natural_id']) }} AS author_key,
     a.author_natural_id,
     a.author_name,
     a.is_deleted,
-    e.username_lc is not null                                        as is_microsoft_employee,
+    e.username_lc IS NOT NULL AS is_microsoft_employee,
     e.msft_username,
     e.msft_job_title,
     e.msft_department,
-    coalesce(lower(e.msft_job_title) like '%product manager%', false) as is_product_manager,
+    coalesce(lower(e.msft_job_title) LIKE '%product manager%', FALSE) AS is_product_manager,
     a.fetched_at
-from deduped a
-left join employees e on lower(a.author_name) = e.username_lc
-where a._row_num = 1
+FROM deduped a
+LEFT JOIN employees e ON lower(a.author_name) = e.username_lc
+WHERE a._row_num = 1
 
-union all
+UNION ALL
 
-select
-    '-1'                     as author_key,
-    'UNKNOWN'                as author_natural_id,
-    'Unknown'                as author_name,
-    cast(true as boolean)    as is_deleted,
-    cast(false as boolean)   as is_microsoft_employee,
-    cast(null as string)     as msft_username,
-    cast(null as string)     as msft_job_title,
-    cast(null as string)     as msft_department,
-    cast(false as boolean)   as is_product_manager,
-    cast(null as timestamp)  as fetched_at
+SELECT
+    '-1' AS author_key,
+    'UNKNOWN' AS author_natural_id,
+    'Unknown' AS author_name,
+    cast(TRUE AS boolean) AS is_deleted,
+    cast(FALSE AS boolean) AS is_microsoft_employee,
+    cast(NULL AS string) AS msft_username,
+    cast(NULL AS string) AS msft_job_title,
+    cast(NULL AS string) AS msft_department,
+    cast(FALSE AS boolean) AS is_product_manager,
+    cast(NULL AS timestamp) AS fetched_at

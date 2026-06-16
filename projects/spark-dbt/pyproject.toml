@@ -25,6 +25,8 @@ dependencies = [
   "azure-core>=1.33.0",
   "dbterd",
   "dbt-artifacts-parser",
+  "sqlfluff",
+  "sqlfluff-templater-dbt",
 ]
 
 [tool.hatch.envs.default.env-vars]

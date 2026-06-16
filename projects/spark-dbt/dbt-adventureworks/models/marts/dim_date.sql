@@ -1,8 +1,8 @@
-with stg_date as (
-    select * from {{ ref('date') }}
+WITH stg_date AS (
+    SELECT * FROM {{ ref('date') }}
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['stg_date.date_day']) }} as date_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['stg_date.date_day']) }} AS date_key,
     *
-from stg_date
+FROM stg_date

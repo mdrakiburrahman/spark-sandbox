@@ -1,9 +1,9 @@
-with source as (
-    select * from {{ source('dataops_inventory', 'kpi_results') }}
+WITH source AS (
+    SELECT * FROM {{ source('dataops_inventory', 'kpi_results') }}
 ),
 
-cleaned as (
-    select
+cleaned AS (
+    SELECT
         table_fqn,
         overall_status,
         evaluation_timestamp,
@@ -24,8 +24,8 @@ cleaned as (
         optimize_count_7d,
         vacuum_count_7d,
         snapshot_date,
-        snapshot_date as date_key
-    from source
+        snapshot_date AS date_key
+    FROM source
 )
 
-select * from cleaned
+SELECT * FROM cleaned

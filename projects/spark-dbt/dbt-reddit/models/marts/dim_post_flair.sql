@@ -1,21 +1,21 @@
-with flairs as (
+WITH flairs AS (
 
-    select distinct
+    SELECT DISTINCT
         flair_text,
         flair_category
-    from {{ ref('stg_posts') }}
+    FROM {{ ref('stg_posts') }}
 
 )
 
-select
-    {{ dbt_utils.generate_surrogate_key(['flair_text']) }} as post_flair_key,
+SELECT
+    {{ dbt_utils.generate_surrogate_key(['flair_text']) }} AS post_flair_key,
     flair_text,
     flair_category
-from flairs
+FROM flairs
 
-union all
+UNION ALL
 
-select
-    '-1'                  as post_flair_key,
-    'Unknown'             as flair_text,
-    cast(null as string)  as flair_category
+SELECT
+    '-1' AS post_flair_key,
+    'Unknown' AS flair_text,
+    cast(NULL AS string) AS flair_category

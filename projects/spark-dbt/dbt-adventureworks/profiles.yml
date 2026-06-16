@@ -1,6 +1,22 @@
 adventureworks:
   target: local-local
   outputs:
+    # Lint-only static target (sqlfluff dbt templater) - no live Spark session
+    lint:
+      authentication: cli
+      method: livy
+      livy_mode: local
+      connect_retries: 0
+      retry_all: false
+      http_timeout: 5
+      statement_timeout: 5
+      lakehouse: dbt_adventureworks_dwh
+      schema: dbt_adventureworks_dwh
+      threads: 4
+      type: fabricspark
+      spark_config:
+        name: dbt-adventureworks
+
     # Local dbt client + Local spark server (default for development)
     local-local:
       authentication: cli

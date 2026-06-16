@@ -4,27 +4,28 @@
     )
 }}
 
-with source as (
-    select * from {{ source('dataops_inventory', 'openlineage') }}
-    where eventType = 'COMPLETE'
+WITH source AS (
+    SELECT * FROM {{ source('dataops_inventory', 'openlineage') }}
+    WHERE eventtype = 'COMPLETE'
 ),
 
-lineage_edges as (
-    select distinct
-        inputs_namespace as source_namespace,
-        inputs_name as source_name,
-        outputs_namespace as target_namespace,
-        outputs_name as target_name,
+lineage_edges AS (
+    SELECT DISTINCT
+        inputs_namespace AS source_namespace,
+        inputs_name AS source_name,
+        outputs_namespace AS target_namespace,
+        outputs_name AS target_name,
         job_name,
         job_namespace,
-        eventTime as event_timestamp,
+        eventtime AS event_timestamp,
         event_year_date,
-        event_year_date as date_key
-    from source
-    where inputs_name is not null
-      and outputs_name is not null
-      and inputs_name != ''
-      and outputs_name != ''
+        event_year_date AS date_key
+    FROM source
+    WHERE
+        inputs_name IS NOT NULL
+        AND outputs_name IS NOT NULL
+        AND inputs_name != ''
+        AND outputs_name != ''
 )
 
-select * from lineage_edges
+SELECT * FROM lineage_edges

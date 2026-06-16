@@ -1,0 +1,5 @@
+# One-big-table (obt_*) models use dbt_utils.star, which introspects live
+# relations at compile time. They can only be templated when the upstream
+# tables already exist + a Spark session is up, so sqlfluff's result is
+# non-deterministic (skipped vs fixed). Exclude them so lint is deterministic.
+obt_*.sql

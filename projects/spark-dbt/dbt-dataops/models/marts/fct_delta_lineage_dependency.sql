@@ -15,8 +15,8 @@
     are intentionally nullable here (LEFT JOIN preserved by design).
 #}
 
-with src as (
-    select * from {{ ref('stg_delta_lineage') }}
+WITH src AS (
+    SELECT * FROM {{ ref('stg_delta_lineage') }}
     {% if is_incremental() %}
     where
         event_year_date >= (select date_format(max(last_seen_timestamp), 'yyyyMMdd') from {{ this }})
@@ -24,54 +24,59 @@ with src as (
     {% endif %}
 ),
 
-daily_edges as (
-    select
+daily_edges AS (
+    SELECT
         source_name,
         target_name,
         job_name,
         date_key,
-        min(event_timestamp) as first_seen_timestamp,
-        max(event_timestamp) as last_seen_timestamp,
-        count(*) as event_count
-    from src
-    group by
+        min(event_timestamp) AS first_seen_timestamp,
+        max(event_timestamp) AS last_seen_timestamp,
+        count(*) AS event_count
+    FROM src
+    GROUP BY
         source_name, target_name,
         job_name,
         date_key
 ),
 
-dim_tbl as (
-    select __pk as table_key, table_fqn, row_effective_start, row_effective_end
-    from {{ ref('dim_delta_table') }}
+dim_tbl AS (
+    SELECT __pk AS table_key, table_fqn, row_effective_start, row_effective_end
+    FROM {{ ref('dim_delta_table') }}
 ),
 
-fact as (
-    select
-        sha2(concat_ws('|',
+fact AS (
+    SELECT
+        sha2(concat_ws(
+            '|',
             de.source_name, de.target_name,
             de.job_name, de.date_key
-        ), 256) as lineage_key,
-        src_tbl.table_key as source_table_key,
-        tgt_tbl.table_key as target_table_key,
+        ), 256) AS lineage_key,
+        src_tbl.table_key AS source_table_key,
+        tgt_tbl.table_key AS target_table_key,
         de.date_key,
         de.first_seen_timestamp,
         de.last_seen_timestamp,
         de.event_count,
-        current_timestamp() as dbt_loaded_at,
-        date_format(current_timestamp(), 'yyyyMMdd') as event_year_date
+        current_timestamp() AS dbt_loaded_at,
+        date_format(current_timestamp(), 'yyyyMMdd') AS event_year_date
 
-    from daily_edges de
-    left join dim_tbl as src_tbl
-        on (de.source_name like concat('%', replace(src_tbl.table_fqn, '.', '/'), '%')
-            or de.source_name like concat('%', src_tbl.table_fqn, '%'))
-        and de.first_seen_timestamp >= src_tbl.row_effective_start
-        and de.first_seen_timestamp < coalesce(src_tbl.row_effective_end, cast('9999-12-31' as timestamp))
-    left join dim_tbl as tgt_tbl
-        on (de.target_name like concat('%', replace(tgt_tbl.table_fqn, '.', '/'), '%')
-            or de.target_name like concat('%', tgt_tbl.table_fqn, '%'))
-        and de.first_seen_timestamp >= tgt_tbl.row_effective_start
-        and de.first_seen_timestamp < coalesce(tgt_tbl.row_effective_end, cast('9999-12-31' as timestamp))
+    FROM daily_edges de
+    LEFT JOIN dim_tbl AS src_tbl
+        ON (
+            de.source_name LIKE concat('%', replace(src_tbl.table_fqn, '.', '/'), '%')
+            OR de.source_name LIKE concat('%', src_tbl.table_fqn, '%')
+        )
+        AND de.first_seen_timestamp >= src_tbl.row_effective_start
+        AND de.first_seen_timestamp < coalesce(src_tbl.row_effective_end, cast('9999-12-31' AS timestamp))
+    LEFT JOIN dim_tbl AS tgt_tbl
+        ON (
+            de.target_name LIKE concat('%', replace(tgt_tbl.table_fqn, '.', '/'), '%')
+            OR de.target_name LIKE concat('%', tgt_tbl.table_fqn, '%')
+        )
+        AND de.first_seen_timestamp >= tgt_tbl.row_effective_start
+        AND de.first_seen_timestamp < coalesce(tgt_tbl.row_effective_end, cast('9999-12-31' AS timestamp))
 )
 
-select * from fact
+SELECT * FROM fact
 {{ fact_not_exists('lineage_key', 'fact') }}

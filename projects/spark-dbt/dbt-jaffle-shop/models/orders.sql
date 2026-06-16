@@ -1,43 +1,43 @@
 {% set payment_methods = ['credit_card', 'coupon', 'bank_transfer', 'gift_card'] %}
 
-with orders as (
+WITH orders AS (
 
-    select * from {{ ref('stg_orders') }}
-
-),
-
-payments as (
-
-    select * from {{ ref('stg_payments') }}
+    SELECT * FROM {{ ref('stg_orders') }}
 
 ),
 
-customers as (
+payments AS (
 
-    select * from {{ ref('stg_customers') }}
+    SELECT * FROM {{ ref('stg_payments') }}
 
 ),
 
-order_payments as (
+customers AS (
 
-    select
+    SELECT * FROM {{ ref('stg_customers') }}
+
+),
+
+order_payments AS (
+
+    SELECT
         order_id,
 
         {% for payment_method in payment_methods -%}
-        sum(case when payment_method = '{{ payment_method }}' then amount else 0 end) as {{ payment_method }}_amount,
+            sum(CASE WHEN payment_method = '{{ payment_method }}' THEN amount ELSE 0 END) AS {{ payment_method }}_amount,
         {% endfor -%}
 
-        sum(amount) as total_amount
+        sum(amount) AS total_amount
 
-    from payments
+    FROM payments
 
-    group by order_id
+    GROUP BY order_id
 
 ),
 
-final as (
+final AS (
 
-    select
+    SELECT
         orders.order_id,
         orders.customer_id,
         orders.order_date,
@@ -45,21 +45,21 @@ final as (
 
         {% for payment_method in payment_methods -%}
 
-        order_payments.{{ payment_method }}_amount,
+            order_payments.{{ payment_method }}_amount,
 
         {% endfor -%}
 
-        order_payments.total_amount as amount
+        order_payments.total_amount AS amount
 
-    from orders
+    FROM orders
 
     -- FK integrity: only include orders whose customer exists
-    inner join customers
-        on orders.customer_id = customers.customer_id
+    INNER JOIN customers
+        ON orders.customer_id = customers.customer_id
 
-    left join order_payments
-        on orders.order_id = order_payments.order_id
+    LEFT JOIN order_payments
+        ON orders.order_id = order_payments.order_id
 
 )
 
-select * from final
+SELECT * FROM final

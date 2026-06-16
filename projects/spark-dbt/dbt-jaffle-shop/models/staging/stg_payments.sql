@@ -1,35 +1,35 @@
-with source as (
-    
-    select * from {{ ref('raw_payments') }}
+WITH source AS (
+
+    SELECT * FROM {{ ref('raw_payments') }}
 
 ),
 
-renamed as (
+renamed AS (
 
-    select
-        id as payment_id,
+    SELECT
+        id AS payment_id,
         order_id,
         payment_method,
 
         -- `amount` is currently stored in cents, so we convert it to dollars
-        amount / 100 as amount
+        amount / 100 AS amount
 
-    from source
+    FROM source
 
 ),
 
 -- Deduplicate on natural key
-deduped as (
-    select
+deduped AS (
+    SELECT
         *,
-        row_number() over (partition by payment_id order by payment_id) as _row_num
-    from renamed
+        row_number() OVER (PARTITION BY payment_id ORDER BY payment_id) AS _row_num
+    FROM renamed
 )
 
-select
+SELECT
     payment_id,
     order_id,
     payment_method,
     amount
-from deduped
-where _row_num = 1
+FROM deduped
+WHERE _row_num = 1

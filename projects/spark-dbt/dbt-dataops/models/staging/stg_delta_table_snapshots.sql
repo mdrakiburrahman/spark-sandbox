@@ -1,32 +1,32 @@
-with source as (
-    select * from {{ source('dataops_inventory', 'table_snapshots') }}
+WITH source AS (
+    SELECT * FROM {{ source('dataops_inventory', 'table_snapshots') }}
 ),
 
-ranked as (
-    select
+ranked AS (
+    SELECT
         *,
-        row_number() over (
-            partition by table_fqn
-            order by snapshot_date desc, ingested_at desc
-        ) as _row_num
-    from source
+        row_number() OVER (
+            PARTITION BY table_fqn
+            ORDER BY snapshot_date DESC, ingested_at DESC
+        ) AS _row_num
+    FROM source
 ),
 
-latest as (
-    select * from ranked where _row_num = 1
+latest AS (
+    SELECT * FROM ranked WHERE _row_num = 1
 ),
 
-cleaned as (
-    select
+cleaned AS (
+    SELECT
         table_fqn,
         database_name,
         table_name,
         table_id,
         location,
         format,
-        cast(partition_columns as string) as partition_columns,
-        cast(clustering_columns as string) as clustering_columns,
-        cast(table_properties as string) as table_properties,
+        cast(partition_columns AS string) AS partition_columns,
+        cast(clustering_columns AS string) AS clustering_columns,
+        cast(table_properties AS string) AS table_properties,
         min_reader_version,
         min_writer_version,
         num_files,
@@ -36,26 +36,28 @@ cleaned as (
         last_modified,
         ingested_at,
         snapshot_date,
-        snapshot_date as date_key,
+        snapshot_date AS date_key,
 
-        sha2(concat_ws('|',
-            coalesce(cast(clustering_columns as string), ''),
-            coalesce(cast(table_properties as string), ''),
-            coalesce(cast(min_reader_version as string), ''),
-            coalesce(cast(min_writer_version as string), '')
-        ), 256) as __scd2_hash,
+        sha2(concat_ws(
+            '|',
+            coalesce(cast(clustering_columns AS string), ''),
+            coalesce(cast(table_properties AS string), ''),
+            coalesce(cast(min_reader_version AS string), ''),
+            coalesce(cast(min_writer_version AS string), '')
+        ), 256) AS __scd2_hash,
 
-        sha2(concat_ws('|',
+        sha2(concat_ws(
+            '|',
             coalesce(table_id, ''),
             coalesce(location, ''),
             coalesce(format, ''),
-            coalesce(cast(partition_columns as string), '')
-        ), 256) as __scd1_hash,
+            coalesce(cast(partition_columns AS string), '')
+        ), 256) AS __scd1_hash,
 
-        current_date() as __merge_effective_date,
-        current_timestamp() as __merge_ingest_time
+        current_date() AS __merge_effective_date,
+        current_timestamp() AS __merge_ingest_time
 
-    from latest
+    FROM latest
 )
 
-select * from cleaned
+SELECT * FROM cleaned

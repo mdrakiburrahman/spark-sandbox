@@ -1,9 +1,9 @@
-with source as (
-    select * from {{ source('dataops_inventory', 'commit_history') }}
+WITH source AS (
+    SELECT * FROM {{ source('dataops_inventory', 'commit_history') }}
 ),
 
-cleaned as (
-    select
+cleaned AS (
+    SELECT
         table_fqn,
         database_name,
         table_name,
@@ -26,8 +26,8 @@ cleaned as (
         execution_time_ms,
         ingested_at,
         snapshot_date,
-        snapshot_date as date_key
-    from source
+        snapshot_date AS date_key
+    FROM source
 )
 
-select * from cleaned
+SELECT * FROM cleaned
