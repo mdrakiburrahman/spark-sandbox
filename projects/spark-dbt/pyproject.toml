@@ -27,6 +27,8 @@ dependencies = [
   "dbt-artifacts-parser",
   "sqlfluff",
   "sqlfluff-templater-dbt",
+  "deltalake",
+  "pyarrow",
 ]
 
 [tool.hatch.envs.default.env-vars]
