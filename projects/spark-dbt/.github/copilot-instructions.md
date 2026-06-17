@@ -15,7 +15,7 @@ projects/spark-dbt/
 ├── pyproject.toml                # hatch venv; pinned dbt-fabricspark==1.12.5 (uv installer)
 ├── project.json                  # nx root: clean, install, init, run, package, compile, lint
 ├── .scripts/
-│   ├── run-dbt-local.sh          # one-project loop: debug → deps → seed → build → cleanup → docs
+│   ├── run-dbt-local.sh          # thin wrapper: builds inline YAML → dbt-runner-lib (deps → debug → seed → build → cleanup → docs + metrics)
 │   ├── lint-dbt.sh               # per-project lint: black (Python) + sqlfluff fix/lint (SQL)
 │   ├── package-fabric.sh         # packages all dbt projects into a Fabric deploy bundle
 │   ├── compile-erd.sh            # ERD compile (dbterd)
@@ -166,7 +166,7 @@ npx nx run spark-dbt:compile
 npx nx run spark-dbt:package
 ```
 
-`run-dbt-local.sh` invokes: `dbt debug → dbt deps → dbt seed → dbt build --exclude resource_type:seed → cleanup_dbt_tmp_relations (if macro exists) → dbt docs generate`.
+`run-dbt-local.sh` is a thin wrapper: it builds an inline-YAML `runner:` config (local-local target, metrics localized under `.temp/dbt-runner/<project>`) and hands it to the shared **`dbt-runner-lib`** (`projects/fabric/python/dbt-runner-lib`), which executes the pipeline `dbt deps → debug → seed → build --exclude resource_type:seed → cleanup_dbt_tmp_relations (if macro exists) → docs generate`, collects node-execution metrics, and writes the **same** Delta table (`dbt_node_executions`) the Fabric `dbt_scheduler` notebook produces — only the paths differ. The library is an editable dependency of the spark-dbt hatch venv (installed by `spark-dbt:install`) and is bundled into `dbt-fabric-bundle.tar.gz` by `package-fabric.sh`. See [`projects/fabric/python/dbt-runner-lib/README.md`](../../fabric/python/dbt-runner-lib/README.md) for the full YAML contract.
 
 ---
 

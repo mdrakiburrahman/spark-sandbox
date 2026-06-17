@@ -18,9 +18,9 @@
 WITH src AS (
     SELECT * FROM {{ ref('stg_delta_lineage') }}
     {% if is_incremental() %}
-    where
-        event_year_date >= (select date_format(max(last_seen_timestamp), 'yyyyMMdd') from {{ this }})
-        and event_timestamp > (select max(last_seen_timestamp) from {{ this }})
+        WHERE
+            event_year_date >= (SELECT date_format(max(last_seen_timestamp), 'yyyyMMdd') FROM {{ this }})
+            AND event_timestamp > (SELECT max(last_seen_timestamp) FROM {{ this }})
     {% endif %}
 ),
 
