@@ -1,0 +1,59 @@
+# Canonical annotated configuration template for `dbt-runner-lib`.
+#
+# This file documents the full inline-YAML contract consumed by `DbtRunner`.
+# Both entry points (the local `run-dbt-local.sh` wrapper and the Fabric
+# `dbt_scheduler` notebook) build a payload of this shape, base64-encode it,
+# and hand it to `DbtRunner.from_base64(...).run()`.
+#
+# Required keys: runner.project_name, runner.project_dir, runner.target,
+# runner.pipeline. Everything else has a sensible default (shown below).
+runner:
+  # --- Identity / location ---------------------------------------------------
+  project_name: dbt-example # logical name; tags every metric row + log line
+  project_dir: /abs/path/to/projects/dbt-example # dbt project root (has dbt_project.yml)
+  profiles_dir: /abs/path/to/projects/dbt-example # defaults to project_dir
+  target: local-local # any dbt target defined in the project's profiles.yml
+  git_root: /abs/path/to/repo # optional; exported as GIT_ROOT for dbt env_var()
+  runtime: local # local | fabric — selects the token/storage provider
+
+  # --- dbt vars override (inlined) -------------------------------------------
+  # Injected as `--vars '<json>'` on seed/run/build/test/snapshot steps.
+  vars: {}
+
+  # --- Declarative pipeline (ordered) ----------------------------------------
+  # Each step is one dbt command (or a run-operation / shell hook). Per-step
+  # flags: full_refresh, exclude, select, collect_metrics, copy_run_results.
+  pipeline:
+    - command: deps
+    - command: debug
+    - command: seed
+      full_refresh: false
+      collect_metrics: true
+      copy_run_results: true
+    - command: build
+      exclude: [resource_type:seed]
+      collect_metrics: true
+      copy_run_results: true
+    - command: run-operation
+      macro: cleanup_dbt_tmp_relations
+      if_macro_exists: true # silently skipped when the macro is absent
+    - command: docs-generate
+
+  # --- Logging ---------------------------------------------------------------
+  logging:
+    log_path: /abs/path/to/logs/dbt/dbt-example # DBT_LOG_PATH; dbt.log lands here
+    archive_previous: true # rename a prior dbt.log before the run
+
+  # --- Node-execution metrics sink -------------------------------------------
+  metrics:
+    enabled: true
+    delta_path: /abs/path/to/raw/dbt/dbt_node_executions # Delta table (local fs or abfss://)
+    raw_path: /abs/path/to/metrics/dbt/dbt-example # run_results-<cmd>.json archive
+    partition_by: [project, event_year_month]
+    archive_previous_raw: true
+
+  # --- Session lifecycle (Fabric Livy close) ---------------------------------
+  session:
+    close: false # local Livy sessions are intentionally reused
+    target: local-local # profiles target whose session_id_file to read
+    endpoint: https://api.fabric.microsoft.com/v1

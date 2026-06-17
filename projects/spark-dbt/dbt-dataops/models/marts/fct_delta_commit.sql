@@ -18,9 +18,9 @@ WITH src AS (
         ) AS _row_num
     FROM {{ ref('stg_delta_commit_history') }}
     {% if is_incremental() %}
-    where
-        snapshot_date >= (select date_format(max(commit_timestamp), 'yyyyMMdd') from {{ this }})
-        and commit_timestamp > (select max(commit_timestamp) from {{ this }})
+        WHERE
+            snapshot_date >= (SELECT date_format(max(commit_timestamp), 'yyyyMMdd') FROM {{ this }})
+            AND commit_timestamp > (SELECT max(commit_timestamp) FROM {{ this }})
     {% endif %}
 ),
 

@@ -1,0 +1,50 @@
+{
+  "name": "dbt-runner-lib",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "targets": {
+    "clean": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [".scripts/hatch.sh clean"],
+        "parallel": false,
+        "forwardAllArgs": false
+      }
+    },
+    "build": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [".scripts/hatch.sh env create", ".scripts/hatch.sh build"],
+        "parallel": false,
+        "forwardAllArgs": false
+      }
+    },
+    "lint": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [".scripts/hatch.sh run lint:format"],
+        "parallel": false,
+        "forwardAllArgs": false
+      }
+    },
+    "test": {
+      "cache": false,
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "{projectRoot}",
+        "commands": [
+          ".scripts/hatch.sh env create",
+          ".scripts/hatch.sh run test"
+        ],
+        "parallel": false,
+        "forwardAllArgs": false
+      }
+    }
+  }
+}

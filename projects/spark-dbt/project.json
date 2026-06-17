@@ -2,6 +2,7 @@
   "name": "spark-dbt",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
+  "implicitDependencies": ["dbt-runner-lib"],
   "targets": {
     "clean": {
       "executor": "nx:run-commands",
@@ -29,7 +30,10 @@
       "dependsOn": ["clean"],
       "options": {
         "cwd": "projects/spark-dbt",
-        "commands": ["hatch env create"],
+        "commands": [
+          "hatch env create",
+          "uv pip install --link-mode=copy --python .venv/bin/python -e ../fabric/python/dbt-runner-lib --no-deps"
+        ],
         "parallel": false
       }
     },
@@ -67,7 +71,13 @@
       }
     },
     "package": {
-      "dependsOn": ["install"],
+      "dependsOn": [
+        "install",
+        {
+          "target": "build",
+          "projects": ["dbt-runner-lib"]
+        }
+      ],
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-dbt",

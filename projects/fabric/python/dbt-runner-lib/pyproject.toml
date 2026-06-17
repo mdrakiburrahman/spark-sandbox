@@ -1,0 +1,61 @@
+# ----- Build Backend ----------------------------------------------------------
+
+[build-system]
+requires = ["hatchling>=1.17.0"]
+build-backend = "hatchling.build"
+
+# ----- Wheel layout -----------------------------------------------------------
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dbt_runner"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"config/default.yaml" = "dbt_runner/_resources/default.yaml"
+
+# ----- Project metadata -------------------------------------------------------
+
+[project]
+name = "dbt-runner-lib"
+version = "0.1.0"
+description = "Config-driven dbt execution runner."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "Raki Rahman", email = "mdrakiburrahman@gmail.com" },
+]
+dependencies = [
+  "pyyaml>=6.0",
+  "pyarrow>=14.0",
+  "deltalake>=0.18",
+  "requests>=2.31",
+]
+
+# `dbt-core` (dbtRunner) and `notebookutils` are intentionally NOT declared
+# dependencies: dbt-core is provided by the host runtime (the spark-dbt venv
+# locally, the bundle wheels in Fabric) and imported lazily; notebookutils
+# ships only with the Fabric notebook runtime and is not pip-installable.
+
+# ----- Default env ------------------------------------------------------------
+
+[tool.hatch.envs.default]
+type = "virtual"
+path = ".venv"
+dependencies = [
+  "pytest>=8.0",
+]
+
+[tool.hatch.envs.default.scripts]
+test = "pytest {args:tests}"
+
+# ----- Lint env ---------------------------------------------------------------
+
+[tool.hatch.envs.lint]
+detached = true
+dependencies = [
+  "black",
+]
+
+[tool.hatch.envs.lint.scripts]
+format = "black --line-length 2000 {args:.}"
+check = "black --check --line-length 2000 {args:.}"

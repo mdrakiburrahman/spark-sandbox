@@ -15,7 +15,9 @@
       "inputs": [
         "{projectRoot}/**/*",
         "{workspaceRoot}/projects/spark-dbt/.scripts/run-dbt-local.sh",
-        "{workspaceRoot}/projects/spark-dbt/pyproject.toml"
+        "{workspaceRoot}/projects/spark-dbt/pyproject.toml",
+        "{workspaceRoot}/projects/fabric/python/dbt-runner-lib/src/dbt_runner/**/*",
+        "{workspaceRoot}/projects/fabric/python/dbt-runner-lib/pyproject.toml"
       ],
       "options": {
         "cwd": "projects/spark-dbt",

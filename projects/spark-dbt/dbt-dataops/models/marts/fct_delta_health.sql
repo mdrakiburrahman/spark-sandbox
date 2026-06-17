@@ -18,9 +18,9 @@ WITH src AS (
         ) AS _row_num
     FROM {{ ref('stg_delta_kpi_results') }}
     {% if is_incremental() %}
-    where
-        date_key >= (select max(date_key) from {{ this }})
-        and evaluation_timestamp > (select max(evaluation_timestamp) from {{ this }})
+        WHERE
+            date_key >= (SELECT max(date_key) FROM {{ this }})
+            AND evaluation_timestamp > (SELECT max(evaluation_timestamp) FROM {{ this }})
     {% endif %}
 ),
 

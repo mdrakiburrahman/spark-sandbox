@@ -29,6 +29,7 @@ dependencies = [
   "sqlfluff-templater-dbt",
   "deltalake",
   "pyarrow",
+  "dbt-runner-lib @ {root:uri}/../fabric/python/dbt-runner-lib",
 ]
 
 [tool.hatch.envs.default.env-vars]

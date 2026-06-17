@@ -18,9 +18,9 @@ WITH raw_snapshots AS (
         ) AS _row_num
     FROM {{ source('dataops_inventory', 'table_snapshots') }}
     {% if is_incremental() %}
-    where
-        snapshot_date >= (select max(date_key) from {{ this }})
-        and ingested_at > (select max(ingested_at) from {{ this }})
+        WHERE
+            snapshot_date >= (SELECT max(date_key) FROM {{ this }})
+            AND ingested_at > (SELECT max(ingested_at) FROM {{ this }})
     {% endif %}
 ),
 
