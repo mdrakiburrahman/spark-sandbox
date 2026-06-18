@@ -39,13 +39,19 @@ A complete output from this skill produces:
 - **Semantic model**: `projects/fabric/workspace-automation/<workspace>/<name>.SemanticModel/definition/` (one `.tmdl` per dim/fact, `Report Measures.tmdl`, `relationships.tmdl`)
 - **PBIR report**: `projects/fabric/workspace-automation/<workspace>/Reports/<area>/<name>.Report/`
 
+You should also use the following SKILLs available to you that were installed via a plugin officially from Microsoft to author Power BI reports:
+
+- `semantic-model-authoring`: Develops and manages Power BI semantic models across Desktop, PBIP projects, and Fabric Service.
+- `powerbi-report-planning`: Build a guided requirements-to-implementation workflow for new Power BI reports and dashboards from semantic models, datasets, or PBIP projects.
+- `powerbi-report-design`: Generate Power BI report visual design guidance before PBIR files are written.
+- `powerbi-report-authoring`: Create and modify Power BI report files in PBIR/PBIP format using the `powerbi-report-author` and `powerbi-desktop` CLIs.
+- `powerbi-report-management`: Manage Power BI report workspace items in Microsoft Fabric via `az rest` CLI against the Fabric REST API.
+
 Skill templates you can copy from:
 
 - [`templates/matplotlib_report.py`](templates/matplotlib_report.py) — Power BI-themed matplotlib skeleton with `draw_card` / `panel` helpers
 - [`templates/report_measures.tmdl`](templates/report_measures.tmdl) — TMDL `Report Measures` table with hidden dummy column
 - [`templates/generate_pbir_visuals.py`](templates/generate_pbir_visuals.py) — PBIR JSON generator for 5 visual archetypes
-
-> ⚠️ This repo does **not** ship a committed PBIR Report you can template-clone from. Before Step 6, you need to either (a) generate one visual in the Fabric UI and commit it to seed the JSON schema, or (b) bring your own known-working PBIR folder and adapt [`templates/generate_pbir_visuals.py`](templates/generate_pbir_visuals.py) to it. See Step 6a for the workaround.
 
 ---
 
@@ -358,12 +364,8 @@ This step replaces "click-ops in the Power BI UI" with `git add`-able JSON.
 
 PBIR (Power BI Report) is a folder of JSON files. The schema is **template-friendly but undocumented**. Always copy from a known-working report rather than writing JSON from scratch.
 
-⚠️ **This repo does not ship a committed PBIR Report.** Before you can generate visuals, you need a seed template. Two paths:
+Fabric items live in `projects/fabric/template/sandbox/`, and there's already a committed `adventureworks.SemanticModel` and `adventureworks.Report` (PBIR).
 
-1. **Generate one in the Fabric UI** (easiest): open Fabric → New Report → save → export the `.Report` folder via Power BI Desktop Developer Mode or Fabric Git integration. Commit it under `projects/fabric/workspace-automation/<workspace>/Reports/<area>/<name>.Report/`.
-2. **Bring your own**: any production PBIR folder you have access to will work — copy it into the repo and adapt the generator script to match its `report.json`/`pages.json` schema version.
-
-The generator script (Step 6c) assumes the standard PBIR JSON shape: a `report.json` + `pages.json` at the root, then `pages/<page-id>/page.json` + `pages/<page-id>/visuals/<20-char-hex>/visual.json` per visual. Any seed that follows this shape will work.
 
 ### 6b — Visual archetypes
 

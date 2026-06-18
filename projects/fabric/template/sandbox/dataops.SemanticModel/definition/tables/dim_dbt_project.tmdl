@@ -1,0 +1,54 @@
+table dim_dbt_project
+	lineageTag: fbae8bf1-0f11-44c5-b86a-d53729a33a8f
+	sourceLineageTag: [dbo].[dim_dbt_project]
+
+	column project_key
+		dataType: string
+		lineageTag: ee8ca441-a992-4570-b619-6ec6e4046512
+		sourceLineageTag: project_key
+		summarizeBy: none
+		sourceColumn: project_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column project
+		dataType: string
+		lineageTag: 4fbe74dc-0f16-4d0c-bf34-6333853b4e2c
+		sourceLineageTag: project
+		summarizeBy: none
+		sourceColumn: project
+
+		annotation SummarizationSetBy = Automatic
+
+	column project_domain
+		dataType: string
+		lineageTag: a7161a09-d59f-413c-a749-9b91cf506447
+		sourceLineageTag: project_domain
+		summarizeBy: none
+		sourceColumn: project_domain
+
+		annotation SummarizationSetBy = Automatic
+
+	column project_description
+		dataType: string
+		lineageTag: 2e65b5d3-68e7-49fe-8fdc-680297473f8f
+		sourceLineageTag: project_description
+		summarizeBy: none
+		sourceColumn: project_description
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_demo
+		dataType: boolean
+		lineageTag: 9acbf102-cf13-470b-9d69-465ceb962813
+		sourceLineageTag: is_demo
+		summarizeBy: none
+		sourceColumn: is_demo
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_dbt_project = entity
+		mode: directLake
+		source
+			entityName: dim_dbt_project
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

@@ -1,5 +1,5 @@
 //Tables (based on the selection criteria)
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table dim_date {
   "date_key" "string" [pk, note: "Date key in yyyyMMdd format."]
   "full_date" "date"
@@ -15,7 +15,83 @@ Table dim_date {
 
   Note: "Conformed calendar date dimension."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_materialization {
+  "materialization_key" "string" [pk, note: "Surrogate key (SHA-256 of materialized). Unknown member at '-1'."]
+  "materialized" "string" [pk, note: "dbt materialization name."]
+  "storage_class" "string" [note: "Whether the materialization persists as a view, table, or none."]
+  "is_persisted" "boolean" [note: "True if the materialization writes a durable relation."]
+  "is_rebuilt_each_run" "boolean" [note: "True if the relation is fully rebuilt on every run."]
+  "description" "string"
+
+  Note: "Reference dimension for dbt materializations (view, table, incremental, snapshot, seed, ...). Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_node {
+  "node_key" "string" [pk, note: "Surrogate key (SHA-256 of unique_id). Unknown member at '-1'."]
+  "unique_id" "string" [pk, note: "dbt node unique_id (business key), e.g. model.dataops.dim_date."]
+  "project" "string" [note: "Owning dbt project."]
+  "resource_type" "string" [note: "dbt resource type of the node."]
+  "package_name" "string"
+  "node_name" "string" [note: "Node name (without unique_id namespacing)."]
+  "alias" "string"
+  "database_name" "string"
+  "schema_name" "string"
+  "relation_name" "string"
+  "original_file_path" "string"
+  "materialized" "string" [note: "Latest materialization of the node."]
+  "node_layer" "string" [note: "Model folder (staging/marts/...) for models, else the resource_type."]
+  "test_type" "string" [note: "For tests: the test macro name; NULL otherwise."]
+  "tested_column" "string" [note: "For column-level tests: the tested column; NULL otherwise."]
+  "is_test" "boolean" [note: "True if the node is a test."]
+
+  Note: "Central conformed dimension: one row per dbt node (unique_id) with its latest attributes. Type 1 (latest-wins); SCD2 history via snapshot is a future enhancement. Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_project {
+  "project_key" "string" [pk, note: "Surrogate key (SHA-256 of project). Unknown member at '-1'."]
+  "project" "string" [pk, note: "dbt project name (business key), e.g. dbt-dataops."]
+  "project_domain" "string" [note: "Short domain slug (project name without the dbt- prefix)."]
+  "project_description" "string" [note: "Human-readable description of the project's purpose."]
+  "is_demo" "boolean" [note: "True if the project is a demo/sample project."]
+
+  Note: "Conformed dimension of dbt projects observed in the telemetry. Type 1. Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_resource_type {
+  "resource_type_key" "string" [pk, note: "Surrogate key (SHA-256 of resource_type). Unknown member at '-1'."]
+  "resource_type" "string" [pk, note: "dbt resource type name."]
+  "resource_category" "string" [note: "Coarse grouping of the resource type."]
+  "is_executable" "boolean" [note: "True if the resource runs SQL against the warehouse."]
+  "is_test" "boolean" [note: "True if the resource is a data/unit test."]
+  "is_data" "boolean" [note: "True if the resource represents source/seed data."]
+  "description" "string"
+
+  Note: "Reference dimension classifying dbt resource types (model, test, seed, snapshot, operation, ...). Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_status {
+  "status_key" "string" [pk, note: "Surrogate key (SHA-256 of status). Unknown member at '-1'."]
+  "status" "string" [pk, note: "Raw dbt node status string."]
+  "status_group" "string" [note: "Conformed status grouping."]
+  "is_passing" "boolean" [note: "True if the node completed successfully (model success or test pass)."]
+  "is_failure" "boolean" [note: "True if the node failed (model error or test fail)."]
+  "severity_rank" "int" [note: "Ordinal severity (0 = ok, higher = worse). -1 for the unknown member."]
+  "description" "string"
+
+  Note: "Reference dimension conforming heterogeneous model (success/error/skipped) and test (pass/fail/warn/error/skipped) statuses into a single health classification. Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table dim_dbt_test_type {
+  "test_type_key" "string" [pk, note: "Surrogate key (SHA-256 of test_type). Unknown member at '-1'."]
+  "test_type" "string" [pk, note: "Test macro name from test_metadata (e.g. not_null)."]
+  "test_family" "string" [note: "Quality dimension the test asserts."]
+  "package" "string" [note: "Package providing the test (dbt_core, dbt_utils, custom, unknown)."]
+  "is_generic" "boolean" [note: "True for generic (schema) tests."]
+
+  Note: "Reference dimension for data-test types (not_null, unique, relationships, accepted_values, dbt_utils.*, custom). Carries a '-1' unknown member."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table dim_delta_table {
   "__pk" "string" [pk, note: "Surrogate key unique per SCD2 version. SHA-256 of (table_fqn, row_effective_start)."]
   "table_fqn" "string" [note: "Business key: fully qualified table name (database.table)."]
@@ -40,7 +116,7 @@ Table dim_delta_table {
 
   Note: "Central table dimension with mixed SCD1/SCD2 tracking. SCD2 columns (clustering_columns, table_properties, min_reader_version, min_writer_version) are version-specific. SCD1 columns (table_id, location, format, partition_columns) are propagated to all versions."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table dim_delta_table_health_status {
   "health_status_key" "string" [pk, note: "Surrogate key (SHA-256 of status name)."]
   "status" "string" [pk, note: "Health status: Healthy, Training, or Unhealthy."]
@@ -49,7 +125,7 @@ Table dim_delta_table_health_status {
 
   Note: "Static enum dimension for health status values."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table dim_delta_table_operation_type {
   "operation_type_key" "string" [pk, note: "Surrogate key (SHA-256 of operation name)."]
   "operation" "string" [pk, note: "Delta Lake operation name."]
@@ -60,7 +136,93 @@ Table dim_delta_table_operation_type {
 
   Note: "Reference dimension classifying Delta Lake operation types."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table fct_dbt_invocation {
+  "invocation_key" "string" [pk, note: "Surrogate key (SHA-256 of invocation_id)."]
+  "project_key" "string" [note: "FK to dim_dbt_project."]
+  "date_key" "string" [note: "FK to dim_date (invocation date)."]
+  "invocation_id" "string" [pk, note: "Degenerate dimension: the dbt invocation UUID."]
+  "command" "string" [note: "Degenerate dimension: dbt command (build, seed, ...)."]
+  "dbt_version" "string"
+  "total_nodes" "bigint" [note: "Count of node executions in the invocation (additive)."]
+  "model_count" "bigint"
+  "test_count" "bigint"
+  "seed_count" "bigint"
+  "snapshot_count" "bigint"
+  "operation_count" "bigint"
+  "success_count" "bigint"
+  "error_count" "bigint"
+  "skipped_count" "bigint"
+  "test_pass_count" "bigint"
+  "test_fail_count" "bigint"
+  "test_warn_count" "bigint"
+  "failure_count" "bigint" [note: "Count of failed nodes (model errors + test fails) (additive)."]
+  "total_execution_time" "double"
+  "total_execute_time" "double"
+  "total_compile_time" "double"
+  "avg_node_execute_time" "double"
+  "wall_clock_seconds" "bigint" [note: "Elapsed seconds between first execute start and last execute completion."]
+  "thread_count" "bigint"
+  "has_failure" "int"
+  "success_rate" "double" [note: "success_count / total_nodes. NON-ADDITIVE \u2014 recompute from counts when aggregating."]
+  "invocation_started_at" "timestamp"
+  "invocation_completed_at" "timestamp"
+  "generated_at" "timestamp"
+  "dbt_loaded_at" "timestamp"
+  "event_year_date" "string" [note: "Hive partition key (yyyyMMdd) from dbt run time."]
+
+  Note: "Summary fact: one row per dbt invocation (command run). Grain: one row per invocation_id. Count and timing measures are additive; success_rate is non-additive (a ratio \u2014 do not SUM; recompute from counts)."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table fct_dbt_node_dependency {
+  "dependency_key" "string" [pk, note: "Surrogate key (SHA-256 of node_unique_id + depends_on_unique_id)."]
+  "node_key" "string" [note: "FK to dim_dbt_node (the dependent node)."]
+  "depends_on_node_key" "string" [note: "FK to dim_dbt_node (the upstream node)."]
+  "project_key" "string" [note: "FK to dim_dbt_project."]
+  "date_key" "string" [note: "FK to dim_date."]
+  "node_unique_id" "string"
+  "depends_on_unique_id" "string"
+  "dbt_loaded_at" "timestamp"
+  "event_year_date" "string" [note: "Hive partition key (yyyyMMdd) from dbt run time."]
+
+  Note: "Bridge fact of the current dbt DAG (latest invocation per project). Grain: one edge per (node_unique_id, depends_on_unique_id). Rebuilt in full each run; depends_on_node_key resolves to the unknown member when the upstream node never executed on its own (e.g. a source)."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table fct_dbt_node_execution {
+  "node_execution_key" "string" [pk, note: "Surrogate key (SHA-256 of invocation_id + unique_id)."]
+  "node_key" "string" [note: "FK to dim_dbt_node."]
+  "project_key" "string" [note: "FK to dim_dbt_project."]
+  "resource_type_key" "string" [note: "FK to dim_dbt_resource_type."]
+  "status_key" "string" [note: "FK to dim_dbt_status."]
+  "materialization_key" "string" [note: "FK to dim_dbt_materialization."]
+  "test_type_key" "string" [note: "FK to dim_dbt_test_type (unknown member for non-test nodes)."]
+  "date_key" "string" [note: "FK to dim_date (run date)."]
+  "invocation_id" "string" [note: "Degenerate dimension: the dbt invocation UUID."]
+  "unique_id" "string" [note: "Degenerate dimension: the dbt node unique_id (grain key)."]
+  "command" "string"
+  "thread_id" "string"
+  "dbt_version" "string"
+  "execution_time" "double" [note: "Total node execution time in seconds (additive)."]
+  "compile_time" "double" [note: "Compile-phase time in seconds (additive)."]
+  "execute_time" "double" [note: "Execute-phase time in seconds (additive)."]
+  "rows_affected" "bigint"
+  "failures" "bigint"
+  "is_success" "int" [note: "1 if the node succeeded (model/seed/snapshot/operation), else 0."]
+  "is_error" "int"
+  "is_skipped" "int"
+  "is_pass" "int"
+  "is_fail" "int"
+  "is_warn" "int"
+  "has_failure" "int" [note: "1 if the node errored or a test failed, else 0."]
+  "compile_started_at" "timestamp"
+  "execute_completed_at" "timestamp"
+  "generated_at" "timestamp"
+  "dbt_loaded_at" "timestamp"
+  "event_year_date" "string" [note: "Hive partition key (yyyyMMdd) from dbt run time."]
+
+  Note: "Atomic fact: one row per dbt node execution within an invocation. Grain: one row per (invocation_id, unique_id). Status counters are additive; timing measures are additive. rows_affected/failures are adapter-reported and frequently NULL on the fabricspark adapter."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table fct_delta_commit {
   "commit_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + version)."]
   "table_key" "string" [note: "FK to dim_delta_table."]
@@ -75,10 +237,12 @@ Table fct_delta_commit {
   "execution_time_ms" "bigint"
   "is_blind_append" "boolean"
   "ingested_at" "timestamp"
+  "dbt_loaded_at" "timestamp" [note: "Spark write timestamp when this row was materialized by dbt."]
+  "event_year_date" "string" [note: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."]
 
   Note: "Fact table capturing individual Delta Lake commits. Grain: one row per table per commit version."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table fct_delta_health {
   "health_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date + evaluation_timestamp)."]
   "table_key" "string" [note: "FK to dim_delta_table."]
@@ -102,10 +266,12 @@ Table fct_delta_health {
   "snapshot_date" "string"
   "optimize_count_7d" "bigint"
   "vacuum_count_7d" "bigint"
+  "dbt_loaded_at" "timestamp" [note: "Spark write timestamp when this row was materialized by dbt."]
+  "event_year_date" "string" [note: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."]
 
   Note: "Fact table capturing daily health KPI assessments. Grain: one row per table per snapshot date."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table fct_delta_lineage_dependency {
   "lineage_key" "string" [pk, note: "Surrogate key for the lineage edge."]
   "source_table_key" "string" [note: "FK to dim_delta_table for source dataset."]
@@ -114,10 +280,12 @@ Table fct_delta_lineage_dependency {
   "first_seen_timestamp" "timestamp"
   "last_seen_timestamp" "timestamp"
   "event_count" "bigint"
+  "dbt_loaded_at" "timestamp" [note: "Spark write timestamp when this row was materialized by dbt."]
+  "event_year_date" "string" [note: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."]
 
   Note: "Fact table capturing table-level data lineage edges from OpenLineage. Grain: one edge per source\u2192target per job per day."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table fct_delta_storage {
   "storage_key" "string" [pk, note: "Surrogate key (SHA-256 of table_fqn + snapshot_date)."]
   "table_key" "string" [note: "FK to dim_delta_table."]
@@ -128,10 +296,186 @@ Table fct_delta_storage {
   "created_at" "timestamp"
   "last_modified" "timestamp"
   "ingested_at" "timestamp"
+  "dbt_loaded_at" "timestamp" [note: "Spark write timestamp when this row was materialized by dbt."]
+  "event_year_date" "string" [note: "Hive partition key in yyyyMMdd format, derived from current_timestamp() at dbt run time."]
 
   Note: "Fact table capturing daily table storage metrics. Grain: one row per table per snapshot date."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table obt_dbt_invocation {
+  "invocation_key" "string" [pk, note: "Surrogate key inherited from fct_dbt_invocation."]
+  "invocation_id" "string"
+  "command" "string"
+  "dbt_version" "string"
+  "total_nodes" "bigint"
+  "model_count" "bigint"
+  "test_count" "bigint"
+  "seed_count" "bigint"
+  "snapshot_count" "bigint"
+  "operation_count" "bigint"
+  "success_count" "bigint"
+  "error_count" "bigint"
+  "skipped_count" "bigint"
+  "test_pass_count" "bigint"
+  "test_fail_count" "bigint"
+  "test_warn_count" "bigint"
+  "failure_count" "bigint"
+  "total_execution_time" "double"
+  "total_execute_time" "double"
+  "total_compile_time" "double"
+  "avg_node_execute_time" "double"
+  "wall_clock_seconds" "bigint"
+  "thread_count" "bigint"
+  "has_failure" "int"
+  "success_rate" "double"
+  "invocation_started_at" "timestamp"
+  "invocation_completed_at" "timestamp"
+  "generated_at" "timestamp"
+  "dbt_loaded_at" "timestamp"
+  "event_year_date" "string"
+  "project" "string"
+  "project_domain" "string"
+  "project_description" "string"
+  "is_demo" "boolean"
+  "full_date" "date"
+  "year" "int"
+  "quarter" "int"
+  "month" "int"
+  "month_name" "string"
+  "day_of_month" "int"
+  "day_of_week" "int"
+  "day_name" "string"
+  "week_of_year" "int"
+  "is_weekend" "boolean"
+
+  Note: "Fully denormalised one-big-table of dbt invocations joined to project and date. Grain: one row per invocation_id."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table obt_dbt_node_execution {
+  "node_execution_key" "string" [pk, note: "Surrogate key inherited from fct_dbt_node_execution."]
+  "invocation_id" "string"
+  "unique_id" "string"
+  "command" "string"
+  "thread_id" "string"
+  "dbt_version" "string"
+  "execution_time" "double"
+  "compile_time" "double"
+  "execute_time" "double"
+  "rows_affected" "bigint"
+  "failures" "bigint"
+  "is_success" "int"
+  "is_error" "int"
+  "is_skipped" "int"
+  "is_pass" "int"
+  "is_fail" "int"
+  "is_warn" "int"
+  "has_failure" "int"
+  "compile_started_at" "timestamp"
+  "execute_completed_at" "timestamp"
+  "generated_at" "timestamp"
+  "dbt_loaded_at" "timestamp"
+  "event_year_date" "string"
+  "project" "string"
+  "resource_type" "string"
+  "package_name" "string"
+  "node_name" "string"
+  "alias" "string"
+  "database_name" "string"
+  "schema_name" "string"
+  "relation_name" "string"
+  "original_file_path" "string"
+  "materialized" "string"
+  "node_layer" "string"
+  "test_type" "string"
+  "tested_column" "string"
+  "is_test" "boolean"
+  "project_domain" "string"
+  "project_description" "string"
+  "is_demo" "boolean"
+  "resource_category" "string"
+  "is_executable" "boolean"
+  "is_data" "boolean"
+  "status" "string"
+  "status_group" "string"
+  "is_passing" "boolean"
+  "is_failure" "boolean"
+  "severity_rank" "int"
+  "storage_class" "string"
+  "is_persisted" "boolean"
+  "is_rebuilt_each_run" "boolean"
+  "test_family" "string"
+  "package" "string"
+  "is_generic" "boolean"
+  "full_date" "date"
+  "year" "int"
+  "quarter" "int"
+  "month" "int"
+  "month_name" "string"
+  "day_of_month" "int"
+  "day_of_week" "int"
+  "day_name" "string"
+  "week_of_year" "int"
+  "is_weekend" "boolean"
+
+  Note: "Fully denormalised one-big-table of dbt node executions joined to every conformed dimension (node, project, resource_type, status, materialization, test_type, date). Grain: one row per (invocation_id, unique_id). Built via dbt_utils.star \u2014 see assert_obt_rowcount_matches_fact for fan-out protection."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table stg_dbt_node_dependency {
+  "invocation_id" "string" [pk]
+  "node_unique_id" "string" [note: "The dependent (parent) dbt node unique_id."]
+  "depends_on_unique_id" "string" [note: "The upstream (child) dbt node unique_id this node depends on."]
+  "project" "string" [note: "dbt project name."]
+  "run_date_key" "string"
+
+  Note: "Exploded dbt DAG edges: one row per (invocation_id, node_unique_id, depends_on_unique_id) derived from the depends_on_nodes array."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
+Table stg_dbt_node_executions {
+  "invocation_id" "string" [pk, note: "UUID of the dbt invocation (one command run)."]
+  "unique_id" "string" [note: "Stable dbt node identity (e.g. model.dataops.dim_date)."]
+  "project" "string" [note: "dbt project name."]
+  "command" "string"
+  "dbt_version" "string"
+  "thread_id" "string"
+  "generated_at" "timestamp"
+  "resource_type" "string" [note: "dbt resource type: model, test, seed, snapshot, operation."]
+  "package_name" "string"
+  "node_name" "string"
+  "alias" "string"
+  "database_name" "string"
+  "schema_name" "string"
+  "relation_name" "string"
+  "original_file_path" "string"
+  "materialized" "string"
+  "node_layer" "string"
+  "test_type" "string"
+  "tested_column" "string"
+  "adapter_message" "string"
+  "status" "string" [note: "Raw node outcome string."]
+  "is_success" "boolean"
+  "is_error" "boolean"
+  "is_skipped" "boolean"
+  "is_pass" "boolean"
+  "is_fail" "boolean"
+  "is_warn" "boolean"
+  "has_failure" "boolean"
+  "is_test" "boolean"
+  "execution_time" "double"
+  "compile_time" "double"
+  "execute_time" "double"
+  "compile_started_at" "timestamp"
+  "compile_completed_at" "timestamp"
+  "execute_started_at" "timestamp"
+  "execute_completed_at" "timestamp"
+  "rows_affected" "bigint"
+  "failures" "bigint"
+  "depends_on_nodes" "array<string>"
+  "run_date_key" "string" [note: "Run date in yyyyMMdd, from coalesce(execute_completed_at, generated_at)."]
+  "event_year_month" "string"
+
+  Note: "Cleaned, typed, and deduplicated dbt node-execution telemetry from the dataops_inventory.dbt_node_executions source. One row per (invocation_id, unique_id) \u2014 the latest result per node per invocation. Extracts test type / tested column / adapter message from JSON and derives run date key, node layer, and boolean status flags."
+}
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table stg_delta_commit_history {
   "table_fqn" "string" [pk, note: "Fully qualified table name (database.table)."]
   "database_name" "string"
@@ -159,7 +503,7 @@ Table stg_delta_commit_history {
 
   Note: "Cleaned and typed Delta Lake commit history entries."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table stg_delta_kpi_results {
   "table_fqn" "string" [pk, note: "Fully qualified table name."]
   "overall_status" "string" [note: "Overall health status: Healthy, Unhealthy, or Training."]
@@ -185,7 +529,7 @@ Table stg_delta_kpi_results {
 
   Note: "Cleaned health KPI assessment results."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table stg_delta_lineage {
   "source_namespace" "string" [pk]
   "source_name" "string" [note: "Source dataset name/path."]
@@ -199,7 +543,7 @@ Table stg_delta_lineage {
 
   Note: "Table-level lineage edges extracted from OpenLineage COMPLETE events."
 }
-//--configured at schema: spark_catalog.dbt_dataops_dwh
+//--configured at schema: dbt_dataops_dwh.dbt_dataops_dwh
 Table stg_delta_table_snapshots {
   "table_fqn" "string" [pk, note: "Fully qualified table name (business key for dim_delta_table)."]
   "database_name" "string"
@@ -228,6 +572,19 @@ Table stg_delta_table_snapshots {
   Note: "Deduplicated table metadata snapshots with SCD hash columns. One row per table per day."
 }
 //Refs (based on the DBT Relationship Tests)
+Ref: fct_dbt_invocation."date_key" > dim_date."date_key"
+Ref: fct_dbt_invocation."project_key" > dim_dbt_project."project_key"
+Ref: fct_dbt_node_dependency."date_key" > dim_date."date_key"
+Ref: fct_dbt_node_dependency."depends_on_node_key" > dim_dbt_node."node_key"
+Ref: fct_dbt_node_dependency."node_key" > dim_dbt_node."node_key"
+Ref: fct_dbt_node_dependency."project_key" > dim_dbt_project."project_key"
+Ref: fct_dbt_node_execution."date_key" > dim_date."date_key"
+Ref: fct_dbt_node_execution."materialization_key" > dim_dbt_materialization."materialization_key"
+Ref: fct_dbt_node_execution."node_key" > dim_dbt_node."node_key"
+Ref: fct_dbt_node_execution."project_key" > dim_dbt_project."project_key"
+Ref: fct_dbt_node_execution."resource_type_key" > dim_dbt_resource_type."resource_type_key"
+Ref: fct_dbt_node_execution."status_key" > dim_dbt_status."status_key"
+Ref: fct_dbt_node_execution."test_type_key" > dim_dbt_test_type."test_type_key"
 Ref: fct_delta_commit."date_key" > dim_date."date_key"
 Ref: fct_delta_commit."operation_type_key" > dim_delta_table_operation_type."operation_type_key"
 Ref: fct_delta_commit."table_key" > dim_delta_table."__pk"

@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["DirectLake - dbt_dataops_dwh"]
+
+annotation __PBI_TimeIntelligenceEnabled = 1
+
+annotation PBI_ProTooling = ["DirectLakeOnOneLakeInWeb","MCP-PBIModeling"]
+
+ref table dim_date
+ref table dim_dbt_project
+ref table dim_dbt_resource_type
+ref table dim_dbt_status
+ref table dim_dbt_materialization
+ref table dim_dbt_test_type
+ref table dim_dbt_node
+ref table fct_dbt_node_execution
+ref table fct_dbt_invocation
+ref table dim_delta_table
+ref table dim_delta_table_operation_type
+ref table dim_delta_table_health_status
+ref table fct_delta_commit
+ref table fct_delta_storage
+ref table fct_delta_health

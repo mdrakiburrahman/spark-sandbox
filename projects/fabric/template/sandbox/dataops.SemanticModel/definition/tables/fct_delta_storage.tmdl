@@ -1,0 +1,139 @@
+table fct_delta_storage
+	lineageTag: 30f13707-c99a-4bb8-97fd-4e0e6578f3fa
+	sourceLineageTag: [dbo].[fct_delta_storage]
+
+	/// Total tracked Delta storage in GB
+	measure 'Total Storage (GB)' = SUM(fct_delta_storage[size_in_gb])
+		formatString: #,0.00
+		displayFolder: Delta \ Storage
+		lineageTag: fd935674-8990-4029-8c4b-6aa671835f98
+
+	/// Total tracked Delta files
+	measure 'Total Files' = SUM(fct_delta_storage[num_files])
+		formatString: #,0
+		displayFolder: Delta \ Storage
+		lineageTag: 6b38fcf4-907d-4139-bc90-96e8b5d25106
+
+	/// Storage in GB on the latest selected date
+	measure 'Latest Storage (GB)' = VAR _d = MAX(fct_delta_storage[date_key]) RETURN CALCULATE(SUM(fct_delta_storage[size_in_gb]), fct_delta_storage[date_key] = _d)
+		formatString: #,0.00
+		displayFolder: Delta \ Storage
+		lineageTag: 283b0d75-5967-4e85-85f4-2fb9254f8f90
+
+	/// File count on the latest selected date
+	measure 'Latest File Count' = VAR _d = MAX(fct_delta_storage[date_key]) RETURN CALCULATE(SUM(fct_delta_storage[num_files]), fct_delta_storage[date_key] = _d)
+		formatString: #,0
+		displayFolder: Delta \ Storage
+		lineageTag: 76166b43-8631-44aa-b62d-083539096bf5
+
+	column storage_key
+		dataType: string
+		lineageTag: ca3db710-a68e-4ae5-80f7-38baf4be76fa
+		sourceLineageTag: storage_key
+		summarizeBy: none
+		sourceColumn: storage_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_key
+		dataType: string
+		lineageTag: 6f0848cd-489d-49be-af42-b0d0d97f671a
+		sourceLineageTag: table_key
+		summarizeBy: none
+		sourceColumn: table_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: string
+		lineageTag: 011eb1b3-e114-47b9-968b-02df3623704e
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_files
+		dataType: int64
+		formatString: 0
+		lineageTag: 06180be7-39cc-424b-9aa6-20114241828a
+		sourceLineageTag: num_files
+		summarizeBy: sum
+		sourceColumn: num_files
+
+		annotation SummarizationSetBy = Automatic
+
+	column size_in_bytes
+		dataType: int64
+		formatString: 0
+		lineageTag: 58c3fcf4-3871-47ea-89cd-f517b740825c
+		sourceLineageTag: size_in_bytes
+		summarizeBy: sum
+		sourceColumn: size_in_bytes
+
+		annotation SummarizationSetBy = Automatic
+
+	column size_in_gb
+		dataType: double
+		formatString: 0.00
+		lineageTag: 24b56e79-821a-4a23-ba5b-60e8c40ab325
+		sourceLineageTag: size_in_gb
+		summarizeBy: sum
+		sourceColumn: size_in_gb
+
+		annotation SummarizationSetBy = Automatic
+
+	column created_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 5cd60ad6-5831-4872-961d-44a4eb735695
+		sourceLineageTag: created_at
+		summarizeBy: none
+		sourceColumn: created_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_modified
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 7040cbe1-c0b6-4365-95cc-6dbf7f983c1b
+		sourceLineageTag: last_modified
+		summarizeBy: none
+		sourceColumn: last_modified
+
+		annotation SummarizationSetBy = Automatic
+
+	column ingested_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: bd09f8f3-aed4-4093-a735-992a915aac9b
+		sourceLineageTag: ingested_at
+		summarizeBy: none
+		sourceColumn: ingested_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_loaded_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 1cee5cee-cced-43c4-9b13-964fd42b249a
+		sourceLineageTag: dbt_loaded_at
+		summarizeBy: none
+		sourceColumn: dbt_loaded_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_year_date
+		dataType: string
+		lineageTag: ed69d303-c806-45bf-b308-1392b8396be2
+		sourceLineageTag: event_year_date
+		summarizeBy: none
+		sourceColumn: event_year_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_delta_storage = entity
+		mode: directLake
+		source
+			entityName: fct_delta_storage
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

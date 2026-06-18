@@ -1,0 +1,72 @@
+table dim_dbt_resource_type
+	lineageTag: 7e6edc6b-98b4-4261-a872-1df234c1fd33
+	sourceLineageTag: [dbo].[dim_dbt_resource_type]
+
+	column resource_type_key
+		dataType: string
+		lineageTag: 554e7b8a-3cca-4b99-aa69-aa8dca7e6a99
+		sourceLineageTag: resource_type_key
+		summarizeBy: none
+		sourceColumn: resource_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column resource_type
+		dataType: string
+		lineageTag: cd697009-3b15-446f-a266-ed638d72b2a5
+		sourceLineageTag: resource_type
+		summarizeBy: none
+		sourceColumn: resource_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column resource_category
+		dataType: string
+		lineageTag: af1eda9a-a446-4891-90ee-689055363c8a
+		sourceLineageTag: resource_category
+		summarizeBy: none
+		sourceColumn: resource_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_executable
+		dataType: boolean
+		lineageTag: 33ecac16-cfc3-4615-aea9-ca4b72a8bba0
+		sourceLineageTag: is_executable
+		summarizeBy: none
+		sourceColumn: is_executable
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_test
+		dataType: boolean
+		lineageTag: cb71489d-883a-44fb-8dcc-33bb39ba9fa9
+		sourceLineageTag: is_test
+		summarizeBy: none
+		sourceColumn: is_test
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_data
+		dataType: boolean
+		lineageTag: 28e456d2-6e3b-4e79-8134-2664d7930973
+		sourceLineageTag: is_data
+		summarizeBy: none
+		sourceColumn: is_data
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: abe0f7a1-7995-4fef-86c5-786f26609f58
+		sourceLineageTag: description
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_dbt_resource_type = entity
+		mode: directLake
+		source
+			entityName: dim_dbt_resource_type
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

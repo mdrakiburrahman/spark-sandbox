@@ -1,0 +1,258 @@
+table fct_delta_health
+	lineageTag: 92205afc-418a-46b9-a213-9d775893cf20
+	sourceLineageTag: [dbo].[fct_delta_health]
+
+	/// Count of Delta health assessment rows
+	measure 'Health Assessments' = COUNTROWS(fct_delta_health)
+		formatString: #,0
+		displayFolder: Delta \ Health
+		lineageTag: 6cc2d86f-c741-48dd-8578-b696ffbc29c5
+
+	/// Percent of health assessments with Healthy status
+	measure 'Healthy Table %' = DIVIDE(CALCULATE([Health Assessments], dim_delta_table_health_status[status] = "Healthy"), [Health Assessments], 0)
+		formatString: 0.0%
+		displayFolder: Delta \ Health
+		lineageTag: d6b676d6-d64e-4a98-8077-a49ef4f6d17b
+
+	/// Average days since latest commit
+	measure 'Avg Days Since Last Commit' = AVERAGE(fct_delta_health[days_since_last_commit])
+		formatString: #,0.0
+		displayFolder: Delta \ Health
+		lineageTag: f2d9fb9c-b9ab-4fcd-88bb-b021dc2033f0
+
+	column health_key
+		dataType: string
+		lineageTag: e0bd2b62-c8d8-4c75-be61-08e8b1c3991d
+		sourceLineageTag: health_key
+		summarizeBy: none
+		sourceColumn: health_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_key
+		dataType: string
+		lineageTag: 9570dba7-3bea-42dd-aa8c-80d1183b1d61
+		sourceLineageTag: table_key
+		summarizeBy: none
+		sourceColumn: table_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: string
+		lineageTag: 120e2f5f-d32d-4326-bc1e-ed96ffc799e5
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column overall_status_key
+		dataType: string
+		lineageTag: f5c969e8-e782-4fb2-bdcd-95bb8b0faecf
+		sourceLineageTag: overall_status_key
+		summarizeBy: none
+		sourceColumn: overall_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column freshness_status_key
+		dataType: string
+		lineageTag: 24024ae4-e93c-47d2-a8b7-db63cadf6d52
+		sourceLineageTag: freshness_status_key
+		summarizeBy: none
+		sourceColumn: freshness_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column completeness_status_key
+		dataType: string
+		lineageTag: 7f1b05c5-f670-4955-b2c5-eb73871ad850
+		sourceLineageTag: completeness_status_key
+		summarizeBy: none
+		sourceColumn: completeness_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column most_common_operation_key
+		dataType: string
+		lineageTag: 5defe3f4-a049-4b3e-8491-7c94b4a9b578
+		sourceLineageTag: most_common_operation_key
+		summarizeBy: none
+		sourceColumn: most_common_operation_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column evaluation_timestamp
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: a5735a70-422c-4c5d-b359-f8e248b404b8
+		sourceLineageTag: evaluation_timestamp
+		summarizeBy: none
+		sourceColumn: evaluation_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column last_commit_timestamp
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 60c4e0de-e758-4671-bf90-f983fe1af27b
+		sourceLineageTag: last_commit_timestamp
+		summarizeBy: none
+		sourceColumn: last_commit_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column predicted_next_commit
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 72de4091-8a8d-430c-84ca-0861dbbedbdd
+		sourceLineageTag: predicted_next_commit
+		summarizeBy: none
+		sourceColumn: predicted_next_commit
+
+		annotation SummarizationSetBy = Automatic
+
+	column median_commit_interval_seconds
+		dataType: double
+		formatString: 0.00
+		lineageTag: 0352f5f8-5958-4aec-9c70-070f62cfe9d5
+		sourceLineageTag: median_commit_interval_seconds
+		summarizeBy: none
+		sourceColumn: median_commit_interval_seconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column p95_commit_interval_seconds
+		dataType: double
+		formatString: 0.00
+		lineageTag: 6a4cef1a-a2dc-406c-bccf-4cc27b5756fa
+		sourceLineageTag: p95_commit_interval_seconds
+		summarizeBy: none
+		sourceColumn: p95_commit_interval_seconds
+
+		annotation SummarizationSetBy = Automatic
+
+	column commits_in_last_24h
+		dataType: int64
+		formatString: 0
+		lineageTag: 79713d6c-a402-430f-abcb-3b4d3f77088d
+		sourceLineageTag: commits_in_last_24h
+		summarizeBy: sum
+		sourceColumn: commits_in_last_24h
+
+		annotation SummarizationSetBy = Automatic
+
+	column commits_in_last_7d
+		dataType: int64
+		formatString: 0
+		lineageTag: 2963c4ac-cdd0-40d8-8c3d-67bae3c0cb5b
+		sourceLineageTag: commits_in_last_7d
+		summarizeBy: sum
+		sourceColumn: commits_in_last_7d
+
+		annotation SummarizationSetBy = Automatic
+
+	column days_since_last_commit
+		dataType: double
+		formatString: 0.00
+		lineageTag: 619e4141-ccbe-43e9-bb8e-4e9a4d4e249f
+		sourceLineageTag: days_since_last_commit
+		summarizeBy: none
+		sourceColumn: days_since_last_commit
+
+		annotation SummarizationSetBy = Automatic
+
+	column daily_row_count_actual
+		dataType: int64
+		formatString: 0
+		lineageTag: fd969766-b089-4c33-a8c6-ec35f6b7ba7d
+		sourceLineageTag: daily_row_count_actual
+		summarizeBy: sum
+		sourceColumn: daily_row_count_actual
+
+		annotation SummarizationSetBy = Automatic
+
+	column daily_row_count_min_expected
+		dataType: int64
+		formatString: 0
+		lineageTag: 5accb37d-fbf3-42cb-b856-67426ddd5bd0
+		sourceLineageTag: daily_row_count_min_expected
+		summarizeBy: sum
+		sourceColumn: daily_row_count_min_expected
+
+		annotation SummarizationSetBy = Automatic
+
+	column daily_row_count_max_expected
+		dataType: int64
+		formatString: 0
+		lineageTag: 8004eadd-3679-4e7a-97ea-927ee629b1fa
+		sourceLineageTag: daily_row_count_max_expected
+		summarizeBy: sum
+		sourceColumn: daily_row_count_max_expected
+
+		annotation SummarizationSetBy = Automatic
+
+	column latest_version
+		dataType: int64
+		formatString: 0
+		lineageTag: cc391803-3d2e-4286-8865-0c3fe232d2b6
+		sourceLineageTag: latest_version
+		summarizeBy: none
+		sourceColumn: latest_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column snapshot_date
+		dataType: string
+		lineageTag: 18ae8ce3-3d9d-40eb-92b5-367fb40a684e
+		sourceLineageTag: snapshot_date
+		summarizeBy: none
+		sourceColumn: snapshot_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column optimize_count_7d
+		dataType: int64
+		formatString: 0
+		lineageTag: 7b3f1e6c-cfe1-49a2-aa32-3e6250e7baab
+		sourceLineageTag: optimize_count_7d
+		summarizeBy: sum
+		sourceColumn: optimize_count_7d
+
+		annotation SummarizationSetBy = Automatic
+
+	column vacuum_count_7d
+		dataType: int64
+		formatString: 0
+		lineageTag: 27d6a68e-2c3b-4334-812d-4849008f62b6
+		sourceLineageTag: vacuum_count_7d
+		summarizeBy: sum
+		sourceColumn: vacuum_count_7d
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_loaded_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 7c2bb357-2af5-4ad4-9001-8598068305a1
+		sourceLineageTag: dbt_loaded_at
+		summarizeBy: none
+		sourceColumn: dbt_loaded_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_year_date
+		dataType: string
+		lineageTag: 42032f2a-c0a6-4039-ac23-9ca9edf9ff04
+		sourceLineageTag: event_year_date
+		summarizeBy: none
+		sourceColumn: event_year_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_delta_health = entity
+		mode: directLake
+		source
+			entityName: fct_delta_health
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

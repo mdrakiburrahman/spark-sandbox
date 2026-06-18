@@ -1,0 +1,397 @@
+version: 2
+
+models:
+  # ---------------------------------------------------------------------------
+  # Dimensions
+  # ---------------------------------------------------------------------------
+  - name: dim_dbt_project
+    description: "Conformed dimension of dbt projects observed in the telemetry. Type 1. Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: project_key
+    columns:
+      - name: project_key
+        description: "Surrogate key (SHA-256 of project). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: project
+        description: "dbt project name (business key), e.g. dbt-dataops."
+        tests:
+          - unique
+          - not_null
+      - name: project_domain
+        description: "Short domain slug (project name without the dbt- prefix)."
+      - name: project_description
+        description: "Human-readable description of the project's purpose."
+      - name: is_demo
+        description: "True if the project is a demo/sample project."
+
+  - name: dim_dbt_resource_type
+    description: "Reference dimension classifying dbt resource types (model, test, seed, snapshot, operation, ...). Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: resource_type_key
+    columns:
+      - name: resource_type_key
+        description: "Surrogate key (SHA-256 of resource_type). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: resource_type
+        description: "dbt resource type name."
+        tests:
+          - unique
+          - not_null
+      - name: resource_category
+        description: "Coarse grouping of the resource type."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["transformation", "test", "data", "maintenance", "documentation", "semantic", "unknown"]
+      - name: is_executable
+        description: "True if the resource runs SQL against the warehouse."
+      - name: is_test
+        description: "True if the resource is a data/unit test."
+      - name: is_data
+        description: "True if the resource represents source/seed data."
+
+  - name: dim_dbt_status
+    description: "Reference dimension conforming heterogeneous model (success/error/skipped) and test (pass/fail/warn/error/skipped) statuses into a single health classification. Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: status_key
+    columns:
+      - name: status_key
+        description: "Surrogate key (SHA-256 of status). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: status
+        description: "Raw dbt node status string."
+        tests:
+          - unique
+          - not_null
+      - name: status_group
+        description: "Conformed status grouping."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["passed", "failed", "skipped", "warned", "unknown"]
+      - name: is_passing
+        description: "True if the node completed successfully (model success or test pass)."
+      - name: is_failure
+        description: "True if the node failed (model error or test fail)."
+      - name: severity_rank
+        description: "Ordinal severity (0 = ok, higher = worse). -1 for the unknown member."
+
+  - name: dim_dbt_materialization
+    description: "Reference dimension for dbt materializations (view, table, incremental, snapshot, seed, ...). Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: materialization_key
+    columns:
+      - name: materialization_key
+        description: "Surrogate key (SHA-256 of materialized). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: materialized
+        description: "dbt materialization name."
+        tests:
+          - unique
+          - not_null
+      - name: storage_class
+        description: "Whether the materialization persists as a view, table, or none."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["view", "table", "none", "unknown"]
+      - name: is_persisted
+        description: "True if the materialization writes a durable relation."
+      - name: is_rebuilt_each_run
+        description: "True if the relation is fully rebuilt on every run."
+
+  - name: dim_dbt_test_type
+    description: "Reference dimension for data-test types (not_null, unique, relationships, accepted_values, dbt_utils.*, custom). Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: test_type_key
+    columns:
+      - name: test_type_key
+        description: "Surrogate key (SHA-256 of test_type). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: test_type
+        description: "Test macro name from test_metadata (e.g. not_null)."
+        tests:
+          - unique
+          - not_null
+      - name: test_family
+        description: "Quality dimension the test asserts."
+        tests:
+          - accepted_values:
+              arguments:
+                values: ["completeness", "uniqueness", "referential_integrity", "validity", "consistency", "other", "unknown"]
+      - name: package
+        description: "Package providing the test (dbt_core, dbt_utils, custom, unknown)."
+      - name: is_generic
+        description: "True for generic (schema) tests."
+
+  - name: dim_dbt_node
+    description: "Central conformed dimension: one row per dbt node (unique_id) with its latest attributes. Type 1 (latest-wins); SCD2 history via snapshot is a future enhancement. Carries a '-1' unknown member."
+    tests:
+      - has_rows
+      - has_unknown_member:
+          arguments:
+            key_column: node_key
+    columns:
+      - name: node_key
+        description: "Surrogate key (SHA-256 of unique_id). Unknown member at '-1'."
+        tests:
+          - unique
+          - not_null
+      - name: unique_id
+        description: "dbt node unique_id (business key), e.g. model.dataops.dim_date."
+        tests:
+          - unique
+          - not_null
+      - name: project
+        description: "Owning dbt project."
+        tests:
+          - not_null
+      - name: resource_type
+        description: "dbt resource type of the node."
+      - name: node_name
+        description: "Node name (without unique_id namespacing)."
+      - name: node_layer
+        description: "Model folder (staging/marts/...) for models, else the resource_type."
+      - name: materialized
+        description: "Latest materialization of the node."
+      - name: test_type
+        description: "For tests: the test macro name; NULL otherwise."
+      - name: tested_column
+        description: "For column-level tests: the tested column; NULL otherwise."
+      - name: is_test
+        description: "True if the node is a test."
+
+  # ---------------------------------------------------------------------------
+  # Facts
+  # ---------------------------------------------------------------------------
+  - name: fct_dbt_node_execution
+    description: >-
+      Atomic fact: one row per dbt node execution within an invocation.
+      Grain: one row per (invocation_id, unique_id). Status counters are additive;
+      timing measures are additive. rows_affected/failures are adapter-reported and
+      frequently NULL on the fabricspark adapter.
+    tests:
+      - has_rows
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - invocation_id
+              - unique_id
+    columns:
+      - name: node_execution_key
+        description: "Surrogate key (SHA-256 of invocation_id + unique_id)."
+        tests:
+          - unique
+          - not_null
+      - name: node_key
+        description: "FK to dim_dbt_node."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_node')
+                field: node_key
+      - name: project_key
+        description: "FK to dim_dbt_project."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_project')
+                field: project_key
+      - name: resource_type_key
+        description: "FK to dim_dbt_resource_type."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_resource_type')
+                field: resource_type_key
+      - name: status_key
+        description: "FK to dim_dbt_status."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_status')
+                field: status_key
+      - name: materialization_key
+        description: "FK to dim_dbt_materialization."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_materialization')
+                field: materialization_key
+      - name: test_type_key
+        description: "FK to dim_dbt_test_type (unknown member for non-test nodes)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_test_type')
+                field: test_type_key
+      - name: date_key
+        description: "FK to dim_date (run date)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: invocation_id
+        description: "Degenerate dimension: the dbt invocation UUID."
+        tests:
+          - not_null
+      - name: unique_id
+        description: "Degenerate dimension: the dbt node unique_id (grain key)."
+        tests:
+          - not_null
+      - name: execution_time
+        description: "Total node execution time in seconds (additive)."
+      - name: execute_time
+        description: "Execute-phase time in seconds (additive)."
+      - name: compile_time
+        description: "Compile-phase time in seconds (additive)."
+      - name: is_success
+        description: "1 if the node succeeded (model/seed/snapshot/operation), else 0."
+      - name: has_failure
+        description: "1 if the node errored or a test failed, else 0."
+      - name: event_year_date
+        description: "Hive partition key (yyyyMMdd) from dbt run time."
+        tests:
+          - not_null
+
+  - name: fct_dbt_invocation
+    description: >-
+      Summary fact: one row per dbt invocation (command run).
+      Grain: one row per invocation_id. Count and timing measures are additive;
+      success_rate is non-additive (a ratio — do not SUM; recompute from counts).
+    tests:
+      - has_rows
+    columns:
+      - name: invocation_key
+        description: "Surrogate key (SHA-256 of invocation_id)."
+        tests:
+          - unique
+          - not_null
+      - name: invocation_id
+        description: "Degenerate dimension: the dbt invocation UUID."
+        tests:
+          - unique
+          - not_null
+      - name: project_key
+        description: "FK to dim_dbt_project."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_project')
+                field: project_key
+      - name: date_key
+        description: "FK to dim_date (invocation date)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: command
+        description: "Degenerate dimension: dbt command (build, seed, ...)."
+        tests:
+          - not_null
+      - name: total_nodes
+        description: "Count of node executions in the invocation (additive)."
+        tests:
+          - not_null
+      - name: failure_count
+        description: "Count of failed nodes (model errors + test fails) (additive)."
+      - name: wall_clock_seconds
+        description: "Elapsed seconds between first execute start and last execute completion."
+      - name: success_rate
+        description: "success_count / total_nodes. NON-ADDITIVE — recompute from counts when aggregating."
+      - name: event_year_date
+        description: "Hive partition key (yyyyMMdd) from dbt run time."
+        tests:
+          - not_null
+
+  - name: fct_dbt_node_dependency
+    description: >-
+      Bridge fact of the current dbt DAG (latest invocation per project).
+      Grain: one edge per (node_unique_id, depends_on_unique_id). Rebuilt in full
+      each run; depends_on_node_key resolves to the unknown member when the upstream
+      node never executed on its own (e.g. a source).
+    tests:
+      - has_rows
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - node_unique_id
+              - depends_on_unique_id
+    columns:
+      - name: dependency_key
+        description: "Surrogate key (SHA-256 of node_unique_id + depends_on_unique_id)."
+        tests:
+          - unique
+          - not_null
+      - name: node_key
+        description: "FK to dim_dbt_node (the dependent node)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_node')
+                field: node_key
+      - name: depends_on_node_key
+        description: "FK to dim_dbt_node (the upstream node)."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_node')
+                field: node_key
+      - name: project_key
+        description: "FK to dim_dbt_project."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_dbt_project')
+                field: project_key
+      - name: date_key
+        description: "FK to dim_date."
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_key
+      - name: event_year_date
+        description: "Hive partition key (yyyyMMdd) from dbt run time."
+        tests:
+          - not_null

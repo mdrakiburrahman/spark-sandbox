@@ -1,0 +1,10 @@
+expression 'DirectLake - dbt_dataops_dwh' =
+		let
+		    Source = AzureStorage.DataLake("https://onelake.dfs.fabric.microsoft.com/3ea60ae5-e979-4d31-a317-66491ab497fb/091ca1a7-9243-4453-8199-8d0663598107", [HierarchicalNavigation=true])
+		in
+		    Source
+	lineageTag: 8af05ba1-c972-4bac-b5f2-088b4b6404b9
+
+	annotation PBI_IncludeFutureArtifacts = False
+
+	annotation PBI_RemovedChildren = []

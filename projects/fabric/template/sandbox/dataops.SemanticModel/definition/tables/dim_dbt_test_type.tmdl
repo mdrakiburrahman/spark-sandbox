@@ -1,0 +1,54 @@
+table dim_dbt_test_type
+	lineageTag: af64f54d-7379-4b72-a3fa-b62215c1ffd8
+	sourceLineageTag: [dbo].[dim_dbt_test_type]
+
+	column test_type_key
+		dataType: string
+		lineageTag: f3bb895a-2c94-4a9f-8314-62617b240ded
+		sourceLineageTag: test_type_key
+		summarizeBy: none
+		sourceColumn: test_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column test_type
+		dataType: string
+		lineageTag: fe09d134-998f-4e6a-b537-e55cd3004a95
+		sourceLineageTag: test_type
+		summarizeBy: none
+		sourceColumn: test_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column test_family
+		dataType: string
+		lineageTag: 3da527cd-520c-4feb-bbbb-69cc0ee8fcc6
+		sourceLineageTag: test_family
+		summarizeBy: none
+		sourceColumn: test_family
+
+		annotation SummarizationSetBy = Automatic
+
+	column package
+		dataType: string
+		lineageTag: 5b74da9c-68a0-4065-a5e3-74d5a108d15f
+		sourceLineageTag: package
+		summarizeBy: none
+		sourceColumn: package
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_generic
+		dataType: boolean
+		lineageTag: 17756434-2ccb-4c74-8b23-be6b0b65a710
+		sourceLineageTag: is_generic
+		summarizeBy: none
+		sourceColumn: is_generic
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_dbt_test_type = entity
+		mode: directLake
+		source
+			entityName: dim_dbt_test_type
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

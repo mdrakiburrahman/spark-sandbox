@@ -33,6 +33,13 @@
     "lint": {
       "executor": "nx:run-commands",
       "cache": false,
+      "dependsOn": [
+        {
+          "target": "init",
+          "projects": ["spark-dbt"],
+          "params": "ignore"
+        }
+      ],
       "inputs": [
         "{projectRoot}/**/*",
         "{workspaceRoot}/projects/spark-dbt/.scripts/lint-dbt.sh",

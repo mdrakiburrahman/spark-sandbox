@@ -1,0 +1,63 @@
+table dim_delta_table_operation_type
+	lineageTag: 39437f88-a974-4d5b-b5ed-ed29d5b5c114
+	sourceLineageTag: [dbo].[dim_delta_table_operation_type]
+
+	column operation_type_key
+		dataType: string
+		lineageTag: 96260aab-13e7-44ed-a4c3-11314e4b4ecd
+		sourceLineageTag: operation_type_key
+		summarizeBy: none
+		sourceColumn: operation_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column operation
+		dataType: string
+		lineageTag: 6c55bf7d-19e5-4320-bc25-61af62914a21
+		sourceLineageTag: operation
+		summarizeBy: none
+		sourceColumn: operation
+
+		annotation SummarizationSetBy = Automatic
+
+	column operation_category
+		dataType: string
+		lineageTag: 8d976efe-72a9-4b9a-9070-af607bfaedfa
+		sourceLineageTag: operation_category
+		summarizeBy: none
+		sourceColumn: operation_category
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_data_changing
+		dataType: boolean
+		lineageTag: db0c98f3-bf4a-433f-a116-743d215d5582
+		sourceLineageTag: is_data_changing
+		summarizeBy: none
+		sourceColumn: is_data_changing
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_row_producing
+		dataType: boolean
+		lineageTag: c87369c9-c3bf-40fc-9f22-131e6fc83791
+		sourceLineageTag: is_row_producing
+		summarizeBy: none
+		sourceColumn: is_row_producing
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: b83a32b5-b937-430f-9daf-42e5585225f7
+		sourceLineageTag: description
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_delta_table_operation_type = entity
+		mode: directLake
+		source
+			entityName: dim_delta_table_operation_type
+			expressionSource: 'DirectLake - dbt_dataops_dwh'
