@@ -44,9 +44,12 @@ The skill will ask for the PR URL and the failed CI run URL, then orchestrate th
 
 ## 📊 dbt → Power BI
 
-End-to-end workflow to ship a Power BI report from a Delta Lake: Kimball dbt model → matplotlib mockup → TMDL semantic model → PBIR visual JSON — skipping the Power BI UI almost entirely.
+End-to-end workflow to ship a Power BI report from a Delta Lake: Kimball dbt model → matplotlib mockup → TMDL semantic model → PBIR visual JSON — skipping the Power BI UI almost entirely. The SKILL also references [`skills-for-fabric`](https://github.com/microsoft/skills-for-fabric).
 
 ```bash
+/plugin marketplace add microsoft/skills-for-fabric
+/plugin install powerbi-authoring@fabric-collection
+
 /fleet @//workspaces/spark-sandbox/.github/skills/dbt-to-power-bi/skill.md
 ```
 

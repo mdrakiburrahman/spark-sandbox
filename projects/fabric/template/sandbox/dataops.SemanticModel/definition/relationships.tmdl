@@ -1,0 +1,77 @@
+relationship fct_dbt_node_execution_node_key_dim_dbt_node_node_key
+	fromColumn: fct_dbt_node_execution.node_key
+	toColumn: dim_dbt_node.node_key
+
+relationship fct_dbt_node_execution_project_key_dim_dbt_project_project_key
+	fromColumn: fct_dbt_node_execution.project_key
+	toColumn: dim_dbt_project.project_key
+
+relationship fct_dbt_node_execution_resource_type_key_dim_dbt_resource_type_resource_type_key
+	fromColumn: fct_dbt_node_execution.resource_type_key
+	toColumn: dim_dbt_resource_type.resource_type_key
+
+relationship fct_dbt_node_execution_status_key_dim_dbt_status_status_key
+	fromColumn: fct_dbt_node_execution.status_key
+	toColumn: dim_dbt_status.status_key
+
+relationship fct_dbt_node_execution_materialization_key_dim_dbt_materialization_materialization_key
+	fromColumn: fct_dbt_node_execution.materialization_key
+	toColumn: dim_dbt_materialization.materialization_key
+
+relationship fct_dbt_node_execution_test_type_key_dim_dbt_test_type_test_type_key
+	fromColumn: fct_dbt_node_execution.test_type_key
+	toColumn: dim_dbt_test_type.test_type_key
+
+relationship fct_dbt_node_execution_date_key_dim_date_date_key
+	fromColumn: fct_dbt_node_execution.date_key
+	toColumn: dim_date.date_key
+
+relationship fct_dbt_invocation_project_key_dim_dbt_project_project_key
+	fromColumn: fct_dbt_invocation.project_key
+	toColumn: dim_dbt_project.project_key
+
+relationship fct_dbt_invocation_date_key_dim_date_date_key
+	fromColumn: fct_dbt_invocation.date_key
+	toColumn: dim_date.date_key
+
+relationship fct_delta_commit_table_key_dim_delta_table___pk
+	fromColumn: fct_delta_commit.table_key
+	toColumn: dim_delta_table.__pk
+
+relationship fct_delta_commit_operation_type_key_dim_delta_table_operation_type_operation_type_key
+	fromColumn: fct_delta_commit.operation_type_key
+	toColumn: dim_delta_table_operation_type.operation_type_key
+
+relationship fct_delta_commit_date_key_dim_date_date_key
+	fromColumn: fct_delta_commit.date_key
+	toColumn: dim_date.date_key
+
+relationship fct_delta_storage_table_key_dim_delta_table___pk
+	fromColumn: fct_delta_storage.table_key
+	toColumn: dim_delta_table.__pk
+
+relationship fct_delta_storage_date_key_dim_date_date_key
+	fromColumn: fct_delta_storage.date_key
+	toColumn: dim_date.date_key
+
+relationship fct_delta_health_table_key_dim_delta_table___pk
+	fromColumn: fct_delta_health.table_key
+	toColumn: dim_delta_table.__pk
+
+relationship fct_delta_health_date_key_dim_date_date_key
+	fromColumn: fct_delta_health.date_key
+	toColumn: dim_date.date_key
+
+relationship fct_delta_health_overall_status_key_dim_delta_table_health_status_health_status_key
+	fromColumn: fct_delta_health.overall_status_key
+	toColumn: dim_delta_table_health_status.health_status_key
+
+relationship fct_delta_health_freshness_status_key_dim_delta_table_health_status_health_status_key
+	fromColumn: fct_delta_health.freshness_status_key
+	toColumn: dim_delta_table_health_status.health_status_key
+	isActive: false
+
+relationship fct_delta_health_completeness_status_key_dim_delta_table_health_status_health_status_key
+	fromColumn: fct_delta_health.completeness_status_key
+	toColumn: dim_delta_table_health_status.health_status_key
+	isActive: false

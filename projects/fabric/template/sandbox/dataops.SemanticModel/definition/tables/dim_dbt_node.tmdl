@@ -1,0 +1,153 @@
+table dim_dbt_node
+	lineageTag: b8e140cd-7afe-4d97-9615-de16d52fb022
+	sourceLineageTag: [dbo].[dim_dbt_node]
+
+	column node_key
+		dataType: string
+		lineageTag: 8e869b0b-7ff5-4508-bfa3-aa315dea3297
+		sourceLineageTag: node_key
+		summarizeBy: none
+		sourceColumn: node_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column unique_id
+		dataType: string
+		lineageTag: 7d20412a-ad3f-4a3a-869e-ada587cfe3f1
+		sourceLineageTag: unique_id
+		summarizeBy: none
+		sourceColumn: unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column project
+		dataType: string
+		lineageTag: 178e2a48-5d07-45e1-bbd7-c4da5341c300
+		sourceLineageTag: project
+		summarizeBy: none
+		sourceColumn: project
+
+		annotation SummarizationSetBy = Automatic
+
+	column resource_type
+		dataType: string
+		lineageTag: c11d019e-c017-4135-ba34-ad94f192ed78
+		sourceLineageTag: resource_type
+		summarizeBy: none
+		sourceColumn: resource_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column package_name
+		dataType: string
+		lineageTag: 2b75494b-4cbe-41b4-9e24-0f0e791f9799
+		sourceLineageTag: package_name
+		summarizeBy: none
+		sourceColumn: package_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column node_name
+		dataType: string
+		lineageTag: 6d345f66-9c7a-4871-a0bd-338a1e8a4273
+		sourceLineageTag: node_name
+		summarizeBy: none
+		sourceColumn: node_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column alias
+		dataType: string
+		lineageTag: f5d5624a-b918-4a40-b510-42f3030fa10e
+		sourceLineageTag: alias
+		summarizeBy: none
+		sourceColumn: alias
+
+		annotation SummarizationSetBy = Automatic
+
+	column database_name
+		dataType: string
+		lineageTag: c7c1787f-2203-4fc6-a03d-5aa0823b1cc0
+		sourceLineageTag: database_name
+		summarizeBy: none
+		sourceColumn: database_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column schema_name
+		dataType: string
+		lineageTag: 86bd5c9c-9459-4465-a2e5-32ae1e852275
+		sourceLineageTag: schema_name
+		summarizeBy: none
+		sourceColumn: schema_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column relation_name
+		dataType: string
+		lineageTag: 329a530f-d2da-47ae-a4be-685e82f9e832
+		sourceLineageTag: relation_name
+		summarizeBy: none
+		sourceColumn: relation_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column original_file_path
+		dataType: string
+		lineageTag: 7cc0a24d-2e4d-4616-9368-66bfbde93d87
+		sourceLineageTag: original_file_path
+		summarizeBy: none
+		sourceColumn: original_file_path
+
+		annotation SummarizationSetBy = Automatic
+
+	column materialized
+		dataType: string
+		lineageTag: f508f9c4-316f-46a8-945c-01c26b8ae747
+		sourceLineageTag: materialized
+		summarizeBy: none
+		sourceColumn: materialized
+
+		annotation SummarizationSetBy = Automatic
+
+	column node_layer
+		dataType: string
+		lineageTag: 97baaf5a-b193-4bf9-b1eb-f5e082d0b7a1
+		sourceLineageTag: node_layer
+		summarizeBy: none
+		sourceColumn: node_layer
+
+		annotation SummarizationSetBy = Automatic
+
+	column test_type
+		dataType: string
+		lineageTag: 3cc8ae16-4d63-4127-b015-f7e3f4fc7153
+		sourceLineageTag: test_type
+		summarizeBy: none
+		sourceColumn: test_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column tested_column
+		dataType: string
+		lineageTag: cf73a2a6-b7f3-4644-9e76-77fa574dd863
+		sourceLineageTag: tested_column
+		summarizeBy: none
+		sourceColumn: tested_column
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_test
+		dataType: boolean
+		lineageTag: 4db849d2-0fa1-4a8c-93be-4ceeb5174196
+		sourceLineageTag: is_test
+		summarizeBy: none
+		sourceColumn: is_test
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_dbt_node = entity
+		mode: directLake
+		source
+			entityName: dim_dbt_node
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

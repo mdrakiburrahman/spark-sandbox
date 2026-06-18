@@ -1,0 +1,46 @@
+table dim_delta_table_health_status
+	lineageTag: 3dfc947a-a458-4e4b-b085-91b834534ad3
+	sourceLineageTag: [dbo].[dim_delta_table_health_status]
+
+	column health_status_key
+		dataType: string
+		lineageTag: 8ce1418d-0fa6-4f52-87cc-e1110ab2d1ab
+		sourceLineageTag: health_status_key
+		summarizeBy: none
+		sourceColumn: health_status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 2d8211c5-9be3-40df-9a8f-181cdad52d44
+		sourceLineageTag: status
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: ea728fd8-d37e-4ccc-a134-842f60fa51fc
+		sourceLineageTag: description
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	column severity_rank
+		dataType: int64
+		formatString: 0
+		lineageTag: c24d4655-1cc3-4fa1-96b3-132e890d30f6
+		sourceLineageTag: severity_rank
+		summarizeBy: none
+		sourceColumn: severity_rank
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_delta_table_health_status = entity
+		mode: directLake
+		source
+			entityName: dim_delta_table_health_status
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

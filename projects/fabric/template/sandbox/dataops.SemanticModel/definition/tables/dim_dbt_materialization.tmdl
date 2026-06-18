@@ -1,0 +1,63 @@
+table dim_dbt_materialization
+	lineageTag: 722d833b-c7b2-4952-8bc5-c2331d1022b0
+	sourceLineageTag: [dbo].[dim_dbt_materialization]
+
+	column materialization_key
+		dataType: string
+		lineageTag: ca6733f8-2b9c-4f2f-b40f-76a276dd0c00
+		sourceLineageTag: materialization_key
+		summarizeBy: none
+		sourceColumn: materialization_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column materialized
+		dataType: string
+		lineageTag: 6535fc82-7c2b-4306-b02b-5590bc57fd9e
+		sourceLineageTag: materialized
+		summarizeBy: none
+		sourceColumn: materialized
+
+		annotation SummarizationSetBy = Automatic
+
+	column storage_class
+		dataType: string
+		lineageTag: 472b5662-1085-4655-87dd-38e803f30ce4
+		sourceLineageTag: storage_class
+		summarizeBy: none
+		sourceColumn: storage_class
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_persisted
+		dataType: boolean
+		lineageTag: 3cdc57c0-7d69-425a-b6e2-1f4a3877b5d1
+		sourceLineageTag: is_persisted
+		summarizeBy: none
+		sourceColumn: is_persisted
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_rebuilt_each_run
+		dataType: boolean
+		lineageTag: eae80d2d-467c-4a83-bf1d-d483045e2d94
+		sourceLineageTag: is_rebuilt_each_run
+		summarizeBy: none
+		sourceColumn: is_rebuilt_each_run
+
+		annotation SummarizationSetBy = Automatic
+
+	column description
+		dataType: string
+		lineageTag: f41105ab-c70c-454e-a5c0-485a3700b2fa
+		sourceLineageTag: description
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_dbt_materialization = entity
+		mode: directLake
+		source
+			entityName: dim_dbt_materialization
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

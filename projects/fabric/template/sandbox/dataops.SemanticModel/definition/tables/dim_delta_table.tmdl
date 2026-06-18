@@ -1,0 +1,195 @@
+table dim_delta_table
+	lineageTag: d00ebf9e-6f63-440f-aaca-3ebd53174f3e
+	sourceLineageTag: [dbo].[dim_delta_table]
+
+	column __pk
+		dataType: string
+		lineageTag: 49ae0226-dde2-4d44-8114-4916aec79926
+		sourceLineageTag: __pk
+		summarizeBy: none
+		sourceColumn: __pk
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_fqn
+		dataType: string
+		lineageTag: 38d459d7-692f-442f-a4aa-e9a837fa6d2a
+		sourceLineageTag: table_fqn
+		summarizeBy: none
+		sourceColumn: table_fqn
+
+		annotation SummarizationSetBy = Automatic
+
+	column database_name
+		dataType: string
+		lineageTag: 5244be71-553b-424b-b6c8-01ef3c65d35d
+		sourceLineageTag: database_name
+		summarizeBy: none
+		sourceColumn: database_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_name
+		dataType: string
+		lineageTag: cee96b28-2c59-48f4-b18a-6734dd3e7a12
+		sourceLineageTag: table_name
+		summarizeBy: none
+		sourceColumn: table_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_id
+		dataType: string
+		lineageTag: 35b6b3d8-1753-40e3-a3d6-0da84c0747a1
+		sourceLineageTag: table_id
+		summarizeBy: none
+		sourceColumn: table_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column location
+		dataType: string
+		lineageTag: 482ed05f-5411-40b1-a412-03d134d53b0d
+		sourceLineageTag: location
+		summarizeBy: none
+		sourceColumn: location
+
+		annotation SummarizationSetBy = Automatic
+
+	column format
+		dataType: string
+		lineageTag: 8b68f9a0-fa23-4a4c-9309-0c238fd7a1cb
+		sourceLineageTag: format
+		summarizeBy: none
+		sourceColumn: format
+
+		annotation SummarizationSetBy = Automatic
+
+	column partition_columns
+		dataType: string
+		lineageTag: cc014b0c-725f-4788-bec5-4dad0f10c4f3
+		sourceLineageTag: partition_columns
+		summarizeBy: none
+		sourceColumn: partition_columns
+
+		annotation SummarizationSetBy = Automatic
+
+	column clustering_columns
+		dataType: string
+		lineageTag: 0c4b7627-83f0-4da7-ae3d-64a2c1dedc0e
+		sourceLineageTag: clustering_columns
+		summarizeBy: none
+		sourceColumn: clustering_columns
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_properties
+		dataType: string
+		lineageTag: 77692d8e-2b80-4d77-8e47-48caf4fad7b5
+		sourceLineageTag: table_properties
+		summarizeBy: none
+		sourceColumn: table_properties
+
+		annotation SummarizationSetBy = Automatic
+
+	column min_reader_version
+		dataType: int64
+		formatString: 0
+		lineageTag: 061bf0b6-4cef-448b-a4bf-949622925f6f
+		sourceLineageTag: min_reader_version
+		summarizeBy: none
+		sourceColumn: min_reader_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column min_writer_version
+		dataType: int64
+		formatString: 0
+		lineageTag: ea9d4dee-4093-4834-a571-e4853ff5661a
+		sourceLineageTag: min_writer_version
+		summarizeBy: none
+		sourceColumn: min_writer_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column __scd2_hash
+		dataType: string
+		lineageTag: 2fe89881-6707-45ff-84b6-4bf1e1686c4f
+		sourceLineageTag: __scd2_hash
+		summarizeBy: none
+		sourceColumn: __scd2_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column __scd1_hash
+		dataType: string
+		lineageTag: 2e2fb1ae-e852-4b11-a01a-6a7de5bdbf4f
+		sourceLineageTag: __scd1_hash
+		summarizeBy: none
+		sourceColumn: __scd1_hash
+
+		annotation SummarizationSetBy = Automatic
+
+	column __merge_effective_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: c96b5268-1f04-4ccd-bfe0-b92f86c4c8b1
+		sourceLineageTag: __merge_effective_date
+		summarizeBy: none
+		sourceColumn: __merge_effective_date
+
+		annotation SummarizationSetBy = Automatic
+
+	column row_effective_start
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ade951e5-d79b-42a9-a981-783f342b52da
+		sourceLineageTag: row_effective_start
+		summarizeBy: none
+		sourceColumn: row_effective_start
+
+		annotation SummarizationSetBy = Automatic
+
+	column row_effective_end
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: fbff6aaa-218e-4f3e-897c-f78b50d55a3f
+		sourceLineageTag: row_effective_end
+		summarizeBy: none
+		sourceColumn: row_effective_end
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_row_effective
+		dataType: boolean
+		lineageTag: 8e57e9d6-8ac9-438b-9b9e-4e41f311c0f7
+		sourceLineageTag: is_row_effective
+		summarizeBy: none
+		sourceColumn: is_row_effective
+
+		annotation SummarizationSetBy = Automatic
+
+	column __scd_id
+		dataType: string
+		lineageTag: fc13f5f2-28a1-47d1-a1a6-dbae4a7f64d9
+		sourceLineageTag: __scd_id
+		summarizeBy: none
+		sourceColumn: __scd_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column __merge_ingest_time
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 82337f62-3046-44c8-96bb-e283ad1fa94e
+		sourceLineageTag: __merge_ingest_time
+		summarizeBy: none
+		sourceColumn: __merge_ingest_time
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_delta_table = entity
+		mode: directLake
+		source
+			entityName: dim_delta_table
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

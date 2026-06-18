@@ -1,0 +1,177 @@
+table fct_delta_commit
+	lineageTag: ce87a80f-a8bf-4c33-825d-c97f40e75dd5
+	sourceLineageTag: [dbo].[fct_delta_commit]
+
+	/// Count of Delta commit rows
+	measure 'Total Commits' = COUNTROWS(fct_delta_commit)
+		formatString: #,0
+		displayFolder: Delta \ Commits
+		lineageTag: 72174692-b558-47d4-a5c7-b0323ecbdef7
+
+	/// Count of distinct Delta tables with commits
+	measure 'Tables Tracked' = DISTINCTCOUNT(fct_delta_commit[table_key])
+		formatString: #,0
+		displayFolder: Delta \ Commits
+		lineageTag: 6d0834fd-7a4a-4986-b256-678885843d6e
+
+	/// Sum of Delta output rows
+	measure 'Rows Written' = SUM(fct_delta_commit[num_output_rows])
+		formatString: #,0
+		displayFolder: Delta \ Commits
+		lineageTag: d8c718f0-0935-4213-bee0-aecca628bc4c
+
+	/// Sum of Delta files added
+	measure 'Files Added' = SUM(fct_delta_commit[num_added_files])
+		formatString: #,0
+		displayFolder: Delta \ Commits
+		lineageTag: fa0053ce-5bfe-4fe8-86cd-906e9241b0d0
+
+	column commit_key
+		dataType: string
+		lineageTag: 0dbb93fc-518e-4f5d-8f24-5a94e4eb9c0d
+		sourceLineageTag: commit_key
+		summarizeBy: none
+		sourceColumn: commit_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column table_key
+		dataType: string
+		lineageTag: e56e7fa2-fecd-4501-b670-de73f8c279b7
+		sourceLineageTag: table_key
+		summarizeBy: none
+		sourceColumn: table_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column operation_type_key
+		dataType: string
+		lineageTag: 6d9c7440-3448-4825-b291-e338e921023a
+		sourceLineageTag: operation_type_key
+		summarizeBy: none
+		sourceColumn: operation_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: string
+		lineageTag: 6885cbff-9852-4aa9-a791-91933ada4481
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column version
+		dataType: int64
+		formatString: 0
+		lineageTag: ee4c7559-7192-4f55-8bda-92f2071b41ab
+		sourceLineageTag: version
+		summarizeBy: none
+		sourceColumn: version
+
+		annotation SummarizationSetBy = Automatic
+
+	column commit_timestamp
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: de9c5727-029a-4503-92ef-45c3e6988423
+		sourceLineageTag: commit_timestamp
+		summarizeBy: none
+		sourceColumn: commit_timestamp
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_output_rows
+		dataType: int64
+		formatString: 0
+		lineageTag: 65c47167-9af5-4569-9adc-5a351ee51a71
+		sourceLineageTag: num_output_rows
+		summarizeBy: sum
+		sourceColumn: num_output_rows
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_added_files
+		dataType: int64
+		formatString: 0
+		lineageTag: 0cc5388f-5e46-4018-922f-759dbf4c9b22
+		sourceLineageTag: num_added_files
+		summarizeBy: sum
+		sourceColumn: num_added_files
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_removed_files
+		dataType: int64
+		formatString: 0
+		lineageTag: 03ae9fe2-f7ee-403a-ad04-5f12543d0d8a
+		sourceLineageTag: num_removed_files
+		summarizeBy: sum
+		sourceColumn: num_removed_files
+
+		annotation SummarizationSetBy = Automatic
+
+	column num_output_bytes
+		dataType: int64
+		formatString: 0
+		lineageTag: a8d110d7-d0a2-4e06-8fbe-f49b89312adb
+		sourceLineageTag: num_output_bytes
+		summarizeBy: sum
+		sourceColumn: num_output_bytes
+
+		annotation SummarizationSetBy = Automatic
+
+	column execution_time_ms
+		dataType: int64
+		formatString: 0
+		lineageTag: a8008689-e56c-4a1f-b5d1-d24ecc561ef7
+		sourceLineageTag: execution_time_ms
+		summarizeBy: sum
+		sourceColumn: execution_time_ms
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_blind_append
+		dataType: boolean
+		lineageTag: 4cd1744b-d343-4564-9547-87fb83055745
+		sourceLineageTag: is_blind_append
+		summarizeBy: none
+		sourceColumn: is_blind_append
+
+		annotation SummarizationSetBy = Automatic
+
+	column ingested_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ba25022a-5b76-478d-b776-0c1c280297df
+		sourceLineageTag: ingested_at
+		summarizeBy: none
+		sourceColumn: ingested_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_loaded_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 98e48de8-8247-461e-a6ed-4bebdc8eeede
+		sourceLineageTag: dbt_loaded_at
+		summarizeBy: none
+		sourceColumn: dbt_loaded_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_year_date
+		dataType: string
+		lineageTag: ccce2088-8e8d-4d97-8719-f6236fc8267e
+		sourceLineageTag: event_year_date
+		summarizeBy: none
+		sourceColumn: event_year_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_delta_commit = entity
+		mode: directLake
+		source
+			entityName: fct_delta_commit
+			expressionSource: 'DirectLake - dbt_dataops_dwh'

@@ -1,0 +1,337 @@
+table fct_dbt_node_execution
+	lineageTag: 9c8a3be7-23b6-4805-b7a5-9b885f12a01e
+	sourceLineageTag: [dbo].[fct_dbt_node_execution]
+
+	/// Count of dbt node execution rows
+	measure 'Total Node Executions' = COUNTROWS(fct_dbt_node_execution)
+		formatString: #,0
+		displayFolder: dbt \ Volume
+		lineageTag: ccc676f4-a5ce-4bd6-8948-925449fd65cf
+
+	/// Sum of successful dbt node counters
+	measure 'Successful Nodes' = SUM(fct_dbt_node_execution[is_success])
+		formatString: #,0
+		displayFolder: dbt \ Outcomes
+		lineageTag: a68690e4-20c3-4d8d-b71a-aef027912d7f
+
+	/// Sum of failed dbt node counters
+	measure 'Failed Nodes' = SUM(fct_dbt_node_execution[has_failure])
+		formatString: #,0
+		displayFolder: dbt \ Outcomes
+		lineageTag: b4693df5-97d0-485d-b2b2-b709c7c9aded
+
+	/// Successful nodes divided by total node executions
+	measure 'Success Rate' = DIVIDE([Successful Nodes],[Total Node Executions],0)
+		formatString: 0.0%
+		displayFolder: dbt \ Outcomes
+		lineageTag: 84553496-6577-43c7-906c-2d3dcec11bda
+
+	/// Average node execution time in seconds
+	measure 'Avg Execution Time (seconds)' = AVERAGE(fct_dbt_node_execution[execution_time])
+		formatString: #,0.00
+		displayFolder: dbt \ Timing
+		lineageTag: ea8a110b-866f-4fb4-9646-baa801a46a3e
+
+	/// Total node execution time in seconds
+	measure 'Total Execution Time (seconds)' = SUM(fct_dbt_node_execution[execution_time])
+		formatString: #,0.0
+		displayFolder: dbt \ Timing
+		lineageTag: df7aa13c-7c84-45a1-85ad-d42fdb1666e0
+
+	/// Count of distinct dbt invocation IDs
+	measure 'Total Invocations' = DISTINCTCOUNT(fct_dbt_node_execution[invocation_id])
+		formatString: #,0
+		displayFolder: dbt \ Volume
+		lineageTag: 74a1c790-29d1-47da-8a79-9d0bf09ecdf3
+
+	column node_execution_key
+		dataType: string
+		lineageTag: 77781010-e215-4a47-82d3-d0a796a6e0e2
+		sourceLineageTag: node_execution_key
+		summarizeBy: none
+		sourceColumn: node_execution_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column node_key
+		dataType: string
+		lineageTag: 031efb35-dde7-457f-9d63-403cbe17b3c1
+		sourceLineageTag: node_key
+		summarizeBy: none
+		sourceColumn: node_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column project_key
+		dataType: string
+		lineageTag: d8b67605-2b98-4759-93f4-6f1736d861eb
+		sourceLineageTag: project_key
+		summarizeBy: none
+		sourceColumn: project_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column resource_type_key
+		dataType: string
+		lineageTag: 8b93d045-dfde-4af5-94b2-080a8a4efcc7
+		sourceLineageTag: resource_type_key
+		summarizeBy: none
+		sourceColumn: resource_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column status_key
+		dataType: string
+		lineageTag: 8ee38970-bd4d-4ade-9ca9-eda206ecff80
+		sourceLineageTag: status_key
+		summarizeBy: none
+		sourceColumn: status_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column materialization_key
+		dataType: string
+		lineageTag: bcb25805-49c2-4ea6-8039-333b77466adb
+		sourceLineageTag: materialization_key
+		summarizeBy: none
+		sourceColumn: materialization_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column test_type_key
+		dataType: string
+		lineageTag: c82d619b-b906-4a13-a61f-84f4664fb4c1
+		sourceLineageTag: test_type_key
+		summarizeBy: none
+		sourceColumn: test_type_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_key
+		dataType: string
+		lineageTag: 0ec1ef41-26dc-4ecb-bf8f-dfe59424d5d8
+		sourceLineageTag: date_key
+		summarizeBy: none
+		sourceColumn: date_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column invocation_id
+		dataType: string
+		lineageTag: dda85fdf-fcac-46c3-ab00-406019211f5c
+		sourceLineageTag: invocation_id
+		summarizeBy: none
+		sourceColumn: invocation_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column unique_id
+		dataType: string
+		lineageTag: ab102599-e054-457b-a9cf-9659ff4e40a1
+		sourceLineageTag: unique_id
+		summarizeBy: none
+		sourceColumn: unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column command
+		dataType: string
+		lineageTag: 2951d6da-f7ad-4faa-8cdf-7ccaa40e10aa
+		sourceLineageTag: command
+		summarizeBy: none
+		sourceColumn: command
+
+		annotation SummarizationSetBy = Automatic
+
+	column thread_id
+		dataType: string
+		lineageTag: 75ff00fc-d8c7-4832-b550-94155cd3f76e
+		sourceLineageTag: thread_id
+		summarizeBy: none
+		sourceColumn: thread_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_version
+		dataType: string
+		lineageTag: 9da0565e-7a34-4de8-8219-fffc7dae001c
+		sourceLineageTag: dbt_version
+		summarizeBy: none
+		sourceColumn: dbt_version
+
+		annotation SummarizationSetBy = Automatic
+
+	column execution_time
+		dataType: double
+		formatString: 0.00
+		lineageTag: be6fe92a-bbef-4299-ace8-cf4a86bc7f2f
+		sourceLineageTag: execution_time
+		summarizeBy: sum
+		sourceColumn: execution_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column compile_time
+		dataType: double
+		formatString: 0.00
+		lineageTag: e4d7a78f-b190-442e-ae9b-14340537de95
+		sourceLineageTag: compile_time
+		summarizeBy: sum
+		sourceColumn: compile_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column execute_time
+		dataType: double
+		formatString: 0.00
+		lineageTag: 4306acdc-4870-4177-81aa-a6c6136e92ce
+		sourceLineageTag: execute_time
+		summarizeBy: sum
+		sourceColumn: execute_time
+
+		annotation SummarizationSetBy = Automatic
+
+	column rows_affected
+		dataType: int64
+		formatString: 0
+		lineageTag: f9dc5602-16a0-475a-817f-45352a0af2ed
+		sourceLineageTag: rows_affected
+		summarizeBy: sum
+		sourceColumn: rows_affected
+
+		annotation SummarizationSetBy = Automatic
+
+	column failures
+		dataType: int64
+		formatString: 0
+		lineageTag: c42861c6-f9e8-44bd-a439-8ddb03195293
+		sourceLineageTag: failures
+		summarizeBy: sum
+		sourceColumn: failures
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_success
+		dataType: int64
+		formatString: 0
+		lineageTag: 3298ec45-6e26-418e-803c-37d4902fdcd2
+		sourceLineageTag: is_success
+		summarizeBy: sum
+		sourceColumn: is_success
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_error
+		dataType: int64
+		formatString: 0
+		lineageTag: 715aca54-d0e1-4526-a419-79109f07aa4a
+		sourceLineageTag: is_error
+		summarizeBy: sum
+		sourceColumn: is_error
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_skipped
+		dataType: int64
+		formatString: 0
+		lineageTag: 78fa4e04-9449-457b-bf49-f73b20c4fe0f
+		sourceLineageTag: is_skipped
+		summarizeBy: sum
+		sourceColumn: is_skipped
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_pass
+		dataType: int64
+		formatString: 0
+		lineageTag: 47edf938-b7b8-4cf5-b198-43e79825bb9f
+		sourceLineageTag: is_pass
+		summarizeBy: sum
+		sourceColumn: is_pass
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_fail
+		dataType: int64
+		formatString: 0
+		lineageTag: 4f8731a9-09ba-47fa-b56b-fee3d7b86522
+		sourceLineageTag: is_fail
+		summarizeBy: sum
+		sourceColumn: is_fail
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_warn
+		dataType: int64
+		formatString: 0
+		lineageTag: 35fb51f4-f854-4529-9279-c062c46b6a6a
+		sourceLineageTag: is_warn
+		summarizeBy: sum
+		sourceColumn: is_warn
+
+		annotation SummarizationSetBy = Automatic
+
+	column has_failure
+		dataType: int64
+		formatString: 0
+		lineageTag: 9ced43cc-5e02-46a7-af20-204a0dd0b2a8
+		sourceLineageTag: has_failure
+		summarizeBy: sum
+		sourceColumn: has_failure
+
+		annotation SummarizationSetBy = Automatic
+
+	column compile_started_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 8c6cc90d-3437-4479-8125-d9fcdbdd99de
+		sourceLineageTag: compile_started_at
+		summarizeBy: none
+		sourceColumn: compile_started_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column execute_completed_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 422d1057-3686-4370-9c6c-9cccc483cf4c
+		sourceLineageTag: execute_completed_at
+		summarizeBy: none
+		sourceColumn: execute_completed_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column generated_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 8f2c1ad2-91cd-4c89-be53-363c8e35cd7c
+		sourceLineageTag: generated_at
+		summarizeBy: none
+		sourceColumn: generated_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column dbt_loaded_at
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: cd17e761-80ee-4cb5-9141-8f1747c52ab1
+		sourceLineageTag: dbt_loaded_at
+		summarizeBy: none
+		sourceColumn: dbt_loaded_at
+
+		annotation SummarizationSetBy = Automatic
+
+	column event_year_date
+		dataType: string
+		lineageTag: fe8d6219-9c35-4cb5-9604-52639b855b13
+		sourceLineageTag: event_year_date
+		summarizeBy: none
+		sourceColumn: event_year_date
+
+		annotation SummarizationSetBy = Automatic
+
+	partition fct_dbt_node_execution = entity
+		mode: directLake
+		source
+			entityName: fct_dbt_node_execution
+			expressionSource: 'DirectLake - dbt_dataops_dwh'
