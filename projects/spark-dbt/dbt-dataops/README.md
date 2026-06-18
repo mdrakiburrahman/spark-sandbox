@@ -1,10 +1,16 @@
 ## Dimensional modelling dbt project: `dataops`
 
-A Kimball STAR schema for monitoring Delta Lake table operations. This dbt project transforms raw inventory data — commit history, table snapshots, health KPIs, and OpenLineage events — into a set of fact and dimension tables for analytics.
+In the `dbt_dataops_dwh` warehouse:
 
-### What's in this repo?
+1. **Delta Lake operations star** (`*_delta_*`) — monitors Delta table operations:
+   commit history, table snapshots, health KPIs, and OpenLineage lineage.
 
-This project sources data from the `dataops_inventory` schema (populated by the `spark-scala` ETL framework) and models it into a dimensional warehouse in `dbt_dataops_dwh`.
+2. **dbt observability star** (`*_dbt_*`) — turns the project's own execution
+   telemetry (`dbt_node_executions`, emitted by `dbt-runner-lib` on every local and
+   Fabric run) into analytics-ready facts, dimensions, and fully-denormalised OBTs.
+
+Both source from the `dataops_inventory` schema (populated by the `spark-scala` ETL
+framework and the dbt runner) and model into `dbt_dataops_dwh`.
 
 The Entity-Relationship Diagram is available in [`erd/full_model.dbml`](erd/full_model.dbml).
 

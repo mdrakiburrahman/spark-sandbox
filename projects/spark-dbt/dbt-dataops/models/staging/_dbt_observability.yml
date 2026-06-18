@@ -1,0 +1,59 @@
+version: 2
+
+models:
+  - name: stg_dbt_node_executions
+    description: >-
+      Cleaned, typed, and deduplicated dbt node-execution telemetry from the
+      dataops_inventory.dbt_node_executions source. One row per
+      (invocation_id, unique_id) — the latest result per node per invocation.
+      Extracts test type / tested column / adapter message from JSON and derives
+      run date key, node layer, and boolean status flags.
+    columns:
+      - name: invocation_id
+        description: "UUID of the dbt invocation (one command run)."
+        tests:
+          - not_null
+      - name: unique_id
+        description: "Stable dbt node identity (e.g. model.dataops.dim_date)."
+        tests:
+          - not_null
+      - name: project
+        description: "dbt project name."
+        tests:
+          - not_null
+      - name: resource_type
+        description: "dbt resource type: model, test, seed, snapshot, operation."
+        tests:
+          - not_null
+      - name: status
+        description: "Raw node outcome string."
+        tests:
+          - not_null
+      - name: run_date_key
+        description: "Run date in yyyyMMdd, from coalesce(execute_completed_at, generated_at)."
+        tests:
+          - not_null
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns:
+              - invocation_id
+              - unique_id
+
+  - name: stg_dbt_node_dependency
+    description: >-
+      Exploded dbt DAG edges: one row per (invocation_id, node_unique_id,
+      depends_on_unique_id) derived from the depends_on_nodes array.
+    columns:
+      - name: node_unique_id
+        description: "The dependent (parent) dbt node unique_id."
+        tests:
+          - not_null
+      - name: depends_on_unique_id
+        description: "The upstream (child) dbt node unique_id this node depends on."
+        tests:
+          - not_null
+      - name: project
+        description: "dbt project name."
+        tests:
+          - not_null

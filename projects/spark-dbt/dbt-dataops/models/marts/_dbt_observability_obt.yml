@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: obt_dbt_node_execution
+    description: >-
+      Fully denormalised one-big-table of dbt node executions joined to every
+      conformed dimension (node, project, resource_type, status, materialization,
+      test_type, date). Grain: one row per (invocation_id, unique_id). Built via
+      dbt_utils.star — see assert_obt_rowcount_matches_fact for fan-out protection.
+    tests:
+      - has_rows
+    columns:
+      - name: node_execution_key
+        description: "Surrogate key inherited from fct_dbt_node_execution."
+        tests:
+          - unique
+          - not_null
+
+  - name: obt_dbt_invocation
+    description: >-
+      Fully denormalised one-big-table of dbt invocations joined to project and
+      date. Grain: one row per invocation_id.
+    tests:
+      - has_rows
+    columns:
+      - name: invocation_key
+        description: "Surrogate key inherited from fct_dbt_invocation."
+        tests:
+          - unique
+          - not_null

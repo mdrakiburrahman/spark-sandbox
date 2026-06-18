@@ -59,3 +59,29 @@ sources:
             description: "Hive partition column in yyyyMMdd format."
           - name: result_timestamp
             description: "Event timestamp."
+
+      - name: dbt_node_executions
+        description: "dbt-runner-lib telemetry: one row per dbt node (model/test/seed/snapshot/operation) per invocation, written identically by local and Fabric runs. Partitioned by project and event_year_month (yyyyMM)."
+        columns:
+          - name: project
+            description: "dbt project name (e.g. dbt-dataops); Hive partition column."
+          - name: command
+            description: "dbt command that produced the node result (build, seed, run, test, ...)."
+          - name: invocation_id
+            description: "UUID of the dbt invocation; the natural key for one command run."
+          - name: unique_id
+            description: "Stable dbt node identity (e.g. model.dataops.dim_date)."
+          - name: resource_type
+            description: "dbt resource type: model, test, seed, snapshot, operation."
+          - name: status
+            description: "Node outcome: success/error/skipped (models), pass/fail/warn/error/skipped (tests)."
+          - name: materialized
+            description: "Node materialization: view, table, incremental, snapshot, seed, test."
+          - name: generated_at
+            description: "Invocation result generation timestamp; reliable incremental high-water mark."
+          - name: event_year_month
+            description: "Hive partition column in yyyyMM format."
+        loaded_at_field: generated_at
+        freshness:
+          warn_after: { count: 2, period: day }
+          error_after: { count: 7, period: day }
