@@ -22,7 +22,8 @@ def _get_notebook_paths():
 
 @pytest.fixture(scope="session")
 def spark():
-    session = SparkSession.builder.appName("spark-python-tests").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "1g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").enableHiveSupport().getOrCreate()
+    # Disable the inherited ADLS OAuth plugin: its jar isn't on this session's classpath and isn't needed here.
+    session = SparkSession.builder.appName("spark-python-tests").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "1g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").config("spark.plugins", "").enableHiveSupport().getOrCreate()
     session.sparkContext.setLogLevel("WARN")
     yield session
     session.stop()

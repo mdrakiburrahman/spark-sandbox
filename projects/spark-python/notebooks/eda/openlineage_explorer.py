@@ -49,7 +49,8 @@ def _():
 
     os.environ["SPARK_CONF_DIR"] = "/opt/spark/conf"
 
-    spark = SparkSession.builder.appName("OpenLineage Explorer").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "2g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").enableHiveSupport().getOrCreate()
+    # Disable the inherited ADLS OAuth plugin: its jar isn't on this session's classpath and isn't needed here.
+    spark = SparkSession.builder.appName("OpenLineage Explorer").master("local[*]").config("spark.ui.enabled", "false").config("spark.driver.memory", "2g").config("spark.driver.extraClassPath", "/opt/spark/jars/*").config("spark.plugins", "").enableHiveSupport().getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
     return (spark,)
 
