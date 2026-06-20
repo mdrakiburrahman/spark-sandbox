@@ -3,6 +3,7 @@ export default {
   testMatch: [
     '<rootDir>/tests/**/*.test.cjs',
     '<rootDir>/tests/**/*.test.ts',
+    '<rootDir>/tools/libs/imds_router/**/*.test.ts',
   ],
   transform: {
     '^.+\\.ts$': [

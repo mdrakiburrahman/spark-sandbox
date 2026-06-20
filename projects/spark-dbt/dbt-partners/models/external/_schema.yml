@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: date_dim
+    description: >-
+      Delta table on ADLS Gen2 read directly over `abfss://`.
+  - name: raw_customers
+    description: >-
+      Delta table in OneLake, read directly over `abfss://`.

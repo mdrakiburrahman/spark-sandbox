@@ -1,73 +1,77 @@
 #!/usr/bin/env node
 /**
- * IMDS Router - Serves tokens via `az account get-access-token` (App Service mode).
- * Set IDENTITY_ENDPOINT=http://localhost:6020/token and IDENTITY_HEADER=<secret>
+ * IMDS Router - Emulates the Azure App Service Managed Identity (IMDS) token endpoint and
+ * serves tokens per request via a routing table:
+ *   - `default` profile  → `az account get-access-token` (the signed-in identity; OneLake)
+ *   - `SNI` profile       → a Key Vault certificate (subject-name/issuer) for an SPN (ADLS)
+ *
+ * Set IDENTITY_ENDPOINT=http://localhost:6020/token and IDENTITY_HEADER=<secret>.
+ *
+ * Composition root: wires config + logging + routing + cache + credential providers into
+ * the server, and on boot downloads each SNI cert and warms its token cache.
  */
-import http from 'http'
 import fs from 'fs'
 import path from 'path'
-import { fileURLToPath } from 'url'
-import { execSync } from 'child_process'
+import { fileURLToPath, pathToFileURL } from 'url'
+import { AppConfig } from './config/app-config'
+import { Logger } from './logging/logger'
+import { Router } from './routing/router'
+import { TokenCache } from './cache/token-cache'
+import { AzCliTokenProvider } from './credential/az-cli-token-provider'
+import { SniTokenProvider } from './credential/sni-token-provider'
+import { TokenService } from './credential/token-service'
+import { ImdsRouterServer } from './server/imds-router-server'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const WARMUP_RESOURCE = 'https://storage.azure.com'
 
-const PORT = 6020
-const EXPECTED_HEADER = 'local-dev-secret'
-const LOG_DIR = path.join(__dirname, '../../../.logs')
-const LOG_FILE = path.join(LOG_DIR, 'imds-router.log')
+const moduleDir = path.dirname(fileURLToPath(import.meta.url))
+const projectDir = path.join(moduleDir, '../../..')
+const logDir = path.join(projectDir, '.logs')
+fs.mkdirSync(logDir, { recursive: true })
+const logFile = path.join(logDir, 'imds-router.log')
+const logger = new Logger(logFile)
 
-fs.mkdirSync(LOG_DIR, { recursive: true })
-const log = (msg: string) => {
-    const line = `[${new Date().toISOString()}] ${msg}\n`
-    fs.appendFileSync(LOG_FILE, line)
-}
+const configFile = process.env.IMDS_ROUTER_CONFIG ?? path.join(moduleDir, 'config', 'config.json')
+const config = AppConfig.fromFile(configFile, logger)
 
-function fetchToken(resource: string): { access_token: string; expires_on: number } {
-    const json = execSync(`az account get-access-token --resource '${resource}' -o json`, { encoding: 'utf-8' }).trim()
-    const result = JSON.parse(json)
-    return {
-        access_token: result.accessToken,
-        expires_on: Math.floor(new Date(result.expiresOn).getTime() / 1000),
+const certCacheDir = path.join(projectDir, '.temp', 'sni')
+const cache = new TokenCache(config.cacheExpirySkewSec)
+const router = new Router(config.routing, logger)
+const azProvider = new AzCliTokenProvider(logger)
+const sniProvider = new SniTokenProvider(logger, { cacheDir: certCacheDir })
+const tokens = new TokenService(cache, azProvider, sniProvider, logger)
+const server = new ImdsRouterServer(config, logger, router, tokens)
+
+/** Download each SNI cert and pre-mint a storage token so the first mount is a cache hit. */
+async function warmSniProfiles(): Promise<void> {
+    const sniProfiles = Object.values(config.routing.profiles).filter((p) => p.credType === 'SNI')
+    for (const params of sniProfiles) {
+        try {
+            await sniProvider.ensureReady(params)
+            await tokens.getToken(WARMUP_RESOURCE, params)
+            logger.log(`Warmed SNI profile: certName=${params.certName} clientId=${params.clientId}`)
+        } catch (e) {
+            logger.log(`SNI warmup failed for certName=${params.certName}: ${e}`)
+        }
     }
 }
 
-http.createServer(async (req, res) => {
-    const url = new URL(req.url ?? '/', `http://localhost:${PORT}`)
+function start(): void {
+    server.start()
+    logger.log(`Config: ${configFile}`)
+    logger.log(`Log file: ${logFile}`)
+    // Warm SNI certs/tokens in the background so /healthz is available immediately;
+    // on-demand minting covers any request that races the warmup.
+    void warmSniProfiles()
+    process.on('SIGTERM', () => {
+        logger.log('Received SIGTERM, shutting down')
+        process.exit(0)
+    })
+    process.on('SIGINT', () => {
+        logger.log('Received SIGINT, shutting down')
+        process.exit(0)
+    })
+}
 
-    log(`${req.method} ${req.url}`)
-
-    if (url.pathname === '/healthz') {
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        return res.end(JSON.stringify({ Healthy: true }))
-    }
-
-    const resource = url.searchParams.get('resource') ?? 'https://storage.azure.com/'
-    const identityHeader = req.headers['x-identity-header']
-    if (identityHeader !== EXPECTED_HEADER) {
-        res.writeHead(403, { 'Content-Type': 'application/json' })
-        return res.end(JSON.stringify({ error: 'Invalid or missing X-IDENTITY-HEADER' }))
-    }
-
-    try {
-        const token = fetchToken(resource)
-        log(`Token acquired (expires: ${new Date(token.expires_on * 1000).toISOString()})`)
-        res.writeHead(200, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ access_token: token.access_token, expires_on: String(token.expires_on), resource, token_type: 'Bearer' }))
-    } catch (e) {
-        log(`Error: ${e}`)
-        res.writeHead(500, { 'Content-Type': 'application/json' })
-        res.end(JSON.stringify({ error: String(e) }))
-    }
-}).listen(PORT, 'localhost', () => {
-    log(`IMDS Router on http://localhost:${PORT}`)
-    log(`Log file: ${LOG_FILE}`)
-})
-
-process.on('SIGTERM', () => {
-    log('Received SIGTERM, shutting down')
-    process.exit(0)
-})
-process.on('SIGINT', () => {
-    log('Received SIGINT, shutting down')
-    process.exit(0)
-})
+const isMain = import.meta.url === pathToFileURL(process.argv[1] ?? '').href
+if (isMain) start()

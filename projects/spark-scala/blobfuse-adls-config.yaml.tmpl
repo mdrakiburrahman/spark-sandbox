@@ -1,0 +1,38 @@
+logging:
+  type: base
+  level: log_warning
+  file-path: ${GIT_ROOT}/projects/spark-scala/.logs/blobfuse-adls-logs-${ADLS_ACCOUNT_NAME}.log
+
+components:
+  - libfuse
+  - stream
+  - attr_cache
+  - azstorage
+
+libfuse:
+  direct-io: false
+  negative-entry-expiration-sec: 0
+  allow-other: true
+  uid: 1000
+  gid: 1000
+
+stream:
+  block-size-mb: 16
+  buffer-size-mb: 64
+  max-buffers: 16
+  max-blocks-per-file: 16
+
+attr_cache:
+  entry_timeout: 240
+  negative_timeout: 120
+  no-symlinks: true
+  timeout-sec: 240
+  cleanup-on-start: true
+
+azstorage:
+  type: adls
+  account-name: ${ADLS_ACCOUNT_NAME}
+  container: ${ADLS_CONTAINER_NAME}
+  max-concurrency: 2000
+  endpoint: ${ADLS_ACCOUNT_NAME}.dfs.core.windows.net
+  mode: msi

@@ -139,7 +139,8 @@
                 "dest": {
                   "cleanFolderPath": true,
                   "folderPath": [
-                    "projects/fabric/template/sandbox/smallOne35_1.Environment/Libraries/CustomLibraries"
+                    "projects/fabric/template/sandbox/smallOne35_1.Environment/Libraries/CustomLibraries",
+                    "projects/fabric/template/sandbox/smallOne35_2.Environment/Libraries/CustomLibraries"
                   ]
                 }
               }

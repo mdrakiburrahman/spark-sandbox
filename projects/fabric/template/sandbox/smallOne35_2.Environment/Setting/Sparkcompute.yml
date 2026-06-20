@@ -1,0 +1,25 @@
+enable_native_execution_engine: false
+instance_pool_id: 00000000-0000-0000-0000-000000000001
+driver_cores: 4
+driver_memory: 28g
+executor_cores: 4
+executor_memory: 28g
+dynamic_executor_allocation:
+  enabled: true
+  min_executors: 1
+  max_executors: 1
+spark_conf:
+  spark.extraListeners: io.openlineage.spark.agent.OpenLineageSparkListener
+  spark.openlineage.transport.type: http
+  spark.openlineage.transport.url: http://localhost:19001
+  spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin,me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.AdlsOAuthTokenProviderPlugin
+  spark.plugin.conf.driver.port: 19001
+  spark.plugin.conf.json.location: Files/onelake/raw/openlineage
+  spark.jars: abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com/4d8783be-e822-46d0-82e4-9b77c7f33992/Files/onelake/jars/commonExecutor.jar
+  spark.plugin.adlsoauth.vaultUrl: https://sandboxmdrrahman.vault.azure.net
+  spark.plugin.adlsoauth.configSecretBase64Name: adlsoauth-base64
+  spark.plugin.adlsoauth.account.0.endpoint: ivmbenchdbrx.dfs.core.windows.net
+  spark.plugin.adlsoauth.account.0.authType: uami
+  spark.plugin.adlsoauth.account.1.endpoint: msit-onelake.dfs.fabric.microsoft.com
+  spark.plugin.adlsoauth.account.1.authType: relay
+runtime_version: 1.3

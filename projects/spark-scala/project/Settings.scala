@@ -63,6 +63,14 @@ object Settings {
       ShadeRule.rename("com.fasterxml.jackson.**" -> "shade.rakirahman.@0").inAll,
       ShadeRule.rename("com.azure.**" -> "shade.rakirahman.@0").inAll,
 
+      // azure-identity's transitive MSAL / Nimbus JOSE stack, shaded for the same
+      // reason as com.azure.** above: keep the SNI ClientCertificateCredential path
+      // isolated from whatever the Synapse / Fabric runtime ships on its classpath.
+      //
+      ShadeRule.rename("com.microsoft.aad.msal4j.**" -> "shade.rakirahman.@0").inAll,
+      ShadeRule.rename("com.nimbusds.**" -> "shade.rakirahman.@0").inAll,
+      ShadeRule.rename("net.minidev.**" -> "shade.rakirahman.@0").inAll,
+
       // Fabric forces redirect in their Azure SQL proxy, which only works with the newer
       // JDBC drivers. Synapse by default loads an old JDBC driver in the classpath, which
       // doesn't work with redirect:

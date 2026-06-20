@@ -42,8 +42,11 @@ object Dependencies {
             // %% - adds Scala suffixes to artifact names (e.g. mylib_2.12)
             // %  - Java package, does not add Scala suffixes to artifact names (e.g. mylib)
             //
+            val azureIdentity                           = "com.azure"                              %  "azure-identity"                                         % "1.13.3"
+            val azureKeyVaultSecrets                    = "com.azure"                              %  "azure-security-keyvault-secrets"                        % "4.4.3"
             val azureNettyHttp                          = "com.azure"                              %  "azure-core-http-netty"                                  % "1.15.4"
             val deltaSpark                              = "io.delta"                               %% "delta-spark"                                            % "3.2.0"
+            val hadoopAzure                             = "org.apache.hadoop"                      %  "hadoop-azure"                                           % "3.3.4"
             val httpNano                                = "org.nanohttpd"                          %  "nanohttpd"                                              % "2.3.1"
             val jacksonModule                           = "com.fasterxml.jackson.module"           %% "jackson-module-scala"                                   % "2.17.2"
             val scalaTest                               = "org.scalatest"                          %% "scalatest"                                              % "3.2.18"
@@ -78,7 +81,41 @@ object Dependencies {
     lazy val azureNetworkingDependencies = Seq(
         dependencies.azureNettyHttp,
     )
-    
+
+    /* Azure Key Vault Secrets SDK + Netty HTTP client + Identity SDK, used by the
+     * AdlsOAuthTokenProviderPlugin secret handlers and the SNI / Devcontainer ABFS
+     * OAuth token providers. Bundled (compile) so the driver plugin works from
+     * commonExecutor.jar locally; the azureShadingRules in Settings.scala relocate
+     * com.azure / netty / msal4j / nimbusds to escape cloud classpath conflicts.
+     */
+    lazy val azureKeyVaultDependencies = Seq(
+        dependencies.azureKeyVaultSecrets,
+        dependencies.azureNettyHttp,
+        dependencies.azureIdentity,
+    )
+
+    /* Hadoop ABFS driver + extension surface (CustomTokenProviderAdaptee + AzureBlobFileSystem),
+     * bundled into commonExecutor.jar so the storage OAuth token providers and the ABFS classes
+     * that instantiate them live in the SAME classloader (the driver extraClassPath). Supplying
+     * hadoop-azure via spark.jars.packages instead lands it in a child classloader, which makes
+     * our parent-loaded provider classes fail to resolve CustomTokenProviderAdaptee.
+     *
+     * hadoop-common is `provided` in the hadoop-azure POM (supplied by Spark's hadoop-client-api),
+     * so it is not pulled into the uber JAR; the explicit exclusions are belt-and-braces.
+     */
+    lazy val hadoopAbfsDependencies = Seq(
+        dependencies.hadoopAzure
+            .exclude("org.apache.hadoop", "hadoop-common")
+            .exclude("org.apache.hadoop", "hadoop-client")
+    )
+
+    /* Synapse/Fabric mssparkutils, marked provided: present in the cloud runtime
+     * and never exercised locally, so it must not bloat the uber JAR.
+     */
+    lazy val synapseProvidedDependencies = Seq(
+        dependencies.synapseUtils               % "provided"
+    )
+
     lazy val deltaDependencies = Seq(
         dependencies.deltaSpark
     )

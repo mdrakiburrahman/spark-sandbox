@@ -1,0 +1,78 @@
+partners:
+  target: local-local
+  outputs:
+    # Lint-only static target (sqlfluff dbt templater) - no live Spark session
+    lint:
+      authentication: cli
+      method: livy
+      livy_mode: local
+      connect_retries: 0
+      retry_all: false
+      http_timeout: 5
+      statement_timeout: 5
+      lakehouse: dbt_partners_dwh
+      schema: dbt_partners_dwh
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
+      type: fabricspark
+      spark_config:
+        name: dbt-partners
+
+    # Local dbt client + Local spark server (default for development)
+    local-local:
+      authentication: cli
+      method: livy
+      livy_mode: local
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      lakehouse: dbt_partners_dwh
+      schema: dbt_partners_dwh
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-partners
+
+    # Local dbt client + Fabric spark server
+    local-fabric:
+      authentication: cli
+      method: livy
+      livy_mode: fabric
+      session_id_file: /workspaces/spark-sandbox/projects/spark-dbt/livy-session-id.txt
+      connect_retries: 25
+      connect_timeout: 10
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
+      lakehouse: dbt_partners_dwh
+      schema: dbt_partners_dwh
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-partners
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''70d68265-6882-4309-8204-680d1c78acad'') }}"}'
+
+    # Fabric dbt client + Fabric spark server
+    fabric-fabric:
+      authentication: fabric_notebook
+      method: livy
+      livy_mode: fabric
+      session_id_file: /tmp/dbt-fabric-bundle/projects/dbt-partners/livy-session-id.txt
+      connect_retries: 1
+      connect_timeout: 60
+      endpoint: https://api.fabric.microsoft.com/v1
+      workspaceid: 3ea60ae5-e979-4d31-a317-66491ab497fb
+      lakehouseid: b6a56ef3-3fbd-4350-8534-3abfb7e3e311
+      lakehouse: dbt_partners_dwh
+      schema: dbt_partners_dwh
+      threads: "{{ env_var('QUERY_CONCURRENCY', '5') | int }}"
+      type: fabricspark
+      retry_all: true
+      spark_config:
+        name: dbt-partners
+        conf:
+          spark.jars: "abfss://{{ env_var('FABRIC_WORKSPACE_ID', '3ea60ae5-e979-4d31-a317-66491ab497fb') }}@msit-onelake.dfs.fabric.microsoft.com/{{ env_var('FABRIC_LAKEHOUSE_ID', 'a1340f32-34c8-494a-9628-8c5d5f03f284') }}/Files/onelake/jars/commonExecutor.jar"
+          spark.fabric.environmentDetails: '{"id": "{{ env_var(''FABRIC_ENVIRONMENT_ID'', ''70d68265-6882-4309-8204-680d1c78acad'') }}"}'

@@ -7,6 +7,7 @@ This folder contains the following Spark Plugins that are used in Production, an
 - [Demo - Uncaching Driver Plugin: REST API that uncaches a temp table](uncachingplugin/README.md)
 - [Demo - RPC Plugin: Executor to Driver Communication](rpcplugin/README.md)
 - [Demo - HTTP Dumper Plugin: Executor to Driver Communication followed by JSONL flush to disk](httpdumperplugin/README.md)
+- [ADLS OAuth Token Provider Plugin: Fetches a Key Vault secret at driver startup](adlsoauthtokenproviderplugin/README.md)
 
 To learn more:
 

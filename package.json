@@ -17,5 +17,8 @@
   "scripts": {
     "fail-on-untracked-files": "tsx tools/scripts/fail-on-untracked-files.ts"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@azure/identity": "^4.13.1"
+  }
 }
