@@ -29,7 +29,19 @@ spark.openlineage.transport.type=file
 spark.openlineage.transport.location=${GIT_ROOT}/projects/spark-scala/.temp/openlineage/lineage-from-spark-default.json
 spark.plugins=me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.AdlsOAuthTokenProviderPlugin
 
-# AdlsOAuthTokenProviderPlugin configuration
-spark.plugin.adlsoauth.vault.url=https://sandboxmdrrahman.vault.azure.net
-spark.plugin.adlsoauth.secret.name=sandboxmdrrahman-sni
-spark.plugin.adlsoauth.output.path=/tmp/secret.txt
+# AdlsOAuthTokenProviderPlugin configuration — per-account ABFS OAuth (modular injection).
+# Each account is a self-contained, indexed block; the plugin stamps a Custom ABFS token
+# provider per DFS endpoint so Spark talks to abfss:// directly (no mount required).
+#
+# Account 0: ADLS Gen2 via SNI Service Principal
+spark.plugin.adlsoauth.account.0.endpoint=fabricdevmdrrahman.dfs.core.windows.net
+spark.plugin.adlsoauth.account.0.authType=sni
+spark.plugin.adlsoauth.account.0.tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47
+spark.plugin.adlsoauth.account.0.clientId=d1bae74d-c1c3-48cb-a38b-89633965bc2f
+spark.plugin.adlsoauth.account.0.vaultUrl=https://sandboxmdrrahman.vault.azure.net
+spark.plugin.adlsoauth.account.0.certName=sandboxmdrrahman-sni
+#
+# Account 1: OneLake via local Azure CLI (devcontainer) identity
+spark.plugin.adlsoauth.account.1.endpoint=msit-onelake.dfs.fabric.microsoft.com
+spark.plugin.adlsoauth.account.1.authType=devcontainer
+spark.plugin.adlsoauth.account.1.tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47

@@ -52,6 +52,8 @@ lazy val commonExecutor = project
       "me\\.rakirahman\\.spark\\.plugin\\.rpcplugin\\..*",
       // AdlsOAuthTokenProvider plugin lifecycle classes (conf is tested separately)
       "me\\.rakirahman\\.spark\\.plugin\\.adlsoauthtokenproviderplugin\\.AdlsOAuthTokenProvider.*",
+      // ABFS OAuth token providers require a live Hadoop ABFS + Azure storage and are not unit-testable
+      "me\\.rakirahman\\.feeds\\..*",
       // Secret manager, handlers and credential chain hit Key Vault / mssparkutils / az CLI
       "me\\.rakirahman\\.secret\\..*",
       "me\\.rakirahman\\.runtime\\..*"
@@ -60,6 +62,7 @@ lazy val commonExecutor = project
     libraryDependencies ++= azureKeyVaultDependencies
       ++ deltaDependencies
       ++ fileTypeDependencies
+      ++ hadoopAbfsDependencies
       ++ httpServerDependencies
       ++ jacksonDependencies
       ++ sparkDependencies

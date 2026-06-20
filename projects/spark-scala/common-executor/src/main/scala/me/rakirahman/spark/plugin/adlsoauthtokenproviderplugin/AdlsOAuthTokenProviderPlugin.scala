@@ -1,17 +1,20 @@
 package me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin
 
-import java.io.{File, PrintWriter}
-
+import me.rakirahman.feeds.authentication.callback.storage.StorageOAuthHadoopKeys
 import me.rakirahman.secret.SparkPluginSecretManager
-import me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.conf.AdlsOAuthTokenProviderConf
+import me.rakirahman.secret.certificates.OpenSSLCertificateManager
+import me.rakirahman.secret.entra.credential.providers.{ProviderConfig, SupportedProviderTypes}
+import me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.conf.{AdlsOAuthAccountConf, AdlsOAuthTokenProviderConf}
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.SparkContext
 import org.apache.spark.api.plugin.{DriverPlugin, ExecutorPlugin, PluginContext, SparkPlugin}
 import org.apache.spark.internal.Logging
 
-/** A Spark plugin that fetches a secret from Azure Key Vault at driver startup and writes it to a local file.
+/** A Spark plugin that wires per-storage-account ABFS OAuth at driver startup so Spark can talk to ADLS Gen2 / OneLake directly over `abfss://` without mounting.
   *
-  * The secret is resolved through [[SparkPluginSecretManager]], which selects a runtime-appropriate handler (Key Vault via the Azure CLI login locally, mssparkutils on Synapse/Fabric).
+  * For each configured account the driver plugin stamps the Hadoop Configuration to use a `Custom` ABFS auth scheme backed by one of our `CustomTokenProviderAdaptee` implementations, and threads the per-account "callback payload" (mirroring the Event Hub `RuntimeTokenFactory` flow): the SNI path
+  * resolves the certificate from Key Vault and converts it to a password-protected PFX on the driver; the Devcontainer path defers entirely to the local `az` identity. The token providers then mint cached Entra storage tokens at IO time.
   */
 class AdlsOAuthTokenProviderPlugin extends SparkPlugin with Logging {
 
@@ -25,9 +28,11 @@ class AdlsOAuthTokenProviderPlugin extends SparkPlugin with Logging {
   override def executorPlugin(): ExecutorPlugin = null
 }
 
-/** Driver plugin that resolves the runtime, fetches the configured secret via [[SparkPluginSecretManager]], and dumps it to the configured output path.
+/** Driver plugin that resolves the per-account config and stamps ABFS OAuth onto the SparkContext's Hadoop Configuration.
   */
 class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
+
+  private lazy val certManager = OpenSSLCertificateManager()
 
   /** @inheritdoc
     */
@@ -36,25 +41,13 @@ class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
       ctx: PluginContext
   ): java.util.Map[String, String] = {
     val config = AdlsOAuthTokenProviderConf(ctx.conf)
-    logInfo(
-      s"AdlsOAuthTokenProviderDriverPlugin initializing: runtime=${config.runtime}, vaultUrl=${config.vaultUrl}, secretName=${config.secretName}"
-    )
 
-    try {
-      val manager = SparkPluginSecretManager(
-        runtime = config.runtime,
-        vaultUrl = config.vaultUrl,
-        linkedServiceName = config.linkedServiceName
-      )
-      val secret = manager.getSecret(config.secretName)
-      writeSecret(config.outputPath, secret)
-      logInfo(s"Wrote secret '${config.secretName}' to ${config.outputPath}")
-    } catch {
-      case e: Exception =>
-        logError(
-          s"Failed to fetch secret '${config.secretName}' from ${config.vaultUrl}",
-          e
-        )
+    if (config.accounts.isEmpty) {
+      logInfo("AdlsOAuthTokenProviderDriverPlugin: no ABFS OAuth accounts configured, skipping")
+    } else {
+      val hadoopConf = sc.hadoopConfiguration
+      registerAbfsFileSystems(hadoopConf)
+      config.accounts.foreach(account => configureAccount(hadoopConf, account, config.runtime))
     }
 
     new java.util.HashMap[String, String]
@@ -64,21 +57,83 @@ class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
     */
   override def shutdown(): Unit = ()
 
-  /** Writes the secret value to the given path, creating parent directories.
+  /** Registers the ABFS FileSystem implementations on the Hadoop Configuration.
     *
-    * @param outputPath
-    *   The destination file path.
-    * @param secret
-    *   The secret value to write.
+    * hadoop-azure is bundled into commonExecutor.jar, but the assembly's merge strategy keeps a single `META-INF/services/org.apache.hadoop.fs.FileSystem`, which drops hadoop-azure's `abfss` auto-registration. Stamping the impl classes explicitly makes `abfss://` resolve to our bundled
+    * `AzureBlobFileSystem` without relying on the service file.
+    *
+    * @param hadoopConf
+    *   The SparkContext's Hadoop Configuration.
     */
-  private def writeSecret(outputPath: String, secret: String): Unit = {
-    val file = new File(outputPath)
-    Option(file.getParentFile).foreach(_.mkdirs())
-    val writer = new PrintWriter(file, "UTF-8")
+  private def registerAbfsFileSystems(hadoopConf: Configuration): Unit = {
+    hadoopConf.set("fs.abfss.impl", "org.apache.hadoop.fs.azurebfs.SecureAzureBlobFileSystem")
+    hadoopConf.set("fs.abfs.impl", "org.apache.hadoop.fs.azurebfs.AzureBlobFileSystem")
+    hadoopConf.set("fs.AbstractFileSystem.abfss.impl", "org.apache.hadoop.fs.azurebfs.Abfss")
+    hadoopConf.set("fs.AbstractFileSystem.abfs.impl", "org.apache.hadoop.fs.azurebfs.Abfs")
+  }
+
+  /** Stamps the ABFS OAuth Hadoop keys for a single account target.
+    *
+    * @param hadoopConf
+    *   The SparkContext's Hadoop Configuration.
+    * @param account
+    *   The resolved account target.
+    * @param runtime
+    *   The resolved Spark runtime (selects the secret handler for the SNI cert fetch).
+    */
+  private def configureAccount(
+      hadoopConf: Configuration,
+      account: AdlsOAuthAccountConf,
+      runtime: me.rakirahman.runtime.SparkRuntime.RuntimeTypes
+  ): Unit = {
+    val endpoint = account.endpoint
     try {
-      writer.write(secret)
-    } finally {
-      writer.close()
+      hadoopConf.set(StorageOAuthHadoopKeys.authTypeKey(endpoint), "Custom")
+      hadoopConf.set(
+        StorageOAuthHadoopKeys.providerTypeKey(endpoint),
+        StorageOAuthHadoopKeys.providerClassName(account.authType)
+      )
+      hadoopConf.set(StorageOAuthHadoopKeys.paramKey(endpoint, ProviderConfig.TENANT_ID), account.tenantId)
+
+      account.authType match {
+        case SupportedProviderTypes.SpnSNICredentialProvider =>
+          stampSniPayload(hadoopConf, account, runtime)
+        case SupportedProviderTypes.DevcontainerCredentialProvider =>
+          ()
+      }
+
+      logInfo(s"Configured ABFS OAuth (${account.authType}) for account '$endpoint'")
+    } catch {
+      case e: Exception =>
+        logError(s"Failed to configure ABFS OAuth for account '$endpoint'", e)
     }
+  }
+
+  /** Resolves the SNI certificate from Key Vault, converts it to a password-protected PFX, and stamps the resulting "callback payload" onto the Hadoop Configuration.
+    *
+    * @param hadoopConf
+    *   The SparkContext's Hadoop Configuration.
+    * @param account
+    *   The SNI account target.
+    * @param runtime
+    *   The resolved Spark runtime (selects the secret handler).
+    */
+  private def stampSniPayload(
+      hadoopConf: Configuration,
+      account: AdlsOAuthAccountConf,
+      runtime: me.rakirahman.runtime.SparkRuntime.RuntimeTypes
+  ): Unit = {
+    val secretManager = SparkPluginSecretManager(runtime = runtime, vaultUrl = account.vaultUrl)
+    val certBase64 = secretManager.getSecret(account.certName)
+
+    val pfxPassword = certManager.generatePfxPassword()
+    val pfxPayload = certManager.convertToPfxWithPassword(certBase64, pfxPassword)
+
+    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLIENT_ID), account.clientId)
+    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLIENT_CERT), pfxPayload)
+    hadoopConf.set(
+      StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLIENT_CERT_RANDOM_RUNTIME_PASSWORD),
+      pfxPassword
+    )
   }
 }
