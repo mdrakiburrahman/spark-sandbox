@@ -3,33 +3,41 @@ package me.rakirahman.secret.entra.credential.providers
 // @formatter:off
 /** Provider-specific configuration keys and validation.
   *
-  * Mirrors the "callback payload" contract from the Event Hub flow: the plugin (driver)
-  * resolves these params per storage account and threads them to the ABFS
-  * `CustomTokenProviderAdaptee`, which reconstructs the credential from them.
+  * These are the params the plugin (driver) stamps per storage account onto the Hadoop
+  * Configuration and that the ABFS `CustomTokenProviderAdaptee` reads back at IO time.
+  *
+  * The SNI credential material (tenant/client ids, cert name) and the relay endpoint are
+  * NOT stamped here — they live in the base64 YAML resolved from Key Vault at IO time
+  * (see [[me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.conf.AdlsOAuthSecretConf]]).
+  * Only the coordinates needed to fetch that secret are threaded through the Hadoop config.
   */
 object ProviderConfig {
 
-  /** Configuration keys threaded through the Hadoop Configuration per account. */
-  val CLIENT_ID                            = "clientId"
-  val TENANT_ID                            = "tenantId"
+  /** Fully qualified Key Vault url holding both the config secret and the SNI certificate. */
   val VAULT_URL                            = "vaultUrl"
-  val CERT_NAME                            = "certName"
+
+  /** Name of the base64-encoded YAML secret describing the SNI creds + relay endpoint. */
+  val CONFIG_SECRET_NAME                   = "configSecretBase64Name"
+
+  /** The resolved Spark runtime, used to pick the secret handler at IO time. */
   val CLUSTER_TYPE                         = "clusterType"
 
   /** All param names a token provider may read back from the Hadoop Configuration. */
-  val AllKeys: Seq[String] = Seq(TENANT_ID, CLIENT_ID, VAULT_URL, CERT_NAME, CLUSTER_TYPE)
+  val AllKeys: Seq[String] = Seq(VAULT_URL, CONFIG_SECRET_NAME, CLUSTER_TYPE)
 
-  /** Mandatory constructor params per provider type.
+  /** Mandatory params per provider type.
     *
-    *  DevcontainerCredentialProvider:
-    *    - tenantId: carried for parity / multi-tenant token requests.
+    *  SpnSNICredentialProvider / RelayCredentialProvider:
+    *    - vaultUrl, configSecretBase64Name: used to fetch + parse the KV secret, then resolve the SNI cert.
     *
-    *  SpnSNICredentialProvider:
-    *    - clientId, tenantId, vaultUrl, certName: the provider resolves the SNI cert from Key Vault at IO time and reconstructs the credential from these.
+    *  DevcontainerCredentialProvider / UamiCredentialProvider:
+    *    - none: the credential is derived from the ambient runtime identity.
     */
   val ProviderConstructorConfig: Map[SupportedProviderTypes.Types, Array[String]] = Map(
-    SupportedProviderTypes.DevcontainerCredentialProvider -> Array(TENANT_ID),
-    SupportedProviderTypes.SpnSNICredentialProvider       -> Array(CLIENT_ID, TENANT_ID, VAULT_URL, CERT_NAME),
+    SupportedProviderTypes.DevcontainerCredentialProvider -> Array.empty[String],
+    SupportedProviderTypes.UamiCredentialProvider         -> Array.empty[String],
+    SupportedProviderTypes.SpnSNICredentialProvider       -> Array(VAULT_URL, CONFIG_SECRET_NAME),
+    SupportedProviderTypes.RelayCredentialProvider        -> Array(VAULT_URL, CONFIG_SECRET_NAME),
   )
 }
 // @formatter:on

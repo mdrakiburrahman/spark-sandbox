@@ -11,6 +11,12 @@ object SupportedProviderTypes extends Enumeration {
   /** Subject Name and Issuer (SNI) Service Principal — used for ADLS Gen2 storage. */
   val SpnSNICredentialProvider = Value("sni")
 
+  /** SNI Service Principal brokered through an Azure Relay endpoint that mints the storage token. */
+  val RelayCredentialProvider = Value("relay")
+
+  /** Fabric User-Assigned Managed Identity via `mssparkutils.credentials.getToken`. */
+  val UamiCredentialProvider = Value("uami")
+
   /** Resolves a [[Types]] from its lowercase config token.
     *
     * @param token

@@ -14,6 +14,14 @@ object StorageOAuthHadoopKeys {
   val DevcontainerProviderClassName: String =
     "me.rakirahman.feeds.authentication.callback.storage.devcontainer.OAuthTokenProvider"
 
+  /** FQCN of the Relay-brokered SNI ABFS OAuth token provider. */
+  val RelayProviderClassName: String =
+    "me.rakirahman.feeds.authentication.callback.storage.relay.OAuthTokenProvider"
+
+  /** FQCN of the Fabric UAMI ABFS OAuth token provider. */
+  val UamiProviderClassName: String =
+    "me.rakirahman.feeds.authentication.callback.storage.uami.OAuthTokenProvider"
+
   /** Hadoop key selecting the ABFS auth scheme for an account (set to `Custom`).
     *
     * @param account
@@ -50,5 +58,7 @@ object StorageOAuthHadoopKeys {
   def providerClassName(authType: SupportedProviderTypes.Types): String = authType match {
     case SupportedProviderTypes.SpnSNICredentialProvider       => SniProviderClassName
     case SupportedProviderTypes.DevcontainerCredentialProvider => DevcontainerProviderClassName
+    case SupportedProviderTypes.RelayCredentialProvider        => RelayProviderClassName
+    case SupportedProviderTypes.UamiCredentialProvider         => UamiProviderClassName
   }
 }

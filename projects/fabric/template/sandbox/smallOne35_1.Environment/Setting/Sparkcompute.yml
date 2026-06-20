@@ -26,20 +26,8 @@ spark_conf:
   spark.extraListeners: io.openlineage.spark.agent.OpenLineageSparkListener
   spark.openlineage.transport.type: http
   spark.openlineage.transport.url: http://localhost:19001
-  spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin,me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.AdlsOAuthTokenProviderPlugin
+  spark.plugins: me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin
   spark.plugin.conf.driver.port: 19001
   spark.plugin.conf.json.location: Files/onelake/raw/openlineage
   spark.jars: abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com/4d8783be-e822-46d0-82e4-9b77c7f33992/Files/onelake/jars/commonExecutor.jar
-  spark.plugin.adlsoauth.account.0.endpoint: ivmbenchdbrx.dfs.core.windows.net
-  spark.plugin.adlsoauth.account.0.authType: sni
-  spark.plugin.adlsoauth.account.0.tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
-  spark.plugin.adlsoauth.account.0.clientId: d1bae74d-c1c3-48cb-a38b-89633965bc2f
-  spark.plugin.adlsoauth.account.0.vaultUrl: https://sandboxmdrrahman.vault.azure.net
-  spark.plugin.adlsoauth.account.0.certName: sandboxmdrrahman-sni
-  spark.plugin.adlsoauth.account.1.endpoint: msit-onelake.dfs.fabric.microsoft.com
-  spark.plugin.adlsoauth.account.1.authType: sni
-  spark.plugin.adlsoauth.account.1.tenantId: 72f988bf-86f1-41af-91ab-2d7cd011db47
-  spark.plugin.adlsoauth.account.1.clientId: d1bae74d-c1c3-48cb-a38b-89633965bc2f
-  spark.plugin.adlsoauth.account.1.vaultUrl: https://sandboxmdrrahman.vault.azure.net
-  spark.plugin.adlsoauth.account.1.certName: sandboxmdrrahman-sni
 runtime_version: 1.3

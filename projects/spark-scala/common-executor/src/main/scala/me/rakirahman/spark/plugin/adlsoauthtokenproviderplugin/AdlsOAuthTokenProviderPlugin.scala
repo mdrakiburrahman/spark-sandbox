@@ -11,8 +11,9 @@ import org.apache.spark.internal.Logging
 
 /** A Spark plugin that wires per-storage-account ABFS OAuth at driver startup so Spark can talk to ADLS Gen2 / OneLake directly over `abfss://` without mounting.
   *
-  * For each configured account the driver plugin stamps the Hadoop Configuration to use a `Custom` ABFS auth scheme backed by one of our `CustomTokenProviderAdaptee` implementations, and threads the per-account inputs: the SNI path stamps the client/tenant ids, Key Vault url, cert name and runtime
-  * so the token provider can resolve the certificate from Key Vault lazily at IO time (avoiding the driver-init ordering race where the Fabric token context is not yet available); the Devcontainer path defers entirely to the local `az` identity. The token providers then mint cached Entra storage
+  * For each configured account the driver plugin stamps the Hadoop Configuration to use a `Custom` ABFS auth scheme backed by one of our `CustomTokenProviderAdaptee` implementations. The committed Spark conf stays terse — only the per-account `endpoint` + `authType`, plus the shared Key Vault
+  * coordinates (`vaultUrl`, `configSecretBase64Name`). For the secret-backed auth types (`sni`, `relay`) the plugin stamps those coordinates + the runtime so the token provider can fetch the base64 YAML config secret (SNI creds + relay endpoint) and resolve the SNI certificate from Key Vault lazily
+  * at IO time — avoiding the driver-init ordering race where the Fabric token context is not yet available. The `devcontainer` path defers to the local `az` identity and `uami` to the Fabric workspace identity; neither needs Key Vault coordinates. The token providers then mint cached Entra storage
   * tokens at IO time.
   */
 class AdlsOAuthTokenProviderPlugin extends SparkPlugin with Logging {
@@ -44,7 +45,7 @@ class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
     } else {
       val hadoopConf = sc.hadoopConfiguration
       registerAbfsFileSystems(hadoopConf)
-      config.accounts.foreach(account => configureAccount(hadoopConf, account, config.runtime))
+      config.accounts.foreach(account => configureAccount(hadoopConf, account, config))
     }
 
     new java.util.HashMap[String, String]
@@ -75,13 +76,13 @@ class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
     *   The SparkContext's Hadoop Configuration.
     * @param account
     *   The resolved account target.
-    * @param runtime
-    *   The resolved Spark runtime, stamped so the SNI token provider can pick the secret handler at IO time.
+    * @param config
+    *   The resolved plugin config, carrying the shared Key Vault coordinates and runtime.
     */
   private def configureAccount(
       hadoopConf: Configuration,
       account: AdlsOAuthAccountConf,
-      runtime: me.rakirahman.runtime.SparkRuntime.RuntimeTypes
+      config: AdlsOAuthTokenProviderConf
   ): Unit = {
     val endpoint = account.endpoint
     hadoopConf.set(StorageOAuthHadoopKeys.authTypeKey(endpoint), "Custom")
@@ -89,37 +90,35 @@ class AdlsOAuthTokenProviderDriverPlugin extends DriverPlugin with Logging {
       StorageOAuthHadoopKeys.providerTypeKey(endpoint),
       StorageOAuthHadoopKeys.providerClassName(account.authType)
     )
-    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(endpoint, ProviderConfig.TENANT_ID), account.tenantId)
 
     account.authType match {
-      case SupportedProviderTypes.SpnSNICredentialProvider =>
-        stampSniInputs(hadoopConf, account, runtime)
-      case SupportedProviderTypes.DevcontainerCredentialProvider =>
+      case SupportedProviderTypes.SpnSNICredentialProvider | SupportedProviderTypes.RelayCredentialProvider =>
+        stampSecretBackedInputs(hadoopConf, account, config)
+      case SupportedProviderTypes.DevcontainerCredentialProvider | SupportedProviderTypes.UamiCredentialProvider =>
         ()
     }
 
     logInfo(s"Configured ABFS OAuth (${account.authType}) for account '$endpoint'")
   }
 
-  /** Stamps the SNI *inputs* for a single account onto the Hadoop Configuration.
+  /** Stamps the Key Vault coordinates + runtime for an account whose credential is resolved from the base64 YAML config secret (`sni` / `relay`).
     *
-    * The certificate itself is resolved from Key Vault lazily by the token provider at IO time, not here, so driver-plugin init never depends on the Fabric token context (`.trident-context`) being available — which it is not yet during `SparkContext` construction.
+    * The SNI certificate and the YAML secret itself are resolved from Key Vault lazily by the token provider at IO time, not here, so driver-plugin init never depends on the Fabric token context (`.trident-context`) being available — which it is not yet during `SparkContext` construction.
     *
     * @param hadoopConf
     *   The SparkContext's Hadoop Configuration.
     * @param account
-    *   The SNI account target.
-    * @param runtime
-    *   The resolved Spark runtime, stamped so the token provider can pick the secret handler.
+    *   The secret-backed account target.
+    * @param config
+    *   The resolved plugin config, carrying the shared Key Vault coordinates and runtime.
     */
-  private def stampSniInputs(
+  private def stampSecretBackedInputs(
       hadoopConf: Configuration,
       account: AdlsOAuthAccountConf,
-      runtime: me.rakirahman.runtime.SparkRuntime.RuntimeTypes
+      config: AdlsOAuthTokenProviderConf
   ): Unit = {
-    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLIENT_ID), account.clientId)
-    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.VAULT_URL), account.vaultUrl)
-    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CERT_NAME), account.certName)
-    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLUSTER_TYPE), runtime.toString)
+    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.VAULT_URL), config.vaultUrl)
+    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CONFIG_SECRET_NAME), config.configSecretBase64Name)
+    hadoopConf.set(StorageOAuthHadoopKeys.paramKey(account.endpoint, ProviderConfig.CLUSTER_TYPE), config.runtime.toString)
   }
 }
