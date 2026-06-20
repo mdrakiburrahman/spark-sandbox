@@ -82,6 +82,7 @@ object LakeDeltaVacuumMetadata extends DeltaVacuumMetadata {
     // =====================================================================
     DesiredDeltaTableConfig(database = "dbt_adventureworks_seed",     tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = false,     skipPurge = true,    purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
     DesiredDeltaTableConfig(database = "dbt_jaffle_shop_seed",        tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = false,     skipPurge = true,    purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
+    DesiredDeltaTableConfig(database = "dbt_partners_dwh",            tableNameOrPrefix = "*",                                   isPrefix = true,     skipVacuum = false,   skipOptimize = false,     skipPurge = true,    purgePartitionColumn = "",                                                    purgePartitionColumnDateType = null,                            numPartitionsToRetain = Int.MaxValue,     zOrderColumns = Array.empty[String]),
 
     // =====================================================================
     // dbt_jaffle_shop_dwh

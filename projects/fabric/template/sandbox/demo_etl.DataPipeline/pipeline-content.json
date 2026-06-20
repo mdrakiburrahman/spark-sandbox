@@ -114,6 +114,32 @@
         "dependsOn": []
       },
       {
+        "type": "TridentNotebook",
+        "typeProperties": {
+          "notebookId": "ec428990-55f6-4c0b-a668-f32fec2c4629",
+          "workspaceId": "00000000-0000-0000-0000-000000000000",
+          "parameters": {
+            "dbt_project_name": {
+              "value": "dbt-partners",
+              "type": "string"
+            },
+            "full_refresh": {
+              "value": "0",
+              "type": "string"
+            }
+          }
+        },
+        "policy": {
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureInput": false,
+          "secureOutput": false
+        },
+        "name": "Run dbt-partners",
+        "description": "Runs dbt-partners Spark Plugin based ingestion",
+        "dependsOn": []
+      },
+      {
         "name": "OpenLineage Stream Processing",
         "description": "Turns OpenLineage JSONL files into a denormalized columnar Silver table",
         "type": "FabricSparkJobDefinition",
@@ -155,6 +181,10 @@
           },
           {
             "activity": "Run dbt-reddit",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run dbt-partners",
             "dependencyConditions": ["Succeeded"]
           },
           {
@@ -221,6 +251,10 @@
           },
           {
             "activity": "Run dbt-reddit",
+            "dependencyConditions": ["Succeeded"]
+          },
+          {
+            "activity": "Run dbt-partners",
             "dependencyConditions": ["Succeeded"]
           },
           {

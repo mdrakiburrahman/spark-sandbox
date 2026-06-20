@@ -32,20 +32,17 @@ if ! command -v fab &>/dev/null; then
     retry pip install ms-fabric-cli==1.0.1 --upgrade
 fi
 
-BLOB_BASE="https://rakirahman.blob.core.windows.net/public/whls"
-FABRIC_CICD_WHL="fabric_cicd-0.1.34.3-py3-none-any.whl"
-
 fabric_cicd_version=$(pip show fabric-cicd 2>/dev/null | grep Version | awk '{print $2}' || echo "")
 
-if [ "$fabric_cicd_version" != "1.0.0" ]; then
+if [ "$fabric_cicd_version" != "1.1.0" ]; then
     pip uninstall fabric-cicd -y 2>/dev/null || true
     pip cache purge
-    retry pip install fabric-cicd==1.0.0 --upgrade
+    retry pip install fabric-cicd==1.1.0 --upgrade
 fi
 
 fabric_deploy_installed=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}' || echo "")
 if [ -z "$fabric_deploy_installed" ]; then
-    retry pip install "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@eb3c77f"
+    retry pip install "fabric-workspace-deployment @ git+https://github.com/mdrakiburrahman/fabric-workspace-deployment.git@2c0f418"
 fi
 
 fabric_deploy_location=$(pip show fabric-workspace-deployment 2>/dev/null | grep Location | awk '{print $2}')
