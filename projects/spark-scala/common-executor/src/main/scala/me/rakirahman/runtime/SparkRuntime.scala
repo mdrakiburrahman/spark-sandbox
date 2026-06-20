@@ -31,4 +31,16 @@ object SparkRuntime extends Enumeration {
       case FabricClusterType  => Fabric
       case _                  => Devcontainer
     }
+
+  /** Resolves the Spark runtime from its canonical name (the [[RuntimeTypes]] string), defaulting to the local devcontainer for an absent or unrecognized name.
+    *
+    * Used to round-trip the resolved runtime through the Hadoop Configuration: the driver plugin stamps `runtime.toString` per account and the token provider resolves it back here at IO time.
+    *
+    * @param name
+    *   The runtime name (e.g. `devcontainer`, `synapse`, `fabric`).
+    * @return
+    *   The resolved [[SparkRuntime]].
+    */
+  def fromName(name: String): RuntimeTypes =
+    values.find(_.toString == Option(name).map(_.trim).getOrElse("")).getOrElse(Devcontainer)
 }

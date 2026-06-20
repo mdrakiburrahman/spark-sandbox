@@ -79,12 +79,9 @@ abstract class StorageEntraCallbackBase extends CustomTokenProviderAdaptee with 
     *   A map of the present params, keyed by [[ProviderConfig]] name.
     */
   private def readParams(configuration: Configuration, account: String): Map[String, String] =
-    Seq(
-      ProviderConfig.TENANT_ID,
-      ProviderConfig.CLIENT_ID,
-      ProviderConfig.CLIENT_CERT,
-      ProviderConfig.CLIENT_CERT_RANDOM_RUNTIME_PASSWORD
-    ).flatMap(name => Option(configuration.get(paramKey(account, name))).map(name -> _)).toMap
+    ProviderConfig.AllKeys
+      .flatMap(name => Option(configuration.get(paramKey(account, name))).map(name -> _))
+      .toMap
 
   /** Validates that all mandatory params are present.
     *

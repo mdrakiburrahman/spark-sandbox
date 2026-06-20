@@ -4,10 +4,10 @@ Wires per-storage-account ABFS OAuth at driver startup so Spark talks to ADLS Ge
 
 Two auth types are supported:
 
-| `authType`     | Target           | Credential                                                                                                |
-| -------------- | ---------------- | --------------------------------------------------------------------------------------------------------- |
-| `sni`          | ADLS Gen2        | SNI Service Principal — cert resolved from Key Vault, converted to a password-protected PFX on the driver |
-| `devcontainer` | OneLake / Fabric | Local `az login` identity (developer's Azure CLI credential)                                              |
+| `authType`     | Target           | Credential                                                                                                          |
+| -------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `sni`          | ADLS Gen2        | SNI Service Principal — cert resolved from Key Vault and converted to a password-protected PFX lazily at query time |
+| `devcontainer` | OneLake / Fabric | Local `az login` identity (developer's Azure CLI credential)                                                        |
 
 For `sni`, the certificate is resolved through `SparkPluginSecretManager`, which selects a runtime-appropriate `SecretHandler`:
 
