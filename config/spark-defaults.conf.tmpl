@@ -27,4 +27,9 @@ spark.jars.packages=io.openlineage:openlineage-spark_2.12:1.26.0
 spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
 spark.openlineage.transport.type=file
 spark.openlineage.transport.location=${GIT_ROOT}/projects/spark-scala/.temp/openlineage/lineage-from-spark-default.json
-spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin
+spark.plugins=me.rakirahman.spark.plugin.adlsoauthtokenproviderplugin.AdlsOAuthTokenProviderPlugin
+
+# AdlsOAuthTokenProviderPlugin configuration
+spark.plugin.adlsoauth.vault.url=https://sandboxmdrrahman.vault.azure.net
+spark.plugin.adlsoauth.secret.name=sandboxmdrrahman-sni
+spark.plugin.adlsoauth.output.path=/tmp/secret.txt

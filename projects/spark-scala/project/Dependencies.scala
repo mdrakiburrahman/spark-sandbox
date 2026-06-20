@@ -42,6 +42,7 @@ object Dependencies {
             // %% - adds Scala suffixes to artifact names (e.g. mylib_2.12)
             // %  - Java package, does not add Scala suffixes to artifact names (e.g. mylib)
             //
+            val azureKeyVaultSecrets                    = "com.azure"                              %  "azure-security-keyvault-secrets"                        % "4.4.3"
             val azureNettyHttp                          = "com.azure"                              %  "azure-core-http-netty"                                  % "1.15.4"
             val deltaSpark                              = "io.delta"                               %% "delta-spark"                                            % "3.2.0"
             val httpNano                                = "org.nanohttpd"                          %  "nanohttpd"                                              % "2.3.1"
@@ -78,7 +79,24 @@ object Dependencies {
     lazy val azureNetworkingDependencies = Seq(
         dependencies.azureNettyHttp,
     )
-    
+
+    /* Azure Key Vault Secrets SDK + Netty HTTP client, used by the
+     * AdlsOAuthTokenProviderPlugin secret handlers. Bundled (compile) so the
+     * driver plugin works from commonExecutor.jar locally; the azureShadingRules
+     * in Settings.scala relocate com.azure/netty to escape cloud classpath conflicts.
+     */
+    lazy val azureKeyVaultDependencies = Seq(
+        dependencies.azureKeyVaultSecrets,
+        dependencies.azureNettyHttp,
+    )
+
+    /* Synapse/Fabric mssparkutils, marked provided: present in the cloud runtime
+     * and never exercised locally, so it must not bloat the uber JAR.
+     */
+    lazy val synapseProvidedDependencies = Seq(
+        dependencies.synapseUtils               % "provided"
+    )
+
     lazy val deltaDependencies = Seq(
         dependencies.deltaSpark
     )

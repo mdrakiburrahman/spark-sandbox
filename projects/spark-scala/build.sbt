@@ -49,15 +49,22 @@ lazy val commonExecutor = project
       "me\\.rakirahman\\.spark\\.plugin\\.uncachingplugin\\..*",
       "me\\.rakirahman\\.spark\\.plugin\\.httpdumperplugin\\.HttpDumper.*Plugin.*",
       "me\\.rakirahman\\.spark\\.plugin\\.httpdumperplugin\\.HttpDumper.*Server.*",
-      "me\\.rakirahman\\.spark\\.plugin\\.rpcplugin\\..*"
+      "me\\.rakirahman\\.spark\\.plugin\\.rpcplugin\\..*",
+      // AdlsOAuthTokenProvider plugin lifecycle classes (conf is tested separately)
+      "me\\.rakirahman\\.spark\\.plugin\\.adlsoauthtokenproviderplugin\\.AdlsOAuthTokenProvider.*",
+      // Secret manager, handlers and credential chain hit Key Vault / mssparkutils / az CLI
+      "me\\.rakirahman\\.secret\\..*",
+      "me\\.rakirahman\\.runtime\\..*"
     ).mkString(";"),
     version := commitVersion.value,
-    libraryDependencies ++= deltaDependencies
+    libraryDependencies ++= azureKeyVaultDependencies
+      ++ deltaDependencies
       ++ fileTypeDependencies
       ++ httpServerDependencies
       ++ jacksonDependencies
       ++ sparkDependencies
       ++ sparkTestDependencies
+      ++ synapseProvidedDependencies
       ++ testDependencies
   )
 
