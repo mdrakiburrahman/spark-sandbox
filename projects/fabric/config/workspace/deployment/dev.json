@@ -45,6 +45,12 @@
         "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
         "aadAppId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
         "principalType": "{user-principal-type}"
+      },
+      {
+        "givenName": "sandboxmdrrahman",
+        "objectId": "ee790fc7-8fb4-4e62-8797-b43de5ae7767",
+        "aadAppId": "d1bae74d-c1c3-48cb-a38b-89633965bc2f",
+        "principalType": "ServicePrincipal"
       }
     ],
     "fabric": {
@@ -182,6 +188,11 @@
                 "permissions": 15,
                 "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
                 "purpose": "A colleague."
+              },
+              {
+                "permissions": 1,
+                "objectId": "ee790fc7-8fb4-4e62-8797-b43de5ae7767",
+                "purpose": "Sandbox Service Principal only needes Viewer access."
               }
             ],
             "items": [
@@ -254,6 +265,18 @@
                     "artifactPermissions": 15,
                     "objectId": "2f95134e-e77b-4736-980f-ed33789e3b2f",
                     "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 1,
+                    "artifactPermissions": 2,
+                    "objectId": "ee790fc7-8fb4-4e62-8797-b43de5ae7767",
+                    "purpose": "Default permission."
+                  },
+                  {
+                    "permissions": 1,
+                    "artifactPermissions": 1,
+                    "objectId": "ee790fc7-8fb4-4e62-8797-b43de5ae7767",
+                    "purpose": "ReadAll is required by Sandbox Service Principal to create Shortcuts."
                   }
                 ]
               },
