@@ -5,25 +5,6 @@ A minimal dbt project that proves the **`AdlsOAuthTokenProviderPlugin`** lets Sp
 pre-registration — with **per-storage-account authentication** selected modularly through
 `spark-defaults.conf`.
 
-## What it proves
-
-1. The plugin is configurable **per storage account** (DFS endpoint) to target different auth
-   approaches, via modular `spark.plugin.adlsoauth.account.<N>.*` injection in
-   `config/spark-defaults.conf`.
-2. The same plugin serves **SNI** and **Azure CLI** (or anything else) at a per-target level.
-3. A net-new dbt project, with the plugin initiated on its Spark session, reads Delta tables
-   straight off `abfss://` and materializes them on disk.
-
-## The two source tables
-
-| Model           | ABFS path (aliased as a dbt var)                                                           | Account                                   | Auth                        |
-| --------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------- | --------------------------- |
-| `date_dim`      | `abfss://onelake@fabricdevmdrrahman.dfs.core.windows.net/raw/demo/date_dim`                | `fabricdevmdrrahman.dfs.core.windows.net` | **SNI** Service Principal   |
-| `raw_customers` | `abfss://3ea60ae5-…@msit-onelake.dfs.fabric.microsoft.com/1dcd407d-…/Tables/raw_customers` | `msit-onelake.dfs.fabric.microsoft.com`   | **Devcontainer** (`az` CLI) |
-
-Both models are a plain `SELECT * FROM delta.\`<abfss-path>\``, materialized as managed Delta
-tables in the `dbt_partners_dwh`schema. The paths are aliased in`dbt_project.yml`under`vars:` (`date_dim_delta_path`, `raw_customers_delta_path`).
-
 ## How the auth is wired
 
 The local Livy Spark session inherits `/opt/spark/conf/spark-defaults.conf`, which enables the
