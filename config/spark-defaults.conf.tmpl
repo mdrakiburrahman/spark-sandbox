@@ -18,7 +18,9 @@ spark.databricks.delta.schema.autoMerge.enabled=true
 spark.sql.warehouse.dir=${GIT_ROOT}/warehouse
 
 # OpenLineage configuration
+spark.driver.extraClassPath=${GIT_ROOT}/projects/spark-scala/common-executor/target/scala-2.12/commonExecutor.jar
 spark.jars.packages=io.openlineage:openlineage-spark_2.12:1.26.0
 spark.extraListeners=io.openlineage.spark.agent.OpenLineageSparkListener
 spark.openlineage.transport.type=file
 spark.openlineage.transport.location=${GIT_ROOT}/projects/spark-scala/.temp/openlineage/lineage-from-spark-default.json
+spark.plugins=me.rakirahman.spark.plugin.httpdumperplugin.HttpDumperPlugin

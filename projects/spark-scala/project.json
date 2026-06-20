@@ -82,6 +82,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "projects/spark-scala",
+        "parallel": false,
         "commands": [
           {
             "command": "sbt clean",
