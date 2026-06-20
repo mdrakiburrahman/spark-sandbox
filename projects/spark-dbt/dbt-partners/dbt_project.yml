@@ -1,0 +1,49 @@
+name: "partners"
+version: "1.0.0"
+config-version: 2
+
+profile: "partners"
+
+flags:
+  partial_parse: true
+  cache_selected_only: true
+
+dispatch:
+  - macro_namespace: dbt_utils
+    search_order: ["partners", "dbt_utils"]
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+require-dbt-version: [">=1.0.0", "<2.0.0"]
+
+on-run-start:
+  - "{{ fabricspark__ensure_database_exists(target.schema) }}"
+
+# Aliased ABFS paths for the two source Delta tables. Spark reaches these directly over
+# abfss:// — the AdlsOAuthTokenProviderPlugin wires a per-account Custom ABFS token provider:
+#   - fabricdevmdrrahman.dfs.core.windows.net -> SNI Service Principal
+#   - msit-onelake.dfs.fabric.microsoft.com   -> local Azure CLI (devcontainer) identity
+vars:
+  date_dim_delta_path: "abfss://onelake@fabricdevmdrrahman.dfs.core.windows.net/raw/demo/date_dim"
+  raw_customers_delta_path: "abfss://3ea60ae5-e979-4d31-a317-66491ab497fb@msit-onelake.dfs.fabric.microsoft.com/1dcd407d-bc28-4e1f-880f-9df1f2464a69/Tables/raw_customers"
+
+models:
+  partners:
+    +materialized: table
+    +file_format: delta
+    +location_root: "none"
+    external:
+      +materialized: table
+      +file_format: delta
+      +location_root: "none"

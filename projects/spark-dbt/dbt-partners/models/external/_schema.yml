@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: date_dim
+    description: >-
+      Pass-through of the `date_dim` Delta table on ADLS Gen2
+      (`fabricdevmdrrahman.dfs.core.windows.net`), read directly over `abfss://` with SNI
+      Service Principal auth wired by the `AdlsOAuthTokenProviderPlugin`. Materialized as a
+      managed Delta table in `dbt_partners_dwh`.
+  - name: raw_customers
+    description: >-
+      Pass-through of the `raw_customers` Delta table in OneLake
+      (`msit-onelake.dfs.fabric.microsoft.com`), read directly over `abfss://` with the local
+      Azure CLI (devcontainer) identity wired by the `AdlsOAuthTokenProviderPlugin`.
+      Materialized as a managed Delta table in `dbt_partners_dwh`.
