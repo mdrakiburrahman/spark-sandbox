@@ -1,0 +1,40 @@
+{
+  "server": {
+    "port": 6020,
+    "expectedHeader": "local-dev-secret"
+  },
+  "cache": {
+    "expirySkewSec": 300
+  },
+  "routing": {
+    "profiles": {
+      "default": {},
+      "sandbox-sni": {
+        "credType": "SNI",
+        "vaultUrl": "https://sandboxmdrrahman.vault.azure.net/",
+        "certName": "sandboxmdrrahman-sni",
+        "clientId": "d1bae74d-c1c3-48cb-a38b-89633965bc2f",
+        "tenantId": "72f988bf-86f1-41af-91ab-2d7cd011db47"
+      }
+    },
+    "routes": [
+      {
+        "name": "fabricdev-adls-sni",
+        "match": {
+          "resource": "https://storage.azure.com",
+          "endpoint": "fabricdevmdrrahman.dfs.core.windows.net"
+        },
+        "profile": "sandbox-sni"
+      },
+      {
+        "name": "onelake-default",
+        "match": {
+          "resource": "https://storage.azure.com",
+          "endpoint": "onelake.dfs.fabric.microsoft.com"
+        },
+        "profile": "default"
+      }
+    ],
+    "default": "default"
+  }
+}
