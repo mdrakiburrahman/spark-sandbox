@@ -4,6 +4,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+concurrency:
+  group: gci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IS_GH_ACTION: "1"
   IMDS_ROUTER_PORT: "8080"

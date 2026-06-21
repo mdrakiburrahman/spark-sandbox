@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: deploy-fabric-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IS_GH_ACTION: "1"
   IMDS_ROUTER_PORT: "8080"
