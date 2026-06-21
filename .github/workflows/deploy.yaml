@@ -59,7 +59,16 @@ jobs:
       - name: "🔐 Az Login with Fake UAMI"
         run: |
           set -euo pipefail
-          az login --identity --client-id "$UAMI_CLIENT_ID" > /dev/null 2>&1
+          for attempt in 1 2 3 4 5 6; do
+            if az login --identity --client-id "$UAMI_CLIENT_ID" > /dev/null 2>&1; then
+              echo "az login succeeded (attempt ${attempt})"
+              exit 0
+            fi
+            echo "az login attempt ${attempt} failed; retrying in 5s..." >&2
+            sleep 5
+          done
+          echo "az login still failing; final attempt (errors shown):" >&2
+          az login --identity --client-id "$UAMI_CLIENT_ID"
 
       - name: "🔒 Configure container permissions and PATH"
         run: |
