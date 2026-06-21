@@ -89,7 +89,14 @@ jobs:
           # base64-decoding the token payload, but its parser is base64url-unsafe and
           # fails intermittently. Decode it here with a correct decoder and pass the
           # identity via env so the tool never introspects the token itself.
-          token=$(az account get-access-token --resource 'https://analysis.windows.net/powerbi/api' --query accessToken -o tsv)
+          token=""
+          for attempt in 1 2 3 4 5; do
+            token=$(az account get-access-token --resource 'https://analysis.windows.net/powerbi/api' --query accessToken -o tsv 2>/dev/null || true)
+            [ -n "$token" ] && break
+            echo "PowerBI token attempt ${attempt} failed; retrying..." >&2
+            sleep 5
+          done
+          [ -n "$token" ] || { echo "Failed to acquire PowerBI token after retries" >&2; exit 1; }
           claims=$(python3 -c 'import sys,base64,json;p=sys.argv[1].split(".")[1];p+="="*(-len(p)%4);print(base64.urlsafe_b64decode(p).decode())' "$token")
           USER_OBJECT_ID=$(echo "$claims" | jq -er '.oid')
           USER_APP_ID=$(echo "$claims" | jq -er '.appid')
