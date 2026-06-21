@@ -1,0 +1,69 @@
+name: "CI auth & runner setup"
+description: >-
+  Shared CI bootstrap: starts the IMDS relay router.
+
+inputs:
+  imds-relay-url:
+    description: "Azure Relay URL for the IMDS relay router (secrets.IMDS_RELAY_URL)."
+    required: true
+  imds-relay-sender-key:
+    description: "Azure Relay sender key for the IMDS relay router (secrets.IMDS_RELAY_SENDER_KEY)."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "🔐 Start IMDS Relay Router"
+      shell: bash
+      env:
+        IMDS_RELAY_URL: ${{ inputs.imds-relay-url }}
+        IMDS_RELAY_SENDER_KEY: ${{ inputs.imds-relay-sender-key }}
+      run: |
+        set -euo pipefail
+        export IMDS_SUBSCRIPTION_ID="$UAMI_SUBSCRIPTION"
+        nohup python3 .github/scripts/imds_relay_router.py > /tmp/imds-router.log 2>&1 &
+        echo "IMDS_ROUTER_PID=$!" >> "$GITHUB_ENV"
+        for i in $(seq 1 10); do
+          curl -sf http://localhost:${IMDS_ROUTER_PORT}/healthz > /dev/null 2>&1 && break
+          [ "$i" -eq 10 ] && { cat /tmp/imds-router.log; exit 1; }
+          sleep 1
+        done
+
+    - name: "🔐 Verify IMDS Relay Router"
+      shell: bash
+      run: |
+        set -euo pipefail
+        SUB=$(curl -sf -H "Metadata: true" "$IMDS_METADATA_ENDPOINT" | jq -r '.compute.subscriptionId')
+        [[ "$SUB" == "$UAMI_SUBSCRIPTION" ]] || { echo "subscriptionId mismatch: expected '$UAMI_SUBSCRIPTION', got '$SUB'"; exit 1; }
+
+    - name: "🔐 Az Login with Fake UAMI"
+      shell: bash
+      run: |
+        set -euo pipefail
+        for attempt in $(seq 1 25); do
+          if az login --identity --client-id "$UAMI_CLIENT_ID" > /dev/null 2>&1; then
+            exit 0
+          fi
+          sleep 1
+        done
+        echo "az login still failing; final attempt (errors shown):" >&2
+        az login --identity --client-id "$UAMI_CLIENT_ID"
+
+    - name: "🔒 Configure container permissions and PATH"
+      shell: bash
+      run: |
+        sudo usermod -a -G sdkman vscode
+        git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        echo "/usr/local/sdkman/candidates/java/current/bin" >> "$GITHUB_PATH"
+        echo "/usr/local/sdkman/candidates/sbt/current/bin" >> "$GITHUB_PATH"
+        echo "/usr/local/sdkman/candidates/scala/current/bin" >> "$GITHUB_PATH"
+        echo "/usr/local/sdkman/candidates/scalacli/current/bin" >> "$GITHUB_PATH"
+        echo "/usr/local/sdkman/candidates/maven/current/bin" >> "$GITHUB_PATH"
+
+    - name: "⚙️ Post create commands"
+      shell: bash
+      run: /tmp/overlay/post-create-commands.sh
+
+    - name: "⚙️ Post attach commands"
+      shell: bash
+      run: /tmp/overlay/post-attach-commands.sh
