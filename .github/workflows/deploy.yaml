@@ -80,4 +80,17 @@ jobs:
       - name: "🚀 Deploy"
         env:
           MARQUITO_WEBSITE_STORAGE_CONN_STRING: ${{ secrets.MARQUITO_WEBSITE_STORAGE_CONN_STRING }}
-        run: npx nx run-many -t deploy --verbose --output-style=stream
+          UNIQUE_ENV_ID: mdrrahman
+          USER_PRINCIPAL_TYPE: ServicePrincipal
+        run: |
+          set -euo pipefail
+          # CI deploys as a service principal (no `upn` claim); derive its identity
+          # with a correct base64url decoder since fabric-workspace-deployment's own
+          # claim parser is base64url-unsafe and fails intermittently on these tokens.
+          token=$(az account get-access-token --resource 'https://analysis.windows.net/powerbi/api' --query accessToken -o tsv)
+          claims=$(python3 -c 'import sys,base64,json;p=sys.argv[1].split(".")[1];p+="="*(-len(p)%4);print(base64.urlsafe_b64decode(p).decode())' "$token")
+          USER_OBJECT_ID=$(echo "$claims" | jq -er '.oid')
+          USER_APP_ID=$(echo "$claims" | jq -er '.appid')
+          USER_DISPLAY_NAME=$(echo "$claims" | jq -r '.app_displayname // .appid')
+          export USER_OBJECT_ID USER_APP_ID USER_DISPLAY_NAME
+          npx nx run-many -t deploy --verbose --output-style=stream
