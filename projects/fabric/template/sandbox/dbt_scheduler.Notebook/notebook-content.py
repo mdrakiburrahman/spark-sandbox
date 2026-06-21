@@ -72,7 +72,7 @@ runner:
     - command: deps
     - command: debug
     - command: seed
-      full_refresh: {FULL_REFRESH}
+      full_refresh: true
       collect_metrics: true
       copy_run_results: true
     - command: build
