@@ -36,7 +36,7 @@ def _generate_sas_token(uri: str, key: str, key_name: str, expiry_seconds: int =
 
 
 class TokenCache:
-    """Route-/scope-aware token cache (port of cache/token-cache.ts).
+    """Route-/scope-aware token cache.
 
     Keyed by resource (+ client_id), so different scopes never share an entry. A
     token within ``skew_sec`` of expiry is treated as stale so callers refetch
