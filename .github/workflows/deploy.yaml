@@ -81,16 +81,19 @@ jobs:
         env:
           MARQUITO_WEBSITE_STORAGE_CONN_STRING: ${{ secrets.MARQUITO_WEBSITE_STORAGE_CONN_STRING }}
           UNIQUE_ENV_ID: mdrrahman
-          USER_PRINCIPAL_TYPE: ServicePrincipal
+          USER_PRINCIPAL_TYPE: User
         run: |
           set -euo pipefail
-          # CI deploys as a service principal (no `upn` claim); derive its identity
-          # with a correct base64url decoder since fabric-workspace-deployment's own
-          # claim parser is base64url-unsafe and fails intermittently on these tokens.
+          # The IMDS relay returns a user-context token for mdrrahman.
+          # fabric-workspace-deployment resolves dev.json's {user-*} placeholders by
+          # base64-decoding the token payload, but its parser is base64url-unsafe and
+          # fails intermittently. Decode it here with a correct decoder and pass the
+          # identity via env so the tool never introspects the token itself.
           token=$(az account get-access-token --resource 'https://analysis.windows.net/powerbi/api' --query accessToken -o tsv)
           claims=$(python3 -c 'import sys,base64,json;p=sys.argv[1].split(".")[1];p+="="*(-len(p)%4);print(base64.urlsafe_b64decode(p).decode())' "$token")
           USER_OBJECT_ID=$(echo "$claims" | jq -er '.oid')
           USER_APP_ID=$(echo "$claims" | jq -er '.appid')
-          USER_DISPLAY_NAME=$(echo "$claims" | jq -r '.app_displayname // .appid')
+          USER_DISPLAY_NAME=$(echo "$claims" | jq -er '.upn // .unique_name // .email // .app_displayname')
           export USER_OBJECT_ID USER_APP_ID USER_DISPLAY_NAME
+          echo "Resolved deploy identity: oid=${USER_OBJECT_ID} appid=${USER_APP_ID} upn=${USER_DISPLAY_NAME}"
           npx nx run-many -t deploy --verbose --output-style=stream
